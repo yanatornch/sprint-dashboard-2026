@@ -621,6 +621,11 @@
 
     <div class="kpis" id="projKpis"></div>
 
+    <div class="card" style="margin-bottom:16px;">
+      <h3>🔍 Project Insights <span class="tag">Auto-generated</span></h3>
+      <div id="projectInsights" class="insights-grid"></div>
+    </div>
+
     <div class="grid-2">
       <div class="card">
         <h3>Project Points by Sprint <span class="tag" id="projTrendTag">Stacked</span></h3>
@@ -1969,6 +1974,200 @@ function buildPersonProjectMatrix(){
 }
 
 // ============================================================================
+//  PROJECTS — INSIGHTS
+// ============================================================================
+function renderProjectInsights(){
+  const el = document.getElementById("projectInsights");
+  if (!el) return;
+  const idx = rangeIdx(S.projRange);
+  const SPR = DATA.sprints.length;
+
+  // Team latest active sprint (across all projects)
+  const allProjects = Object.keys(DATA.projectSprint);
+  let latest = -1;
+  for (let i = SPR-1; i >= 0; i--) {
+    if (allProjects.some(p => (+DATA.projectSprint[p][i]||0) > 0)) { latest = i; break; }
+  }
+
+  // Build per-project stats in range
+  const stats = allProjects.map(n => {
+    const arr = getProjectSprint(n);
+    const rangeTotal = sum(idx.map(i => +arr[i]||0));
+    const yearTotal = sum(arr);
+    const activeSprintsInRange = idx.filter(i => (+arr[i]||0) > 0).length;
+    const activeSprintsAll = arr.filter(v => (+v||0) > 0).length;
+    // peak
+    let peakI = -1, peakV = 0;
+    arr.forEach((v,i) => { if ((+v||0) > peakV) { peakV = +v; peakI = i; } });
+    // recent vs prior activity (global latest)
+    let trend = null;
+    if (latest >= 2) {
+      const recent = arr.slice(Math.max(0,latest-2), latest+1).reduce((a,b)=>a+(+b||0),0);
+      const prior  = arr.slice(Math.max(0,latest-5), Math.max(0,latest-2)).reduce((a,b)=>a+(+b||0),0);
+      trend = { recent, prior, delta: recent - prior };
+    }
+    // stale within range: 0 in last 2 sprints of range (if range has ≥ 2)
+    const stale = idx.length >= 2 && (+arr[idx[idx.length-1]]||0) === 0 && (+arr[idx[idx.length-2]]||0) === 0 && rangeTotal > 0;
+    // status (year-wide from status sheet)
+    const sc = DATA.statusProjectCount[n] || [];
+    const sp = DATA.statusProjectPts[n] || [];
+    const SL = DATA.statusLabels;
+    const donePts = +sp[SL.indexOf("Done")]||0;
+    const blocked = +sc[SL.indexOf("Blocked")]||0;
+    const bugged  = +sc[SL.indexOf("Bugged")]||0;
+    const wip = (+sc[SL.indexOf("In Progress")]||0)
+              + (+sc[SL.indexOf("Ready for review")]||0)
+              + (+sc[SL.indexOf("Ready for test")]||0)
+              + (+sc[SL.indexOf("Waiting to INT deploy")]||0)
+              + (+sc[SL.indexOf("Waiting to PRD deploy")]||0);
+    const todo = +sc[SL.indexOf("To Do")]||0;
+    const grandPts = sp.reduce((a,b)=>a+(+b||0),0);
+    const doneRate = grandPts ? donePts/grandPts*100 : 0;
+    return { n, arr, rangeTotal, yearTotal, activeSprintsInRange, activeSprintsAll, peakI, peakV, trend, stale, donePts, grandPts, doneRate, blocked, bugged, wip, todo };
+  });
+
+  const activeStats = stats.filter(s => s.rangeTotal > 0).sort((a,b)=>b.rangeTotal-a.rangeTotal);
+  const totalPts = activeStats.reduce((a,b)=>a+b.rangeTotal,0);
+  const totalProjects = activeStats.length;
+
+  const cards = [];
+
+  // Portfolio summary
+  cards.push({
+    cls: "info",
+    title: "🗂️ Portfolio",
+    value: `${totalProjects} active projects · ${totalPts.toFixed(0)} pts`,
+    hint: `ใน range ที่เลือก · รวม ${allProjects.length} projects ทั้งหมด`
+  });
+
+  // Top 3 share (concentration)
+  const top3 = activeStats.slice(0,3);
+  const top3Share = totalPts ? top3.reduce((a,b)=>a+b.rangeTotal,0)/totalPts*100 : 0;
+  const concCls = top3Share >= 70 ? "warn" : top3Share >= 50 ? "info" : "good";
+  cards.push({
+    cls: concCls,
+    title: "🎯 Concentration",
+    value: `Top-3 = ${top3Share.toFixed(0)}% ของ points`,
+    hint: top3.map(t => `${t.n} (${t.rangeTotal.toFixed(0)})`).join(" · ") || "—"
+  });
+
+  // Leader
+  if (activeStats.length) {
+    const top = activeStats[0];
+    cards.push({
+      cls: "good",
+      title: "🏆 Leader",
+      value: `${top.n} — ${top.rangeTotal.toFixed(0)} pts`,
+      hint: `active ${top.activeSprintsInRange}/${idx.length} sprints in range`
+    });
+  }
+
+  // Rising star — biggest positive delta (recent vs prior, 3v3)
+  if (latest >= 2) {
+    const rising = stats
+      .filter(s => s.trend && s.trend.recent > 0 && s.trend.delta > 0 && s.yearTotal > 5)
+      .sort((a,b) => b.trend.delta - a.trend.delta)[0];
+    if (rising) {
+      cards.push({
+        cls: "good",
+        title: "📈 Rising",
+        value: `${rising.n} — +${rising.trend.delta.toFixed(0)} pts`,
+        hint: `3 sprints ล่าสุด ${rising.trend.recent.toFixed(0)} vs ก่อนหน้า ${rising.trend.prior.toFixed(0)}`
+      });
+    }
+    // Fading — biggest negative delta
+    const fading = stats
+      .filter(s => s.trend && s.trend.prior > 0 && s.trend.delta < 0 && s.yearTotal > 10)
+      .sort((a,b) => a.trend.delta - b.trend.delta)[0];
+    if (fading) {
+      cards.push({
+        cls: "warn",
+        title: "📉 Fading",
+        value: `${fading.n} — ${fading.trend.delta.toFixed(0)} pts`,
+        hint: `ช่วงหลังชะลอ (${fading.trend.recent.toFixed(0)} vs ${fading.trend.prior.toFixed(0)})`
+      });
+    }
+  }
+
+  // Stale projects (ran in range but 0 in last 2 sprints of range)
+  const staleList = activeStats.filter(s => s.stale).map(s => s.n);
+  if (staleList.length) {
+    cards.push({
+      cls: "bad",
+      title: "⏰ Stale Projects",
+      value: `${staleList.length} project ไม่มี activity 2 sprints ล่าสุด`,
+      hint: staleList.slice(0,4).join(" · ") + (staleList.length > 4 ? ` · +${staleList.length-4}` : "")
+    });
+  }
+
+  // Risk (blocked/bugged)
+  const riskList = stats
+    .filter(s => s.blocked > 0 || s.bugged > 0)
+    .sort((a,b) => (b.blocked+b.bugged)-(a.blocked+a.bugged));
+  if (riskList.length) {
+    const top = riskList.slice(0,3);
+    cards.push({
+      cls: "bad",
+      title: "⚠️ Risk Projects",
+      value: `${riskList.length} projects มี Blocked/Bugged`,
+      hint: top.map(r => `${r.n} (${r.blocked}B/${r.bugged}🐞)`).join(" · ")
+    });
+  }
+
+  // Done rate — best and worst (only projects with meaningful volume)
+  const withVol = stats.filter(s => s.grandPts >= 30);
+  if (withVol.length) {
+    const sorted = withVol.slice().sort((a,b) => b.doneRate - a.doneRate);
+    const best = sorted[0];
+    const worst = sorted[sorted.length-1];
+    cards.push({
+      cls: best.doneRate >= 70 ? "good" : "info",
+      title: "✅ Best Done Rate",
+      value: `${best.n} — ${best.doneRate.toFixed(0)}%`,
+      hint: `${best.donePts.toFixed(0)} / ${best.grandPts.toFixed(0)} pts · ≥30 pts volume`
+    });
+    if (best !== worst) {
+      cards.push({
+        cls: worst.doneRate < 40 ? "warn" : "info",
+        title: "🚧 Lowest Done Rate",
+        value: `${worst.n} — ${worst.doneRate.toFixed(0)}%`,
+        hint: `${worst.donePts.toFixed(0)} / ${worst.grandPts.toFixed(0)} pts`
+      });
+    }
+  }
+
+  // Backlog-heavy projects (To Do > 20 tasks)
+  const heavy = stats.filter(s => s.todo > 20).sort((a,b) => b.todo - a.todo).slice(0,3);
+  if (heavy.length) {
+    cards.push({
+      cls: "warn",
+      title: "📝 Big Backlog",
+      value: `${heavy.length} projects มี To Do > 20`,
+      hint: heavy.map(h => `${h.n} (${h.todo})`).join(" · ")
+    });
+  }
+
+  // WIP heavy
+  const wipHeavy = stats.filter(s => s.wip > 15).sort((a,b) => b.wip - a.wip).slice(0,3);
+  if (wipHeavy.length) {
+    cards.push({
+      cls: "info",
+      title: "🔄 WIP Concentration",
+      value: `${wipHeavy.length} projects มี WIP > 15`,
+      hint: wipHeavy.map(h => `${h.n} (${h.wip})`).join(" · ")
+    });
+  }
+
+  el.innerHTML = cards.map(c =>
+    `<div class="insight ${c.cls}">
+       <div class="ins-title">${c.title}</div>
+       <div class="ins-value">${c.value}</div>
+       <div class="ins-hint">${c.hint}</div>
+     </div>`
+  ).join("");
+}
+
+// ============================================================================
 //  PROJECTS
 // ============================================================================
 function updateProjKPIs(){
@@ -2266,6 +2465,7 @@ function refresh(){
     buildPersonProjectMatrix();
   } else if (S.section === "projects") {
     updateProjKPIs();
+    renderProjectInsights();
     buildProjTrendChart();
     buildProjTopChart();
     buildProjTable();
@@ -2500,7 +2700,39 @@ function buildLogicTab(){
     <div style="color:#94a3b8; font-size:13px; margin-top:6px;">วิธีคำนวณตัวเลขในแดชบอร์ด · refresh ทุกครั้งที่อัปไฟล์ CSV ใหม่</div>
   </div>`;
 
-  document.getElementById("logicContent").innerHTML = header + filterCard + pointCard + statusCard + projectCard + roleCard + insightCard;
+  // ---- Card 7: Project Insights criteria ----
+  const projInsightRules = [
+    { icon:"🗂️", title:"Portfolio", rule:"นับ active projects และผลรวม points ใน sprint range ที่เลือก", flag:"info เสมอ" },
+    { icon:"🎯", title:"Concentration (Top-3 Share)", rule:"ผลรวม points ของ 3 projects ใหญ่สุด ÷ total points ใน range", flag:"good < 50% · info 50–69% · warn ≥ 70% (กระจุก)" },
+    { icon:"🏆", title:"Leader", rule:"Project ที่มี points สูงสุดใน range", flag:"good เสมอ (ถ้ามี)" },
+    { icon:"📈", title:"Rising", rule:"Project ที่ delta = (3 sprints ล่าสุด) − (3 sprints ก่อนหน้า) บวกสูงสุด (ต้องมี yearTotal > 5)", flag:"good" },
+    { icon:"📉", title:"Fading", rule:"Project ที่ delta ลบหนักสุด (ต้องมี prior > 0 และ yearTotal > 10)", flag:"warn" },
+    { icon:"⏰", title:"Stale Projects", rule:"Project ที่มี points ใน range > 0 แต่ 2 sprints สุดท้ายใน range = 0", flag:"bad" },
+    { icon:"⚠️", title:"Risk Projects", rule:"Project ที่มี Blocked หรือ Bugged > 0 (นับจาก status sheet ทั้งปี)", flag:"bad · โชว์ top 3" },
+    { icon:"✅", title:"Best / Lowest Done Rate", rule:"donePts/grandPts × 100 · เฉพาะ project ที่มี grandPts ≥ 30 (ตัด noise)", flag:"best: good ≥ 70% · worst: warn < 40%" },
+    { icon:"📝", title:"Big Backlog", rule:"Project ที่มี tasks สถานะ To Do > 20", flag:"warn · โชว์ top 3" },
+    { icon:"🔄", title:"WIP Concentration", rule:"Project ที่รวม In Progress + Review/Test + Waiting deploy > 15", flag:"info · โชว์ top 3" },
+  ];
+  const projInsightChips = projInsightRules.map(r => `
+    <div style="background:var(--panel-2); border-radius:10px; padding:12px 14px; border-left:3px solid var(--accent-2);">
+      <div style="font-weight:600; color:#a5b4fc; font-size:13px; margin-bottom:6px;">${r.icon} ${r.title}</div>
+      <div style="font-size:12px; color:#cbd5e1; line-height:1.55; margin-bottom:6px;">${r.rule}</div>
+      <div style="font-size:11px; color:#94a3b8;"><strong style="color:#fcd34d;">Flag:</strong> ${r.flag}</div>
+    </div>`).join("");
+  const projInsightCard = `<div class="card" style="margin-top:14px;">
+    <h3>7 · Projects · 🔍 Insights criteria <span class="tag">${projInsightRules.length} rules · auto</span></h3>
+    <div style="font-size:13px; color:#94a3b8; margin:4px 0 12px;">
+      เกณฑ์ที่ใช้คำนวณการ์ด Insight ในหน้า <strong style="color:#e2e8f0;">Projects</strong> (reactive ตาม Sprint Range ที่เลือก)
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px;">
+      ${projInsightChips}
+    </div>
+    <div style="margin-top:12px; padding:10px 12px; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.3); border-radius:8px; font-size:12px; color:#a5b4fc;">
+      <strong>Trend window:</strong> recent = 3 sprints สุดท้ายก่อน latest (inclusive) · prior = 3 sprints ก่อนหน้า · latest = sprint ล่าสุดที่ <em>ทีมใด ๆ</em> มี activity
+    </div>
+  </div>`;
+
+  document.getElementById("logicContent").innerHTML = header + filterCard + pointCard + statusCard + projectCard + roleCard + insightCard + projInsightCard;
 }
 
 function wireUp(){
