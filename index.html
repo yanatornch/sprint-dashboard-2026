@@ -2156,7 +2156,7 @@ document.getElementById("updated").textContent = "Data updated: 21 April 2026";
   }
   const chips = stale.map(n => `<span class="stale-chip">${n}${roleOf(n)!=="—"?` · ${roleOf(n)}`:""}</span>`).join("");
   banner.className = "stale-banner";
-  banner.innerHTML = `<span class="stale-icon">⚠️</span><div><strong>ขาดการอัปเดทเกิน 2 Sprints</strong> (ไม่มี points/tasks ใน ${windowLabel}): ${chips}</div>`;
+  banner.innerHTML = `<span class="stale-icon">⚠️</span><div><strong>ขาดการอัปเดทเกิน 2 Sprints</strong>: ${chips}</div>`;
   banner.style.display = "flex";
 })();
 populateSelects();
