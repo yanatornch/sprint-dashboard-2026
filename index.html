@@ -1,0 +1,2064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sprint Contribution Dashboard 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-2: #273449;
+    --border: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #6366f1;
+    --accent-2: #22d3ee;
+    --good: #10b981;
+    --warn: #f59e0b;
+    --bad: #ef4444;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 10% -10%, #1e293b 0%, #0f172a 60%) fixed;
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header {
+    padding: 28px 32px 8px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 26px;
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, #fff, #a5b4fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+  .container { padding: 16px 32px 48px; }
+
+  .topnav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .topnav .navtab {
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .topnav .navtab:hover { color: var(--text); border-color: var(--accent); }
+  .topnav .navtab.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 18px;
+  }
+  .control {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 180px;
+  }
+  .control label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  select, input[type="text"] {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 14px;
+    outline: none;
+  }
+  select:focus, input:focus { border-color: var(--accent); }
+
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .kpi {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(99,102,241,0.12), transparent 60%);
+    pointer-events: none;
+  }
+  .kpi .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .kpi .value { font-size: 26px; font-weight: 700; margin-top: 6px; letter-spacing: -0.02em; }
+  .kpi .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 18px; }
+  .grid-eq { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+  @media (max-width: 1000px) {
+    .grid-2, .grid-eq { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+  .card h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .card h3 .tag {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+  .card h3 .head-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-inline-select {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 12px;
+    outline: none;
+    font-weight: 500;
+  }
+  .card-inline-select:focus { border-color: var(--accent); }
+  .chart-wrap { position: relative; height: 340px; }
+  .chart-wrap.tall { height: 420px; }
+  .chart-wrap.xtall { height: 520px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th, td {
+    padding: 8px 10px;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--panel); z-index: 1; }
+  thead th {
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    background: var(--panel);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  tbody tr:hover { background: rgba(99,102,241,0.08); }
+  tr.total-row td { font-weight: 700; color: #fff; background: var(--panel-2); }
+  tr.highlight td:first-child::before {
+    content: "●";
+    color: var(--accent-2);
+    margin-right: 6px;
+  }
+  .scroll { overflow: auto; max-height: 560px; border-radius: 10px; }
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-right: 4px;
+  }
+  .pill.good { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+  .pill.warn { background: rgba(245,158,11,0.15); color: #fcd34d; }
+  .pill.bad { background: rgba(239,68,68,0.15); color: #fca5a5; }
+  .pill.neutral { background: rgba(148,163,184,0.15); color: #cbd5e1; }
+
+  .tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .tab {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 24px; }
+  .legend-sq {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .progress {
+    height: 8px; background: var(--panel-2); border-radius: 4px; overflow: hidden;
+    display: inline-block; width: 100px; vertical-align: middle; margin-right: 8px;
+  }
+  .progress > div {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #22d3ee);
+  }
+  .person-drill {
+    background: var(--panel-2);
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 8px;
+    border: 1px solid var(--border);
+  }
+  .person-drill h4 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    color: #a5b4fc;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Sprint Contribution Dashboard 2026</h1>
+    <div class="sub">Story points, tasks, projects, and status across Sprints 1–9 · 16 teammates · 25 projects · Task-level only</div>
+  </div>
+  <div class="sub" id="updated"></div>
+</header>
+
+<div class="container">
+
+  <div class="topnav" id="topnav">
+    <div class="navtab active" data-section="overview">Overview</div>
+    <div class="navtab" data-section="people">People</div>
+    <div class="navtab" data-section="projects">Projects</div>
+    <div class="navtab" data-section="status">Status</div>
+    <div class="navtab" data-section="logic">Logic</div>
+  </div>
+
+  <!-- =========================== OVERVIEW =========================== -->
+  <section class="section active" id="section-overview">
+    <div class="controls">
+      <div class="control">
+        <label for="viewSelect">Data View</label>
+        <select id="viewSelect">
+          <option value="points">Story Points</option>
+          <option value="tasks">Tasks Count</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="memberSelect">View Person</label>
+        <select id="memberSelect"></select>
+      </div>
+      <div class="control">
+        <label for="roleSelect">View Role</label>
+        <select id="roleSelect">
+          <option value="all">All Roles</option>
+          <option value="Dev">Dev</option>
+          <option value="Designer">Designer</option>
+          <option value="BA">BA</option>
+          <option value="Tester">Tester</option>
+          <option value="PC">PC</option>
+          <option value="CEO">CEO</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="sprintRange">Sprint Range</label>
+        <select id="sprintRange">
+          <option value="all">All Sprints (1-9)</option>
+          <option value="1-3">Q1 Burst (1-3)</option>
+          <option value="4-6">Mid (4-6)</option>
+          <option value="7-9">Recent (7-9)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>
+          <span id="trendTitleText">Sprint Trend by Person</span>
+          <span class="head-right">
+            <select id="chartType" class="card-inline-select" title="Chart Style">
+              <option value="bar">Stacked Bar</option>
+              <option value="line">Lines</option>
+            </select>
+            <span class="tag" id="trendTag">Story Points</span>
+          </span>
+        </h3>
+        <div class="chart-wrap tall"><canvas id="trendChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>
+          <span id="topTitleText">Top Contributors</span>
+          <span class="head-right">
+            <select id="topSprint" class="card-inline-select" title="Filter by sprint">
+              <option value="all">Use Sprint Range</option>
+              <option value="1">Sprint 1</option>
+              <option value="2">Sprint 2</option>
+              <option value="3">Sprint 3</option>
+              <option value="4">Sprint 4</option>
+              <option value="5">Sprint 5</option>
+              <option value="6">Sprint 6</option>
+              <option value="7">Sprint 7</option>
+              <option value="8">Sprint 8</option>
+              <option value="9">Sprint 9</option>
+            </select>
+            <span class="tag" id="topTag">Total</span>
+          </span>
+        </h3>
+        <div class="chart-wrap tall"><canvas id="topChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid-eq">
+      <div class="card">
+        <h3 id="capTitle">Team Capacity by Sprint <span class="tag" id="capTag">Points + Items</span></h3>
+        <div class="chart-wrap"><canvas id="capacityChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3 id="avgTitle">Avg Points / Task Trend <span class="tag" id="avgTag">Team-wide</span></h3>
+        <div class="chart-wrap"><canvas id="avgTrendChart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== PEOPLE =========================== -->
+  <section class="section" id="section-people">
+    <div class="controls">
+      <div class="control">
+        <label for="personDrill">Drill into Person</label>
+        <select id="personDrill"></select>
+      </div>
+      <div class="control">
+        <label for="personMetric">Metric</label>
+        <select id="personMetric">
+          <option value="points">Story Points</option>
+          <option value="tasks">Tasks Count</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <h3><span id="drillName">Select a person</span> <span class="tag" id="drillStat">—</span></h3>
+      <div id="drillStatusPills" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;"></div>
+    </div>
+
+    <div class="grid-eq">
+      <div class="card">
+        <h3>Sprint-by-Sprint Contribution Chart <span class="tag" id="drillChartTag">Story Points</span></h3>
+        <div class="chart-wrap tall"><canvas id="personProjChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Project Summary Table <span class="tag" id="drillTableTag">Points</span></h3>
+        <div class="scroll" id="personTable"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Person × Project Matrix <span class="tag" id="matrixTag">Story Points</span></h3>
+      <div class="scroll" id="matrixTable"></div>
+      <div class="sub" style="margin-top:10px; font-size:12px;">
+        <span class="legend-sq" style="background:#1e293b; border:1px solid #334155"></span> low
+        <span class="legend-sq" style="background:#312e81"></span>
+        <span class="legend-sq" style="background:#4338ca"></span>
+        <span class="legend-sq" style="background:#6366f1"></span>
+        <span class="legend-sq" style="background:#a5b4fc"></span> high
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== PROJECTS =========================== -->
+  <section class="section" id="section-projects">
+    <div class="controls">
+      <div class="control">
+        <label for="projSprintRange">Sprint Range</label>
+        <select id="projSprintRange">
+          <option value="all">All Sprints (1-9)</option>
+          <option value="1-3">Q1 Burst (1-3)</option>
+          <option value="4-6">Mid (4-6)</option>
+          <option value="7-9">Recent (7-9)</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="projTopN">Show Top</label>
+        <select id="projTopN">
+          <option value="10">Top 10</option>
+          <option value="15" selected>Top 15</option>
+          <option value="all">All Projects</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="kpis" id="projKpis"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Project Points by Sprint <span class="tag" id="projTrendTag">Stacked</span></h3>
+        <div class="chart-wrap tall"><canvas id="projTrendChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Top Projects <span class="tag" id="projTopTag">By points</span></h3>
+        <div class="chart-wrap tall"><canvas id="projTopChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Project × Sprint Heatmap <span class="tag">Points</span></h3>
+      <div class="scroll" id="projTable"></div>
+    </div>
+  </section>
+
+  <!-- =========================== STATUS =========================== -->
+  <section class="section" id="section-status">
+    <div class="controls">
+      <div class="control">
+        <label for="statusMetric">Metric</label>
+        <select id="statusMetric">
+          <option value="points">Story Points</option>
+          <option value="count">Task Count</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="statusView">View</label>
+        <select id="statusView">
+          <option value="person">By Person</option>
+          <option value="project">By Project</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="kpis" id="statusKpis"></div>
+
+    <div class="card">
+      <h3>Status Breakdown <span class="tag" id="statusTag">By Person · Story Points</span></h3>
+      <div class="chart-wrap xtall"><canvas id="statusChart"></canvas></div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h3>Completion Rate Ranking <span class="tag">% Done of total</span></h3>
+      <div class="scroll" id="doneTable"></div>
+    </div>
+  </section>
+
+  <!-- =========================== LOGIC =========================== -->
+  <section class="section" id="section-logic">
+    <div id="logicContent"></div>
+  </section>
+
+  <div class="footer">Data: Azure DevOps Task export · 2,556.5 pts total · 932 Tasks · 1,564 pts Done (SP1-9, 2026)</div>
+</div>
+
+<script>
+// ============================================================================
+//  DATA
+// ============================================================================
+const DATA = {
+  sprints: ["Sprint 1", "Sprint 2", "Sprint 3", "Sprint 4", "Sprint 5", "Sprint 6", "Sprint 7", "Sprint 8", "Sprint 9"],
+
+  points: {
+    "Ohm":[10, 16, 140, 93, 104, 58, 161, 47, 0],
+    "Nust":[74, 65, 55, 37, 66, 80, 11, 45, 0],
+    "Waew":[27, 7, 170, 61, 0, 76, 36, 29, 0],
+    "Ploy":[15, 18, 17, 15, 16.5, 17, 13.5, 54, 1],
+    "Gib":[24, 11, 21, 7, 18.5, 18.5, 14.5, 30.5, 0],
+    "Unn":[19, 8, 24, 33, 13, 24, 11, 19, 0],
+    "Nine":[2, 23, 16, 7, 17, 22, 27, 2, 0],
+    "Ping":[0, 0, 28, 38, 13, 11, 15, 59, 0],
+    "Praew":[0, 13, 8, 16, 11, 38, 30, 8, 0],
+    "P":[15, 5, 0, 0, 20, 26, 45, 5, 0],
+    "No":[10, 8, 0, 0, 5, 5, 38, 14, 0],
+    "Tae":[25, 0, 8, 14, 14, 0, 0, 0, 0],
+    "Tum":[5, 0, 0, 5, 0, 0, 0, 0, 0],
+    "Karn":[0, 0, 0, 0, 0, 0, 3, 0, 0],
+    "Dream":[0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Torfah":[0, 0, 0, 0, 0, 0, 0, 0, 0]
+  },
+
+  tasks: {
+    "Ohm":[10, 3, 20, 21, 19, 11, 40, 10, 0],
+    "Nust":[31, 24, 20, 14, 22, 22, 4, 16, 0],
+    "Waew":[6, 3, 39, 15, 0, 16, 8, 8, 0],
+    "Ploy":[15, 19, 18, 16, 16, 17, 17, 49, 1],
+    "Gib":[12, 10, 12, 6, 11, 8, 10, 28, 0],
+    "Unn":[4, 1, 12, 17, 6, 9, 6, 7, 0],
+    "Nine":[3, 13, 8, 4, 9, 11, 12, 2, 0],
+    "Ping":[2, 1, 5, 10, 3, 3, 5, 11, 0],
+    "Praew":[0, 3, 3, 16, 10, 11, 9, 2, 0],
+    "P":[5, 16, 1, 2, 6, 6, 9, 5, 0],
+    "No":[2, 3, 4, 1, 1, 1, 11, 6, 0],
+    "Tae":[12, 5, 7, 8, 11, 12, 1, 0, 0],
+    "Tum":[1, 1, 0, 1, 0, 0, 0, 0, 0],
+    "Karn":[0, 0, 0, 0, 0, 0, 7, 2, 0],
+    "Dream":[0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Torfah":[0, 0, 0, 0, 0, 0, 0, 0, 0]
+  },
+
+  projectSprint: {
+    "NCSWT":[5, 32, 232, 154, 159, 169, 249, 110, 0],
+    "Internal/Ops":[120, 47, 74, 18, 31, 49, 88.5, 51, 0],
+    "Gift-Card-2026":[0, 0, 6, 23, 18, 80, 2, 22, 0],
+    "InsureTech":[0, 8, 7, 40, 37, 3, 7, 8, 0],
+    "Pet Project":[0, 0, 44, 22, 1, 0, 8, 25, 0],
+    "Merlin":[8, 0, 42, 32, 5.5, 1, 0, 0, 0],
+    "Event-Registration-2026":[15, 12, 25, 1, 0, 5, 5, 14, 0],
+    "MorePOS":[31, 5, 1, 0, 25, 6, 0, 0, 0],
+    "Breaking Par":[20, 1, 5, 7, 7, 0, 15, 2, 0],
+    "P2CR2":[0, 15, 5, 5, 0, 10, 1, 15.5, 0],
+    "Chang HomePro":[0, 0, 27, 3, 0, 7, 3, 10, 0],
+    "Village Fund":[0, 31, 5, 5, 0, 0, 0, 6, 0],
+    "Campaign-Accumulate-2025":[25, 8, 6, 1, 3, 0, 0, 0, 0],
+    "Gamesmith":[0, 5, 0, 0, 1, 10.5, 9, 9.5, 0],
+    "khaojai it":[0, 0, 0, 4, 2, 7, 4.5, 10, 1],
+    "2026-1":[0, 0, 0, 0, 0, 1, 8, 8.5, 0],
+    "AdelphiISRP":[0, 0, 0, 1, 0, 10.5, 1, 4, 0],
+    "Ship360EXP":[0, 0, 0, 0, 0, 2.5, 0, 11, 0],
+    "Andaman Phuket":[0, 0, 0, 5, 7, 0, 0, 0, 0],
+    "POC":[0, 0, 0, 0, 0, 5, 3, 3, 0],
+    "GENCO":[0, 0, 6, 1, 0, 0, 0, 3, 0],
+    "Market Village":[0, 7, 0, 0, 0, 0, 0, 0, 0],
+    "AI":[0, 0, 0, 4, 0, 3, 0, 0, 0],
+    "OEG Support 2025":[0, 0, 2, 0, 0, 3, 0, 0, 0],
+    "Zleep":[0, 3, 0, 0, 0, 0, 0, 0, 0],
+    "MeApp":[0, 0, 0, 0, 0, 3, 0, 0, 0],
+    "Seree Golf Club":[2, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Monty":[0, 0, 0, 0, 1.5, 0, 0, 0, 0],
+    "Maggi":[0, 0, 0, 0, 0, 0, 1, 0, 0]
+  },
+
+  personProject: {
+    "Ohm":{
+      "NCSWT":565,
+      "InsureTech":29,
+      "Internal/Ops":13,
+      "Campaign-Accumulate-2025":10,
+      "GENCO":7,
+      "Village Fund":5
+    },
+    "Nust":{
+      "Internal/Ops":165,
+      "InsureTech":81,
+      "NCSWT":79,
+      "Gift-Card-2026":44,
+      "Village Fund":37,
+      "Campaign-Accumulate-2025":10,
+      "OEG Support 2025":5,
+      "Zleep":3,
+      "MeApp":3,
+      "MorePOS":2,
+      "Chang HomePro":2,
+      "Pet Project":1,
+      "GENCO":1
+    },
+    "Waew":{
+      "Internal/Ops":106,
+      "Pet Project":99,
+      "NCSWT":57,
+      "Merlin":41,
+      "Gift-Card-2026":41,
+      "Event-Registration-2026":24,
+      "Campaign-Accumulate-2025":21,
+      "Gamesmith":7,
+      "Andaman Phuket":5,
+      "P2CR2":4,
+      "Maggi":1
+    },
+    "Ploy":{
+      "Internal/Ops":25,
+      "P2CR2":23.5,
+      "Chang HomePro":21,
+      "Gamesmith":17,
+      "2026-1":14.5,
+      "Merlin":12.5,
+      "Event-Registration-2026":12,
+      "Gift-Card-2026":11,
+      "khaojai it":8.5,
+      "Ship360EXP":5.5,
+      "AdelphiISRP":4.5,
+      "POC":3,
+      "Breaking Par":3,
+      "Andaman Phuket":3,
+      "MorePOS":2,
+      "Market Village":1
+    },
+    "Gib":{
+      "Internal/Ops":31.5,
+      "Event-Registration-2026":27,
+      "khaojai it":20,
+      "Gift-Card-2026":16,
+      "AdelphiISRP":12,
+      "Chang HomePro":10,
+      "Ship360EXP":8,
+      "Andaman Phuket":4,
+      "NCSWT":3,
+      "MorePOS":3,
+      "P2CR2":3,
+      "2026-1":3,
+      "Campaign-Accumulate-2025":2,
+      "Monty":1.5,
+      "Merlin":1
+    },
+    "Unn":{
+      "NCSWT":76,
+      "Breaking Par":35,
+      "Gift-Card-2026":34,
+      "Event-Registration-2026":6
+    },
+    "Nine":{
+      "Internal/Ops":52,
+      "P2CR2":21,
+      "Chang HomePro":17,
+      "Gamesmith":11,
+      "Market Village":6,
+      "POC":3,
+      "AI":3,
+      "Seree Golf Club":2,
+      "Merlin":1
+    },
+    "Ping":{
+      "NCSWT":121,
+      "Breaking Par":13,
+      "Event-Registration-2026":8,
+      "Village Fund":5,
+      "Gift-Card-2026":5,
+      "AI":4,
+      "Merlin":3,
+      "Internal/Ops":3,
+      "GENCO":2
+    },
+    "Praew":{
+      "NCSWT":124
+    },
+    "P":{
+      "NCSWT":70,
+      "MorePOS":46
+    },
+    "No":{
+      "Internal/Ops":68,
+      "NCSWT":7,
+      "POC":5
+    },
+    "Tae":{
+      "Merlin":30,
+      "Internal/Ops":15,
+      "MorePOS":10,
+      "Breaking Par":6
+    },
+    "Tum":{
+      "NCSWT":5,
+      "MorePOS":5
+    },
+    "Karn":{
+      "NCSWT":3
+    },
+    "Dream":{
+
+
+    },
+    "Torfah":{
+
+
+    }
+  },
+
+  contribution: {
+    "Ohm":{
+      "NCSWT":[0, 11, 123, 64, 104, 58, 161, 44, 0],
+      "InsureTech":[0, 0, 0, 29, 0, 0, 0, 0, 0],
+      "Internal/Ops":[0, 0, 13, 0, 0, 0, 0, 0, 0],
+      "Campaign-Accumulate-2025":[10, 0, 0, 0, 0, 0, 0, 0, 0],
+      "GENCO":[0, 0, 4, 0, 0, 0, 0, 3, 0],
+      "Village Fund":[0, 5, 0, 0, 0, 0, 0, 0, 0]
+    },
+    "Nust":{
+      "Internal/Ops":[72, 22, 9, 7, 9, 18, 2, 26, 0],
+      "InsureTech":[0, 8, 7, 11, 37, 3, 7, 8, 0],
+      "NCSWT":[0, 0, 36, 9, 15, 15, 2, 2, 0],
+      "Gift-Card-2026":[0, 0, 0, 2, 1, 38, 0, 3, 0],
+      "Village Fund":[0, 26, 0, 5, 0, 0, 0, 6, 0],
+      "Campaign-Accumulate-2025":[0, 6, 0, 1, 3, 0, 0, 0, 0],
+      "OEG Support 2025":[0, 0, 2, 0, 0, 3, 0, 0, 0],
+      "Zleep":[0, 3, 0, 0, 0, 0, 0, 0, 0],
+      "MeApp":[0, 0, 0, 0, 0, 3, 0, 0, 0],
+      "MorePOS":[2, 0, 0, 0, 0, 0, 0, 0, 0],
+      "Chang HomePro":[0, 0, 1, 1, 0, 0, 0, 0, 0],
+      "Pet Project":[0, 0, 0, 0, 1, 0, 0, 0, 0],
+      "GENCO":[0, 0, 0, 1, 0, 0, 0, 0, 0]
+    },
+    "Waew":{
+      "Internal/Ops":[9, 5, 42, 1, 0, 24, 22, 3, 0],
+      "Pet Project":[0, 0, 44, 22, 0, 0, 8, 25, 0],
+      "NCSWT":[5, 0, 28, 0, 0, 24, 0, 0, 0],
+      "Merlin":[0, 0, 27, 14, 0, 0, 0, 0, 0],
+      "Gift-Card-2026":[0, 0, 6, 18, 0, 16, 0, 1, 0],
+      "Event-Registration-2026":[0, 0, 13, 1, 0, 5, 5, 0, 0],
+      "Campaign-Accumulate-2025":[13, 2, 6, 0, 0, 0, 0, 0, 0],
+      "Gamesmith":[0, 0, 0, 0, 0, 7, 0, 0, 0],
+      "Andaman Phuket":[0, 0, 0, 5, 0, 0, 0, 0, 0],
+      "P2CR2":[0, 0, 4, 0, 0, 0, 0, 0, 0],
+      "Maggi":[0, 0, 0, 0, 0, 0, 1, 0, 0]
+    },
+    "Ploy":{
+      "Internal/Ops":[5, 1, 2, 1, 1, 2, 5, 8, 0],
+      "P2CR2":[0, 5, 0, 5, 0, 0, 0, 13.5, 0],
+      "Chang HomePro":[0, 0, 8, 2, 0, 2, 0, 9, 0],
+      "Gamesmith":[0, 5, 0, 0, 0, 1.5, 1, 9.5, 0],
+      "2026-1":[0, 0, 0, 0, 0, 1, 5, 8.5, 0],
+      "Merlin":[3, 0, 4, 3, 2.5, 0, 0, 0, 0],
+      "Event-Registration-2026":[5, 5, 2, 0, 0, 0, 0, 0, 0],
+      "Gift-Card-2026":[0, 0, 0, 1, 8, 2, 0, 0, 0],
+      "khaojai it":[0, 0, 0, 2, 1, 1, 1.5, 2, 1],
+      "Ship360EXP":[0, 0, 0, 0, 0, 2.5, 0, 3, 0],
+      "AdelphiISRP":[0, 0, 0, 1, 0, 2, 1, 0.5, 0],
+      "POC":[0, 0, 0, 0, 0, 3, 0, 0, 0],
+      "Breaking Par":[1, 1, 0, 0, 1, 0, 0, 0, 0],
+      "Andaman Phuket":[0, 0, 0, 0, 3, 0, 0, 0, 0],
+      "MorePOS":[1, 0, 1, 0, 0, 0, 0, 0, 0],
+      "Market Village":[0, 1, 0, 0, 0, 0, 0, 0, 0]
+    },
+    "Gib":{
+      "Internal/Ops":[9, 3, 2, 2, 0, 0, 6.5, 9, 0],
+      "Event-Registration-2026":[10, 7, 10, 0, 0, 0, 0, 0, 0],
+      "khaojai it":[0, 0, 0, 2, 1, 6, 3, 8, 0],
+      "Gift-Card-2026":[0, 0, 0, 2, 9, 3, 2, 0, 0],
+      "AdelphiISRP":[0, 0, 0, 0, 0, 8.5, 0, 3.5, 0],
+      "Chang HomePro":[0, 0, 9, 0, 0, 1, 0, 0, 0],
+      "Ship360EXP":[0, 0, 0, 0, 0, 0, 0, 8, 0],
+      "Andaman Phuket":[0, 0, 0, 0, 4, 0, 0, 0, 0],
+      "NCSWT":[0, 0, 0, 0, 3, 0, 0, 0, 0],
+      "MorePOS":[3, 0, 0, 0, 0, 0, 0, 0, 0],
+      "P2CR2":[0, 1, 0, 0, 0, 0, 0, 2, 0],
+      "2026-1":[0, 0, 0, 0, 0, 0, 3, 0, 0],
+      "Campaign-Accumulate-2025":[2, 0, 0, 0, 0, 0, 0, 0, 0],
+      "Monty":[0, 0, 0, 0, 1.5, 0, 0, 0, 0],
+      "Merlin":[0, 0, 0, 1, 0, 0, 0, 0, 0]
+    },
+    "Unn":{
+      "NCSWT":[0, 8, 24, 28, 13, 3, 0, 0, 0],
+      "Breaking Par":[19, 0, 0, 5, 0, 0, 11, 0, 0],
+      "Gift-Card-2026":[0, 0, 0, 0, 0, 21, 0, 13, 0],
+      "Event-Registration-2026":[0, 0, 0, 0, 0, 0, 0, 6, 0]
+    },
+    "Nine":{
+      "Internal/Ops":[0, 8, 6, 7, 16, 0, 14, 1, 0],
+      "P2CR2":[0, 9, 1, 0, 0, 10, 1, 0, 0],
+      "Chang HomePro":[0, 0, 9, 0, 0, 4, 3, 1, 0],
+      "Gamesmith":[0, 0, 0, 0, 1, 2, 8, 0, 0],
+      "Market Village":[0, 6, 0, 0, 0, 0, 0, 0, 0],
+      "POC":[0, 0, 0, 0, 0, 2, 1, 0, 0],
+      "AI":[0, 0, 0, 0, 0, 3, 0, 0, 0],
+      "Seree Golf Club":[2, 0, 0, 0, 0, 0, 0, 0, 0],
+      "Merlin":[0, 0, 0, 0, 0, 1, 0, 0, 0]
+    },
+    "Ping":{
+      "NCSWT":[0, 0, 13, 32, 13, 11, 8, 44, 0],
+      "Breaking Par":[0, 0, 5, 2, 0, 0, 4, 2, 0],
+      "Event-Registration-2026":[0, 0, 0, 0, 0, 0, 0, 8, 0],
+      "Village Fund":[0, 0, 5, 0, 0, 0, 0, 0, 0],
+      "Gift-Card-2026":[0, 0, 0, 0, 0, 0, 0, 5, 0],
+      "AI":[0, 0, 0, 4, 0, 0, 0, 0, 0],
+      "Merlin":[0, 0, 3, 0, 0, 0, 0, 0, 0],
+      "Internal/Ops":[0, 0, 0, 0, 0, 0, 3, 0, 0],
+      "GENCO":[0, 0, 2, 0, 0, 0, 0, 0, 0]
+    },
+    "Praew":{
+      "NCSWT":[0, 13, 8, 16, 11, 38, 30, 8, 0]
+    },
+    "P":{
+      "NCSWT":[0, 0, 0, 0, 0, 20, 45, 5, 0],
+      "MorePOS":[15, 5, 0, 0, 20, 6, 0, 0, 0]
+    },
+    "No":{
+      "Internal/Ops":[10, 8, 0, 0, 5, 5, 36, 4, 0],
+      "NCSWT":[0, 0, 0, 0, 0, 0, 0, 7, 0],
+      "POC":[0, 0, 0, 0, 0, 0, 2, 3, 0]
+    },
+    "Tae":{
+      "Merlin":[5, 0, 8, 14, 3, 0, 0, 0, 0],
+      "Internal/Ops":[15, 0, 0, 0, 0, 0, 0, 0, 0],
+      "MorePOS":[5, 0, 0, 0, 5, 0, 0, 0, 0],
+      "Breaking Par":[0, 0, 0, 0, 6, 0, 0, 0, 0]
+    },
+    "Tum":{
+      "NCSWT":[0, 0, 0, 5, 0, 0, 0, 0, 0],
+      "MorePOS":[5, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    "Karn":{
+      "NCSWT":[0, 0, 0, 0, 0, 0, 3, 0, 0]
+    },
+    "Dream":{
+
+    },
+    "Torfah":{
+
+    }
+  },
+
+  statusPersonCount: {
+    "Ohm":[36, 1, 0, 20, 73, 0, 4, 0, 0, 1],
+    "Nust":[130, 8, 1, 1, 0, 0, 10, 6, 0, 4],
+    "Waew":[91, 0, 0, 0, 0, 0, 1, 2, 0, 3],
+    "Ploy":[128, 7, 0, 0, 0, 0, 33, 0, 0, 0],
+    "Gib":[71, 5, 0, 0, 0, 0, 17, 0, 0, 4],
+    "Unn":[30, 1, 1, 0, 12, 4, 2, 11, 0, 1],
+    "Nine":[63, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    "Ping":[31, 0, 0, 0, 0, 0, 8, 0, 2, 1],
+    "Praew":[25, 1, 1, 21, 2, 0, 3, 1, 0, 0],
+    "P":[37, 6, 8, 0, 0, 0, 1, 0, 0, 0],
+    "No":[23, 4, 3, 1, 0, 0, 0, 0, 0, 0],
+    "Tae":[51, 0, 0, 0, 0, 0, 1, 0, 0, 4],
+    "Tum":[2, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    "Karn":[7, 0, 0, 0, 0, 0, 2, 0, 0, 0],
+    "Dream":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Torfah":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  },
+
+  statusPersonPts: {
+    "Ohm":[158, 3, 0, 100, 349, 0, 14, 0, 0, 8],
+    "Nust":[367, 26, 0, 3, 0, 0, 24, 16, 0, 16],
+    "Waew":[389, 0, 0, 0, 0, 0, 5, 0, 0, 20],
+    "Ploy":[121.75, 8.5, 0, 0, 0, 0, 36.75, 0, 0, 0],
+    "Gib":[114.25, 5.5, 0, 0, 0, 0, 20.25, 0, 0, 5],
+    "Unn":[59, 3, 0, 0, 33, 19, 6, 31, 0, 0],
+    "Nine":[117, 0, 0, 0, 0, 0, 4, 0, 0, 0],
+    "Ping":[117, 0, 0, 0, 0, 0, 41, 0, 3, 3],
+    "Praew":[27, 0, 3, 72, 8, 0, 11, 3, 0, 0],
+    "P":[66, 50, 0, 0, 0, 0, 0, 0, 0, 0],
+    "No":[61, 10, 15, 0, 0, 0, 0, 0, 0, 0],
+    "Tae":[61, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Tum":[10, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Karn":[3, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Dream":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Torfah":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  },
+
+  statusProjectCount: {
+    "NCSWT":[104, 9, 10, 41, 87, 0, 52, 17, 1, 8],
+    "Internal/Ops":[236, 19, 2, 1, 0, 0, 89, 1, 0, 12],
+    "Gift-Card-2026":[37, 1, 0, 0, 0, 0, 2, 9, 0, 0],
+    "InsureTech":[35, 1, 0, 0, 0, 0, 0, 6, 0, 0],
+    "Pet Project":[19, 0, 0, 0, 0, 0, 1, 1, 0, 0],
+    "Merlin":[29, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Event-Registration-2026":[32, 0, 0, 0, 0, 0, 30, 0, 0, 2],
+    "MorePOS":[49, 0, 0, 0, 0, 0, 6, 0, 1, 1],
+    "Breaking Par":[24, 0, 0, 0, 0, 4, 0, 2, 0, 1],
+    "P2CR2":[27, 0, 0, 0, 0, 0, 9, 0, 0, 1],
+    "Chang HomePro":[26, 0, 0, 0, 0, 0, 3, 0, 0, 2],
+    "Village Fund":[15, 0, 0, 0, 0, 0, 1, 5, 0, 0],
+    "Campaign-Accumulate-2025":[23, 0, 2, 0, 0, 0, 0, 1, 0, 0],
+    "Gamesmith":[17, 0, 0, 0, 0, 0, 4, 0, 0, 0],
+    "khaojai it":[12, 0, 0, 0, 0, 0, 8, 0, 0, 0],
+    "2026-1":[8, 1, 0, 0, 0, 0, 3, 0, 0, 0],
+    "AdelphiISRP":[8, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Ship360EXP":[2, 1, 0, 0, 0, 0, 6, 0, 0, 0],
+    "Andaman Phuket":[5, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    "POC":[6, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    "GENCO":[5, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+    "Market Village":[5, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "AI":[8, 0, 0, 1, 0, 0, 1, 1, 0, 0],
+    "OEG Support 2025":[2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Zleep":[2, 0, 0, 0, 0, 0, 5, 0, 0, 0],
+    "MeApp":[2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Seree Golf Club":[2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Monty":[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Maggi":[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  },
+
+  statusProjectPts: {
+    "NCSWT":[390, 65, 5, 172, 390, 0, 213, 45, 3, 44],
+    "Internal/Ops":[423, 35.5, 13, 3, 0, 0, 211, 3, 0, 17],
+    "Gift-Card-2026":[109, 3, 0, 0, 0, 0, 8, 31, 0, 0],
+    "InsureTech":[102, 3, 0, 0, 0, 0, 0, 13, 0, 0],
+    "Pet Project":[100, 0, 0, 0, 0, 0, 5, 0, 0, 0],
+    "Merlin":[88.5, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Event-Registration-2026":[66, 0, 0, 0, 0, 0, 72, 0, 0, 2],
+    "MorePOS":[68, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Breaking Par":[38, 0, 0, 0, 0, 19, 0, 0, 0, 1],
+    "P2CR2":[42.5, 0, 0, 0, 0, 0, 14, 0, 0, 0],
+    "Chang HomePro":[43.5, 0, 0, 0, 0, 0, 6.5, 0, 0, 2],
+    "Village Fund":[41, 0, 0, 0, 0, 0, 0, 6, 0, 0],
+    "Campaign-Accumulate-2025":[49, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Gamesmith":[25.5, 0, 0, 0, 0, 0, 9.5, 0, 0, 0],
+    "khaojai it":[17.5, 0, 0, 0, 0, 0, 11, 0, 0, 0],
+    "2026-1":[9, 4.5, 0, 0, 0, 0, 4, 0, 0, 0],
+    "AdelphiISRP":[13.5, 3, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Ship360EXP":[2.5, 2, 0, 0, 0, 0, 9, 0, 0, 0],
+    "Andaman Phuket":[12, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    "POC":[11, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    "GENCO":[7, 3, 0, 0, 0, 0, 3, 0, 0, 0],
+    "Market Village":[7, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "AI":[7, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "OEG Support 2025":[5, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Zleep":[3, 0, 0, 0, 0, 0, 19, 0, 0, 0],
+    "MeApp":[3, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Seree Golf Club":[2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Monty":[1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Maggi":[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  },
+
+  statusLabels: ["Done", "In Progress", "Ready for review", "Ready for test", "Waiting to INT deploy", "Waiting to PRD deploy", "To Do", "Blocked", "Bugged", "Removed"],
+  statusColors: ["#10b981", "#3b82f6", "#6366f1", "#06b6d4", "#f59e0b", "#f97316", "#94a3b8", "#ef4444", "#ec4899", "#475569"]
+};
+
+const VIEW_LABEL = { points: "Story Points", tasks: "Tasks" };
+
+// ---- Roles ----
+const ROLES = {
+  "Waew":"BA", "Torfah":"BA", "Tae":"BA",
+  "Ploy":"Designer", "Gib":"Designer", "Nine":"Designer",
+  "Ping":"Tester",
+  "Dream":"PC",
+  "Karn":"CEO",
+  "Ohm":"Dev", "Nust":"Dev", "Unn":"Dev", "Praew":"Dev", "P":"Dev", "No":"Dev", "Tum":"Dev"
+};
+const ROLE_ORDER = ["Dev","Designer","BA","Tester","PC","CEO"];
+const ROLE_COLORS = {
+  "Dev":"#6366f1", "Designer":"#ec4899", "BA":"#a855f7",
+  "Tester":"#06b6d4", "PC":"#f59e0b", "CEO":"#10b981"
+};
+function roleOf(name){ return ROLES[name] || "—"; }
+function peopleInRole(role){
+  if (!role || role === "all") return Object.keys(DATA.points);
+  return Object.keys(DATA.points).filter(n => roleOf(n) === role);
+}
+function roleBadge(name){
+  const r = roleOf(name);
+  if (r === "—") return "";
+  const c = ROLE_COLORS[r] || "#94a3b8";
+  return `<span style="display:inline-block; padding:1px 7px; border-radius:999px; font-size:10px; font-weight:600; background:${c}22; color:${c}; border:1px solid ${c}55; margin-left:6px; vertical-align:middle;">${r}</span>`;
+}
+const PALETTE = [
+  "#6366f1","#22d3ee","#f97316","#10b981","#f43f5e",
+  "#eab308","#a855f7","#14b8a6","#3b82f6","#ec4899",
+  "#84cc16","#06b6d4","#f59e0b","#8b5cf6","#ef4444","#64748b"
+];
+const PROJ_PALETTE = [
+  "#6366f1","#22d3ee","#f97316","#10b981","#f43f5e","#eab308","#a855f7","#14b8a6",
+  "#3b82f6","#ec4899","#84cc16","#06b6d4","#f59e0b","#8b5cf6","#ef4444","#64748b",
+  "#c084fc","#fb923c","#4ade80","#60a5fa","#f472b6","#fbbf24","#34d399","#93c5fd",
+  "#fda4af","#a3e635","#67e8f9","#d8b4fe","#fdba74","#86efac","#c4b5fd","#fca5a5","#fde047","#d1d5db"
+];
+
+// ============================================================================
+//  STATE & CHARTS
+// ============================================================================
+let trendChart, topChart, capacityChart, avgTrendChart,
+    personProjChart, projTrendChart, projTopChart, statusChart;
+
+let S = {
+  section: "overview",
+  view: "points",
+  highlight: "All",
+  range: "all",
+  chartType: "bar",
+  person: "Ohm",
+  personMetric: "points",
+  projRange: "all",
+  projTopN: "15",
+  statusMetric: "points",
+  statusView: "person",
+  doneOnly: false,
+  role: "all",
+  topSprint: "all"
+};
+
+// ============================================================================
+//  DONE-ONLY: ratio helpers (status[0] = Done bucket)
+// ============================================================================
+const DONE_RATIO = {
+  personPts: {}, personCount: {},
+  projPts: {}, projCount: {}
+};
+Object.entries(DATA.statusPersonPts).forEach(([n,a]) => {
+  const t = a.reduce((x,y)=>x+y,0);
+  DONE_RATIO.personPts[n] = t ? a[0]/t : 0;
+});
+Object.entries(DATA.statusPersonCount).forEach(([n,a]) => {
+  const t = a.reduce((x,y)=>x+y,0);
+  DONE_RATIO.personCount[n] = t ? a[0]/t : 0;
+});
+Object.entries(DATA.statusProjectPts).forEach(([n,a]) => {
+  const t = a.reduce((x,y)=>x+y,0);
+  DONE_RATIO.projPts[n] = t ? a[0]/t : 0;
+});
+Object.entries(DATA.statusProjectCount).forEach(([n,a]) => {
+  const t = a.reduce((x,y)=>x+y,0);
+  DONE_RATIO.projCount[n] = t ? a[0]/t : 0;
+});
+
+function getPersonPoints(name) {
+  const a = DATA.points[name] || [];
+  if (!S.doneOnly) return a;
+  const r = DONE_RATIO.personPts[name] || 0;
+  return a.map(v => v * r);
+}
+function getPersonTasks(name) {
+  const a = DATA.tasks[name] || [];
+  if (!S.doneOnly) return a;
+  const r = DONE_RATIO.personCount[name] || 0;
+  return a.map(v => v * r);
+}
+function getProjectSprint(name) {
+  const a = DATA.projectSprint[name] || [];
+  if (!S.doneOnly) return a;
+  const r = DONE_RATIO.projPts[name] || 0;
+  return a.map(v => v * r);
+}
+function getContributionRow(person, project) {
+  const a = (DATA.contribution[person] || {})[project] || [];
+  if (!S.doneOnly) return a;
+  // scale by the project's done rate (most accurate proxy at this granularity)
+  const r = DONE_RATIO.projPts[project] || 0;
+  return a.map(v => v * r);
+}
+function getPersonProjectVal(person, project) {
+  const v = (DATA.personProject[person] || {})[project] || 0;
+  if (!S.doneOnly) return v;
+  return v * (DONE_RATIO.projPts[project] || 0);
+}
+// Per-sprint contribution for the People drill-down, respecting S.personMetric.
+// Tasks contribution isn't stored directly; approximate per sprint by
+// scaling the points contribution by the person's task/point ratio for that sprint.
+function getContributionRowByMetric(person, project) {
+  const row = getContributionRow(person, project);
+  if (S.personMetric !== "tasks") return row;
+  const pPts = getPersonPoints(person);
+  const pTasks = getPersonTasks(person);
+  return row.map((v, i) => {
+    if (!v) return 0;
+    const pts = pPts[i] || 0;
+    if (!pts) return 0;
+    return v * ((pTasks[i] || 0) / pts);
+  });
+}
+function getPersonProjectValByMetric(person, project) {
+  const v = getPersonProjectVal(person, project);
+  if (S.personMetric !== "tasks") return v;
+  const totalPts = sum(getPersonPoints(person));
+  const totalTasks = sum(getPersonTasks(person));
+  if (!totalPts) return 0;
+  return v * (totalTasks / totalPts);
+}
+
+// ============================================================================
+//  HELPERS
+// ============================================================================
+function sum(arr){ return arr.reduce((a,b)=>a+(+b||0),0); }
+function rangeIdx(range){
+  if (range === "all") return [0,1,2,3,4,5,6,7,8];
+  const [s,e] = range.split("-").map(Number);
+  return Array.from({length:e-s+1}, (_,i)=>s-1+i);
+}
+function sliceRange(arr, range){
+  const idx = rangeIdx(range);
+  return idx.map(i => arr[i] ?? 0);
+}
+function heatColor(v, max){
+  if (!max || !v) return "transparent";
+  const r = Math.min(1, v / max);
+  const a = 0.08 + r * 0.72;
+  return `rgba(99,102,241,${a.toFixed(2)})`;
+}
+function fmt(v){
+  if (v === 0 || v == null) return "—";
+  return Number.isInteger(v) ? v : (+v).toFixed(2);
+}
+function percent(v){ return (v*100).toFixed(1) + "%"; }
+function colorFor(name, i, palette=PALETTE){ return palette[i % palette.length]; }
+
+// ============================================================================
+//  OVERVIEW
+// ============================================================================
+function updateKPIs(){
+  const idx = rangeIdx(S.range);
+  const person = S.highlight;
+  const isFilter = person !== "All";
+  const tag = '';
+
+  if (isFilter) {
+    const ptsArr = getPersonPoints(person);
+    const tasksArr = getPersonTasks(person);
+    const totalPoints = sum(idx.map(i => ptsArr[i]||0));
+    const totalTasks = sum(idx.map(i => tasksArr[i]||0));
+    const projObj = DATA.contribution[person] || {};
+    const activeProjects = Object.entries(projObj).filter(([proj,a]) => {
+      const row = S.doneOnly ? getContributionRow(person, proj) : a;
+      return idx.some(i => row[i] > 0);
+    }).length;
+    const avgPerTask = totalTasks ? (totalPoints/totalTasks) : 0;
+    const sp = DATA.statusPersonPts[person] || [0,0,0,0,0,0];
+    const spTot = sum(sp);
+    const doneRate = spTot ? sp[0]/spTot : 0;
+    const teamPts = idx.reduce((acc,i) => acc + sum(Object.keys(DATA.points).map(n=>getPersonPoints(n)[i]||0)), 0);
+    const share = teamPts ? totalPoints/teamPts : 0;
+
+    document.getElementById("kpis").innerHTML = `
+      <div class="kpi"><div class="label">${person} · Points${tag}</div><div class="value">${totalPoints.toLocaleString(undefined,{maximumFractionDigits:1})}</div><div class="hint">in selected range</div></div>
+      <div class="kpi"><div class="label">${person} · Tasks${tag}</div><div class="value">${totalTasks.toLocaleString(undefined,{maximumFractionDigits:1})}</div><div class="hint">all item types</div></div>
+      <div class="kpi"><div class="label">Projects Touched</div><div class="value">${activeProjects}</div><div class="hint">in range</div></div>
+      <div class="kpi"><div class="label">Team Share</div><div class="value">${percent(share)}</div><div class="hint">of team points</div></div>
+      <div class="kpi"><div class="label">Avg Pts / Task</div><div class="value">${avgPerTask.toFixed(2)}</div><div class="hint">${person}'s avg</div></div>
+      <div class="kpi"><div class="label">% Done (pts)</div><div class="value">${percent(doneRate)}</div><div class="hint">${person} full-year</div></div>
+    `;
+    return;
+  }
+
+  const roleNames = peopleInRole(S.role);
+  const roleSet = new Set(roleNames);
+  const roleSuffix = S.role === "all" ? "" : ` · ${S.role}`;
+  let totalPoints=0, totalTasks=0, activePeople=new Set();
+  roleNames.forEach(n => {
+    const arr = getPersonPoints(n);
+    idx.forEach(i => { if (arr[i] > 0) { totalPoints += arr[i]; activePeople.add(n); } });
+  });
+  roleNames.forEach(n => {
+    const arr = getPersonTasks(n);
+    idx.forEach(i => totalTasks += arr[i]||0);
+  });
+  const activeProjects = Object.keys(DATA.projectSprint).filter(n => {
+    const arr = getProjectSprint(n);
+    return idx.some(i => arr[i] > 0);
+  }).length;
+  const avgPerTask = totalTasks ? (totalPoints/totalTasks) : 0;
+
+  const totalDonePts = sum(roleNames.map(n => (DATA.statusPersonPts[n]||[])[0]||0));
+  const totalAllPts = sum(roleNames.map(n => sum(DATA.statusPersonPts[n]||[])));
+  const doneRate = totalAllPts ? (totalDonePts/totalAllPts) : 0;
+
+  document.getElementById("kpis").innerHTML = `
+    <div class="kpi"><div class="label">Total Points${roleSuffix}</div><div class="value">${totalPoints.toLocaleString(undefined,{maximumFractionDigits:1})}</div><div class="hint">selected range</div></div>
+    <div class="kpi"><div class="label">Total Tasks${roleSuffix}</div><div class="value">${totalTasks.toLocaleString(undefined,{maximumFractionDigits:1})}</div><div class="hint">Done only</div></div>
+    <div class="kpi"><div class="label">Active People</div><div class="value">${activePeople.size}</div><div class="hint">of ${roleNames.length}${roleSuffix?` ${S.role}`:''}</div></div>
+    <div class="kpi"><div class="label">Active Projects</div><div class="value">${activeProjects}</div><div class="hint">of ${Object.keys(DATA.projectSprint).length}</div></div>
+    <div class="kpi"><div class="label">Avg Pts / Task</div><div class="value">${avgPerTask.toFixed(2)}</div><div class="hint">${S.role==="all"?"team-wide":S.role}</div></div>
+    <div class="kpi"><div class="label">% Done (pts)</div><div class="value">${percent(doneRate)}</div><div class="hint">full-year</div></div>
+  `;
+}
+
+function buildTrendChart(){
+  const ctx = document.getElementById("trendChart");
+  const idx = rangeIdx(S.range);
+  const labels = idx.map(i => DATA.sprints[i]);
+  const person = S.highlight;
+  const isFilter = person !== "All";
+
+  const tagSuffix = '';
+  let datasets;
+  if (isFilter) {
+    const proj = DATA.contribution[person] || {};
+    const projects = Object.keys(proj).sort((a,b)=>sum(getContributionRow(person,b))-sum(getContributionRow(person,a)));
+    datasets = projects.map((p, i) => {
+      const row = getContributionRow(person, p);
+      const sliced = idx.map(j => row[j] ?? 0);
+      const color = colorFor(p, i, PROJ_PALETTE);
+      return {
+        label: p, data: sliced,
+        backgroundColor: S.chartType === "bar" ? color : color + "22",
+        borderColor: color,
+        borderWidth: 2,
+        pointRadius: S.chartType === "line" ? 3 : 0,
+        fill: false, stack: "a", tension: 0.25
+      };
+    });
+    document.getElementById("trendTitleText").textContent = `Sprint Trend — ${person} by Project`;
+    document.getElementById("trendTag").textContent = `${VIEW_LABEL[S.view]}${tagSuffix}`;
+  } else {
+    const getter = S.view === "points" ? getPersonPoints : getPersonTasks;
+    const names = peopleInRole(S.role).slice();
+    names.sort((a,b)=> sum(idx.map(i=>getter(b)[i]||0)) - sum(idx.map(i=>getter(a)[i]||0)));
+    datasets = names.map((name, i) => {
+      const arr = getter(name);
+      const sliced = idx.map(j => arr[j] ?? 0);
+      const color = colorFor(name, i);
+      return {
+        label: name, data: sliced,
+        backgroundColor: S.chartType === "bar" ? color : color + "22",
+        borderColor: color,
+        borderWidth: 1.5,
+        pointRadius: S.chartType === "line" ? 2 : 0,
+        fill: false, stack: "a"
+      };
+    });
+    const roleSuffix = S.role === "all" ? "" : ` · ${S.role}`;
+    document.getElementById("trendTitleText").textContent = `Sprint Trend by Person`;
+    document.getElementById("trendTag").textContent = `${VIEW_LABEL[S.view]}${roleSuffix}`;
+  }
+
+  if (trendChart) trendChart.destroy();
+  trendChart = new Chart(ctx, {
+    type: S.chartType,
+    data: { labels, datasets },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:"index", intersect:false },
+      scales: {
+        x: { stacked: S.chartType==="bar", grid:{color:"#334155"}, ticks:{color:"#cbd5e1"} },
+        y: { stacked: S.chartType==="bar", beginAtZero:true, grid:{color:"#334155"}, ticks:{color:"#cbd5e1"} }
+      },
+      plugins: {
+        legend: { position:"bottom", labels:{color:"#cbd5e1", boxWidth:10, font:{size:11}} },
+        tooltip: {
+          callbacks: { footer: its => "Total: " + its.reduce((a,b)=>a+(b.parsed.y||0),0).toLocaleString(undefined,{maximumFractionDigits:2}) }
+        }
+      }
+    }
+  });
+}
+
+function buildTopChart(){
+  const ctx = document.getElementById("topChart");
+  const singleSprint = S.topSprint !== "all";
+  const idx = singleSprint ? [parseInt(S.topSprint, 10) - 1] : rangeIdx(S.range);
+  const person = S.highlight;
+  const isFilter = person !== "All";
+
+  const tagSuffix = singleSprint ? ` · Sprint ${S.topSprint}` : '';
+  let labels, vals, colors, title, tag;
+  if (isFilter) {
+    const proj = DATA.contribution[person] || {};
+    const arr = Object.keys(proj).map(n => ({n, v:sum(idx.map(i => getContributionRow(person,n)[i]||0))}))
+      .filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+    labels = arr.map(x=>x.n);
+    vals = arr.map(x=>x.v);
+    colors = labels.map((n,i)=>colorFor(n, i, PROJ_PALETTE));
+    title = `${person}'s Top Projects`;
+    tag = `${labels.length} projects${tagSuffix}`;
+  } else {
+    const getter = S.view === "points" ? getPersonPoints : getPersonTasks;
+    const pool = peopleInRole(S.role);
+    let arr = pool.map(n => ({n, v:sum(idx.map(i => getter(n)[i]||0)), role:roleOf(n)}))
+      .filter(x=>x.v>0);
+    if (S.role === "all") {
+      // group by role (ROLE_ORDER), then by value desc within group
+      arr.sort((a,b) => {
+        const ra = ROLE_ORDER.indexOf(a.role), rb = ROLE_ORDER.indexOf(b.role);
+        if (ra !== rb) return ra - rb;
+        return b.v - a.v;
+      });
+    } else {
+      arr.sort((a,b)=>b.v-a.v);
+    }
+    labels = arr.map(x=>`${x.n} · ${x.role}`);
+    vals = arr.map(x=>x.v);
+    colors = arr.map(x => ROLE_COLORS[x.role] || "#94a3b8");
+    title = S.role === "all" ? "Top Contributors (grouped by role)" : `Top ${S.role}`;
+    tag = `${VIEW_LABEL[S.view]} · ${labels.length} people${tagSuffix}`;
+  }
+
+  if (topChart) topChart.destroy();
+  topChart = new Chart(ctx, {
+    type:"bar",
+    data:{ labels, datasets:[{data:vals, backgroundColor:colors, borderRadius:6}] },
+    options:{
+      indexAxis:"y", responsive:true, maintainAspectRatio:false,
+      onClick: (evt, els) => {
+        if (!els.length || isFilter) return;
+        const clickedLabel = labels[els[0].index];
+        const name = clickedLabel.split(' · ')[0];
+        S.person = name;
+        document.getElementById("personDrill").value = name;
+        switchSection("people");
+      },
+      onHover: (e, els) => { e.native.target.style.cursor = els.length && !isFilter ? 'pointer' : 'default'; },
+      scales:{
+        x:{beginAtZero:true, grid:{color:"#334155"}, ticks:{color:"#cbd5e1"}},
+        y:{grid:{display:false}, ticks:{color:"#cbd5e1"}}
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{}
+      }
+    }
+  });
+  document.getElementById("topTitleText").textContent = title;
+  document.getElementById("topTag").textContent = tag;
+}
+
+function buildCapacityChart(){
+  const ctx = document.getElementById("capacityChart");
+  const idx = rangeIdx(S.range);
+  const labels = idx.map(i=>DATA.sprints[i]);
+  const person = S.highlight;
+  const isFilter = person !== "All";
+
+  const tagText = `Points + Tasks`;
+  let pts, items;
+  if (isFilter) {
+    const pArr = getPersonPoints(person);
+    const tArr = getPersonTasks(person);
+    pts = idx.map(i => pArr[i] || 0);
+    items = idx.map(i => tArr[i] || 0);
+    document.getElementById("capTitle").innerHTML = `${person}'s Capacity by Sprint <span class="tag" id="capTag">${tagText}</span>`;
+  } else {
+    const pool = peopleInRole(S.role);
+    pts = idx.map(i => sum(pool.map(n => getPersonPoints(n)[i]||0)));
+    items = idx.map(i => sum(pool.map(n => getPersonTasks(n)[i]||0)));
+    const titleLbl = S.role === "all" ? "Team Capacity by Sprint" : `${S.role} Capacity by Sprint`;
+    document.getElementById("capTitle").innerHTML = `${titleLbl} <span class="tag" id="capTag">${tagText}</span>`;
+  }
+
+  if (capacityChart) capacityChart.destroy();
+  capacityChart = new Chart(ctx, {
+    data: {
+      labels,
+      datasets: [
+        { type:"bar", label:"Story Points", data:pts, backgroundColor:"#6366f1cc", borderRadius:6, yAxisID:"y" },
+        { type:"line", label:"Tasks (count)", data:items, borderColor:"#22d3ee", backgroundColor:"#22d3ee22", tension:0.35, yAxisID:"y1", borderWidth:2, pointRadius:3 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:"index",intersect:false},
+      scales:{
+        x:{grid:{color:"#334155"},ticks:{color:"#cbd5e1"}},
+        y:{beginAtZero:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"},title:{display:true,text:"Points",color:"#94a3b8"}},
+        y1:{beginAtZero:true,grid:{display:false},ticks:{color:"#cbd5e1"},position:"right",title:{display:true,text:"Tasks",color:"#94a3b8"}}
+      },
+      plugins:{legend:{labels:{color:"#cbd5e1"}}}
+    }
+  });
+}
+
+function buildAvgTrendChart(){
+  const ctx = document.getElementById("avgTrendChart");
+  const idx = rangeIdx(S.range);
+  const labels = idx.map(i=>DATA.sprints[i]);
+  const person = S.highlight;
+  const isFilter = person !== "All";
+
+  const tagText = 'per sprint';
+  let pts, tasks;
+  if (isFilter) {
+    const pArr = getPersonPoints(person);
+    const tArr = getPersonTasks(person);
+    pts = idx.map(i => pArr[i] || 0);
+    tasks = idx.map(i => tArr[i] || 0);
+    document.getElementById("avgTitle").innerHTML = `${person}'s Avg Points / Task <span class="tag" id="avgTag">${tagText}</span>`;
+  } else {
+    const pool = peopleInRole(S.role);
+    pts = idx.map(i=>sum(pool.map(n => getPersonPoints(n)[i]||0)));
+    tasks = idx.map(i=>sum(pool.map(n => getPersonTasks(n)[i]||0)));
+    const lbl = S.role === "all" ? "Team-wide" : S.role;
+    document.getElementById("avgTitle").innerHTML = `Avg Points / Task Trend <span class="tag" id="avgTag">${lbl}</span>`;
+  }
+  const avg = pts.map((p,i)=> tasks[i] ? p/tasks[i] : 0);
+
+  if (avgTrendChart) avgTrendChart.destroy();
+  avgTrendChart = new Chart(ctx, {
+    type:"line",
+    data:{
+      labels,
+      datasets:[{
+        label:"Avg Pts / Task",
+        data:avg,
+        borderColor:"#a855f7",
+        backgroundColor:"#a855f733",
+        tension:0.35,
+        borderWidth:2.5,
+        pointRadius:4,
+        fill:true
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{
+        x:{grid:{color:"#334155"},ticks:{color:"#cbd5e1"}},
+        y:{beginAtZero:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"}}
+      },
+      plugins:{legend:{labels:{color:"#cbd5e1"}}}
+    }
+  });
+}
+
+// ============================================================================
+//  PEOPLE — DRILL DOWN
+// ============================================================================
+function buildPersonDrill(){
+  const person = S.person;
+  const metric = S.personMetric;
+  const proj = DATA.contribution[person] || {};
+
+  // ---- header stats (done-only) ----
+  const totalPts = sum(getPersonPoints(person));
+  const totalTasks = sum(getPersonTasks(person));
+  const projCount = Object.keys(proj).filter(p => sum(getContributionRow(person,p)) > 0).length;
+  document.getElementById("drillName").innerHTML = `👤 ${person}${roleBadge(person)}`;
+  document.getElementById("drillStat").textContent = `${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts · ${totalTasks.toLocaleString(undefined,{maximumFractionDigits:1})} tasks · ${projCount} projects`;
+
+  // ---- status breakdown pills (all statuses, from status sheet — exact numbers) ----
+  const statusCount = DATA.statusPersonCount[person] || [0,0,0,0,0,0];
+  const statusPts = DATA.statusPersonPts[person] || [0,0,0,0,0,0];
+  const grandCount = sum(statusCount);
+  const grandPts = sum(statusPts);
+  const pillsHtml = DATA.statusLabels.map((lbl, i) => {
+    const c = statusCount[i], p = statusPts[i];
+    const pct = grandCount ? (c/grandCount*100).toFixed(0) : 0;
+    const dim = c === 0 ? 'opacity:0.35;' : '';
+    return `<div style="flex:1; min-width:130px; background:var(--panel-2); border:1px solid ${DATA.statusColors[i]}55; border-left:4px solid ${DATA.statusColors[i]}; border-radius:10px; padding:10px 12px; ${dim}">
+      <div style="font-size:11px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.3px;">${lbl}</div>
+      <div style="font-size:20px; font-weight:700; color:${DATA.statusColors[i]}; margin-top:2px;">${c}<span style="font-size:11px; color:#64748b; font-weight:400;"> งาน</span></div>
+      <div style="font-size:11px; color:#cbd5e1;">${p.toLocaleString(undefined,{maximumFractionDigits:1})} pts · ${pct}%</div>
+    </div>`;
+  }).join("");
+  document.getElementById("drillStatusPills").innerHTML = pillsHtml;
+
+  // ---- sprint-by-sprint stacked chart (respects S.personMetric) ----
+  const labels = DATA.sprints;
+  const projects = Object.keys(proj).sort((a,b) => sum(getContributionRowByMetric(person,b)) - sum(getContributionRowByMetric(person,a)));
+  const datasets = projects.map((p,i) => ({
+    label: p,
+    data: getContributionRowByMetric(person, p),
+    backgroundColor: colorFor(p, i, PROJ_PALETTE),
+    borderRadius: 4,
+    stack: "a"
+  }));
+
+  if (personProjChart) personProjChart.destroy();
+  personProjChart = new Chart(document.getElementById("personProjChart"), {
+    type:"bar",
+    data:{labels, datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:"index",intersect:false},
+      scales:{
+        x:{stacked:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"}},
+        y:{stacked:true,beginAtZero:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"}}
+      },
+      plugins:{
+        legend:{position:"bottom",labels:{color:"#cbd5e1",boxWidth:10,font:{size:11}}},
+        tooltip:{callbacks:{footer:its=>"Total: "+its.reduce((a,b)=>a+(b.parsed.y||0),0).toFixed(2)}}
+      }
+    }
+  });
+
+  // ---- project summary table (project × sprint heatmap, respects metric) ----
+  let html = `<table><thead><tr><th>Project</th>${labels.map((_,i)=>`<th>Sp ${i+1}</th>`).join("")}<th>Total</th></tr></thead><tbody>`;
+  const allVals = projects.flatMap(p=>getContributionRowByMetric(person,p));
+  const max = Math.max(1, ...allVals);
+  projects.forEach(p => {
+    const vals = getContributionRowByMetric(person, p);
+    const tot = sum(vals);
+    if (tot <= 0) return;
+    html += `<tr><td style="font-weight:500">${p}</td>`
+          + vals.map(v => `<td style="background:${heatColor(v,max)}">${fmt(v)}</td>`).join("")
+          + `<td style="font-weight:600">${fmt(tot)}</td></tr>`;
+  });
+  if (projects.filter(p => sum(getContributionRowByMetric(person,p)) > 0).length === 0) {
+    html += `<tr><td colspan="11" style="text-align:center;color:#94a3b8">No completed contributions recorded</td></tr>`;
+  }
+  html += "</tbody></table>";
+  document.getElementById("personTable").innerHTML = html;
+  document.getElementById("drillTableTag").textContent = `${VIEW_LABEL[metric]}`;
+  const chartTag = document.getElementById("drillChartTag");
+  if (chartTag) chartTag.textContent = `${VIEW_LABEL[metric]}${metric === "tasks" ? " (approx)" : ""}`;
+}
+
+function buildPersonProjectMatrix(){
+  const people = Object.keys(DATA.personProject);
+  const allProjects = new Set();
+  Object.values(DATA.personProject).forEach(o => Object.keys(o).forEach(p => allProjects.add(p)));
+  const projects = Array.from(allProjects).sort((a,b) => sum(getProjectSprint(b)) - sum(getProjectSprint(a)));
+
+  const allVals = people.flatMap(p => projects.map(pr => getPersonProjectValByMetric(p, pr)));
+  const maxVal = Math.max(1, ...allVals);
+
+  const headerCells = people.map(p => {
+    const r = roleOf(p);
+    const c = ROLE_COLORS[r] || "#94a3b8";
+    return `<th><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span>${p}</span><span style="font-size:9px; color:${c}; font-weight:500;">${r}</span></div></th>`;
+  }).join("");
+  let html = `<table><thead><tr><th>Project</th>${headerCells}<th>Total</th></tr></thead><tbody>`;
+  projects.forEach(proj => {
+    const row = people.map(p => getPersonProjectValByMetric(p, proj));
+    const tot = sum(row);
+    html += `<tr><td>${proj}</td>` + row.map(v=>`<td style="background:${heatColor(v,maxVal)}">${fmt(v)}</td>`).join("") + `<td style="font-weight:600">${fmt(tot)}</td></tr>`;
+  });
+  const colTot = people.map(p => sum(projects.map(pr => getPersonProjectValByMetric(p, pr))));
+  html += `<tr class="total-row"><td>TOTAL</td>${colTot.map(v=>`<td>${fmt(v)}</td>`).join("")}<td>${fmt(sum(colTot))}</td></tr>`;
+  html += "</tbody></table>";
+  document.getElementById("matrixTable").innerHTML = html;
+  document.getElementById("matrixTag").textContent = `${VIEW_LABEL[S.personMetric]}${S.personMetric === "tasks" ? " (approx)" : ""}`;
+}
+
+// ============================================================================
+//  PROJECTS
+// ============================================================================
+function updateProjKPIs(){
+  const idx = rangeIdx(S.projRange);
+  const activeProjects = Object.keys(DATA.projectSprint).filter(n => {
+    const arr = getProjectSprint(n);
+    return idx.some(i => arr[i] > 0);
+  });
+  const totalPts = sum(activeProjects.map(n => sum(idx.map(i => getProjectSprint(n)[i]||0))));
+  const top = activeProjects.map(n => ({n, v: sum(idx.map(i => getProjectSprint(n)[i]||0))})).sort((a,b)=>b.v-a.v);
+  const topProj = top[0] || {n:"—", v:0};
+  const concentration = totalPts ? (top.slice(0,3).reduce((a,b)=>a+b.v,0) / totalPts) : 0;
+  const tag = S.doneOnly ? ' <span class="pill good">Done</span>' : '';
+
+  document.getElementById("projKpis").innerHTML = `
+    <div class="kpi"><div class="label">Active Projects</div><div class="value">${activeProjects.length}</div><div class="hint">in range</div></div>
+    <div class="kpi"><div class="label">Total Points${tag}</div><div class="value">${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})}</div><div class="hint">across projects</div></div>
+    <div class="kpi"><div class="label">#1 Project</div><div class="value" style="font-size:18px">${topProj.n}</div><div class="hint">${topProj.v.toFixed(1)} pts</div></div>
+    <div class="kpi"><div class="label">Top-3 Share</div><div class="value">${percent(concentration)}</div><div class="hint">of total points</div></div>
+  `;
+}
+
+function buildProjTrendChart(){
+  const ctx = document.getElementById("projTrendChart");
+  const idx = rangeIdx(S.projRange);
+  const labels = idx.map(i=>DATA.sprints[i]);
+
+  const proj = Object.keys(DATA.projectSprint)
+    .map(n => { const arr = getProjectSprint(n); return {n, arr:idx.map(i=>arr[i]||0), total:sum(idx.map(i=>arr[i]||0))}; })
+    .filter(p=>p.total>0)
+    .sort((a,b)=>b.total-a.total);
+
+  let topN = S.projTopN === "all" ? proj.length : +S.projTopN;
+  const top = proj.slice(0, topN);
+  const rest = proj.slice(topN);
+  const datasets = top.map((p,i)=>({
+    label: p.n, data: p.arr,
+    backgroundColor: colorFor(p.n, i, PROJ_PALETTE),
+    borderRadius:4, stack:"a"
+  }));
+  if (rest.length) {
+    const otherArr = idx.map((_,i) => rest.reduce((a,b)=>a+b.arr[i], 0));
+    datasets.push({ label:`Other (${rest.length})`, data:otherArr, backgroundColor:"#64748b", borderRadius:4, stack:"a" });
+  }
+
+  if (projTrendChart) projTrendChart.destroy();
+  projTrendChart = new Chart(ctx, {
+    type:"bar",
+    data:{labels, datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:"index",intersect:false},
+      scales:{
+        x:{stacked:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"}},
+        y:{stacked:true,beginAtZero:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"}}
+      },
+      plugins:{
+        legend:{position:"bottom",labels:{color:"#cbd5e1",boxWidth:10,font:{size:11}}},
+        tooltip:{callbacks:{footer:its=>"Total: "+its.reduce((a,b)=>a+(b.parsed.y||0),0).toFixed(2)}}
+      }
+    }
+  });
+  document.getElementById("projTrendTag").textContent = `${top.length} projects shown`;
+}
+
+function buildProjTopChart(){
+  const ctx = document.getElementById("projTopChart");
+  const idx = rangeIdx(S.projRange);
+  const proj = Object.keys(DATA.projectSprint)
+    .map(n => ({n, v: sum(idx.map(i => getProjectSprint(n)[i]||0))}))
+    .filter(p=>p.v>0)
+    .sort((a,b)=>b.v-a.v);
+
+  let topN = S.projTopN === "all" ? proj.length : +S.projTopN;
+  const labels = proj.slice(0, topN).map(p=>p.n);
+  const vals = proj.slice(0, topN).map(p=>p.v);
+  const colors = labels.map((n,i)=>colorFor(n, i, PROJ_PALETTE));
+
+  if (projTopChart) projTopChart.destroy();
+  projTopChart = new Chart(ctx, {
+    type:"bar",
+    data:{labels, datasets:[{data:vals, backgroundColor:colors, borderRadius:6}]},
+    options:{
+      indexAxis:"y", responsive:true, maintainAspectRatio:false,
+      scales:{
+        x:{beginAtZero:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"}},
+        y:{grid:{display:false},ticks:{color:"#cbd5e1"}}
+      },
+      plugins:{legend:{display:false}}
+    }
+  });
+}
+
+function buildProjTable(){
+  const idx = rangeIdx(S.projRange);
+  const sprintsShown = idx.map(i=>DATA.sprints[i]);
+  const rows = Object.keys(DATA.projectSprint).map(n => {
+    const a = getProjectSprint(n);
+    return {n, vals:idx.map(i=>a[i]||0), total:sum(idx.map(i=>a[i]||0))};
+  }).filter(r=>r.total>0).sort((a,b)=>b.total-a.total);
+  const maxVal = Math.max(1, ...rows.flatMap(r=>r.vals));
+
+  let html = `<table><thead><tr><th>Project</th>${sprintsShown.map(s=>`<th>${s}</th>`).join("")}<th>Total</th></tr></thead><tbody>`;
+  rows.forEach(r => {
+    html += `<tr><td>${r.n}</td>` + r.vals.map(v=>`<td style="background:${heatColor(v,maxVal)}">${fmt(v)}</td>`).join("") + `<td style="font-weight:600">${fmt(r.total)}</td></tr>`;
+  });
+  const colTot = sprintsShown.map((_,i)=>sum(rows.map(r=>r.vals[i])));
+  html += `<tr class="total-row"><td>TOTAL</td>${colTot.map(v=>`<td>${fmt(v)}</td>`).join("")}<td>${fmt(sum(colTot))}</td></tr>`;
+  html += "</tbody></table>";
+  document.getElementById("projTable").innerHTML = html;
+}
+
+// ============================================================================
+//  STATUS
+// ============================================================================
+function updateStatusKPIs(){
+  const src = S.statusMetric === "points" ? DATA.statusPersonPts : DATA.statusPersonCount;
+  const totals = DATA.statusLabels.map((_,si) => sum(Object.values(src).map(a=>a[si])));
+  const grand = sum(totals);
+
+  const html = DATA.statusLabels.map((lbl,i) => {
+    const v = totals[i], pct = grand ? (v/grand*100) : 0;
+    const cls = i===0 ? "good" : (i===7 || i===8 ? "bad" : (i>=1 && i<=5 ? "warn" : "neutral"));
+    const valueDisplay = S.statusMetric === "points" ? v.toLocaleString(undefined,{maximumFractionDigits:1}) : v;
+    return `<div class="kpi"><div class="label">${lbl}</div><div class="value" style="color:${DATA.statusColors[i]}">${valueDisplay}</div><div class="hint"><span class="pill ${cls}">${pct.toFixed(1)}%</span></div></div>`;
+  }).join("");
+  document.getElementById("statusKpis").innerHTML = html;
+}
+
+let statusHoverIndex = null;
+let statusEntries = [];
+
+function applyStatusHover(idx){
+  if (!statusChart) return;
+  if (idx === statusHoverIndex) return;
+  statusHoverIndex = idx;
+  statusChart.data.datasets.forEach(ds => {
+    const base = ds.__base;
+    ds.backgroundColor = ds.data.map((_, j) => {
+      if (idx === null) return base;
+      return j === idx ? base : base + "1a";
+    });
+  });
+  statusChart.update("none");
+
+  const name = idx === null ? null : (statusEntries[idx] && statusEntries[idx].n);
+  document.querySelectorAll("#doneTable tbody tr").forEach(tr => {
+    const match = name && tr.dataset.name === name;
+    tr.style.background = match ? "rgba(99,102,241,0.18)" : "";
+    tr.style.outline = match ? "1px solid #6366f1" : "";
+  });
+  const tagEl = document.getElementById("statusTag");
+  if (tagEl && tagEl.dataset.base) {
+    tagEl.textContent = name ? `${name} only` : tagEl.dataset.base;
+  }
+}
+
+function buildStatusChart(){
+  const ctx = document.getElementById("statusChart");
+  const isPerson = S.statusView === "person";
+  const src = isPerson
+    ? (S.statusMetric === "points" ? DATA.statusPersonPts : DATA.statusPersonCount)
+    : (S.statusMetric === "points" ? DATA.statusProjectPts : DATA.statusProjectCount);
+
+  // sort by total descending
+  const entries = Object.entries(src).map(([n,a])=>({n, a, total:sum(a)})).sort((a,b)=>b.total-a.total);
+  statusEntries = entries;
+  statusHoverIndex = null;
+  const labels = entries.map(e=>e.n);
+
+  const datasets = DATA.statusLabels.map((lbl,si)=>{
+    const base = DATA.statusColors[si];
+    return {
+      label: lbl,
+      data: entries.map(e=>e.a[si]),
+      backgroundColor: entries.map(() => base),
+      __base: base,
+      borderRadius: 4,
+      stack: "a"
+    };
+  });
+
+  if (statusChart) statusChart.destroy();
+  statusChart = new Chart(ctx, {
+    type:"bar",
+    data:{labels, datasets},
+    options:{
+      indexAxis:"y",
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:"index", axis:"y", intersect:false},
+      onHover: (evt, els) => {
+        const newIdx = els.length ? els[0].index : null;
+        applyStatusHover(newIdx);
+      },
+      scales:{
+        x:{stacked:true,beginAtZero:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"}},
+        y:{stacked:true,grid:{display:false},ticks:{color:"#cbd5e1"}}
+      },
+      plugins:{
+        legend:{position:"bottom",labels:{color:"#cbd5e1",boxWidth:10,font:{size:11}}},
+        tooltip:{
+          callbacks:{
+            footer: its => {
+              const idx = its[0].dataIndex;
+              const total = entries[idx].total;
+              const done = entries[idx].a[0];
+              return `Total: ${total.toFixed(1)} · Done: ${percent(total?done/total:0)}`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  const baseTag = `By ${isPerson?"Person":"Project"} · ${VIEW_LABEL[S.statusMetric==="points"?"points":"tasks"]}`;
+  const tagEl = document.getElementById("statusTag");
+  tagEl.textContent = baseTag;
+  tagEl.dataset.base = baseTag;
+
+  ctx.onmouseleave = () => applyStatusHover(null);
+}
+
+function buildDoneTable(){
+  const isPerson = S.statusView === "person";
+  const src = isPerson
+    ? (S.statusMetric === "points" ? DATA.statusPersonPts : DATA.statusPersonCount)
+    : (S.statusMetric === "points" ? DATA.statusProjectPts : DATA.statusProjectCount);
+
+  const rows = Object.entries(src).map(([n,a])=>{
+    const total = sum(a);
+    const done = a[0];
+    const rate = total ? done/total : 0;
+    return {n, a, total, done, rate};
+  }).sort((a,b)=> b.rate - a.rate);
+
+  let html = `<table><thead><tr><th>${isPerson?"Name":"Project"}</th>${DATA.statusLabels.map(l=>`<th>${l}</th>`).join("")}<th>Total</th><th>% Done</th><th>Progress</th></tr></thead><tbody>`;
+  rows.forEach(r => {
+    const pct = (r.rate*100).toFixed(1);
+    const nameCell = isPerson ? `<td>${r.n}${roleBadge(r.n)}</td>` : `<td>${r.n}</td>`;
+    html += `<tr data-name="${r.n}">${nameCell}${r.a.map((v,i)=>`<td style="color:${v?DATA.statusColors[i]:'#64748b'}">${fmt(v)}</td>`).join("")}<td style="font-weight:600">${fmt(r.total)}</td><td>${pct}%</td><td><span class="progress"><div style="width:${pct}%"></div></span></td></tr>`;
+  });
+  html += "</tbody></table>";
+  document.getElementById("doneTable").innerHTML = html;
+
+  const tbody = document.querySelector("#doneTable tbody");
+  if (tbody) {
+    tbody.addEventListener("mouseover", e => {
+      const tr = e.target.closest("tr[data-name]");
+      if (!tr) return;
+      const idx = statusEntries.findIndex(en => en.n === tr.dataset.name);
+      if (idx !== -1) applyStatusHover(idx);
+    });
+    tbody.addEventListener("mouseleave", () => applyStatusHover(null));
+  }
+}
+
+// ============================================================================
+//  POPULATE & WIRE UP
+// ============================================================================
+function populateSelects(){
+  const allNames = Object.keys(DATA.points);
+  // group people by role for grouped dropdown
+  const grouped = ROLE_ORDER.map(role => ({
+    role,
+    members: allNames.filter(n => roleOf(n) === role)
+  })).filter(g => g.members.length);
+  const optgroups = grouped.map(g =>
+    `<optgroup label="${g.role}">` +
+    g.members.map(n => `<option value="${n}">${n} · ${g.role}</option>`).join("") +
+    `</optgroup>`
+  ).join("");
+  document.getElementById("memberSelect").innerHTML =
+    `<option value="All">All (no highlight)</option>` + optgroups;
+  document.getElementById("personDrill").innerHTML = optgroups;
+}
+
+function switchSection(name){
+  S.section = name;
+  document.querySelectorAll(".navtab").forEach(t => t.classList.toggle("active", t.dataset.section === name));
+  document.querySelectorAll(".section").forEach(s => s.classList.toggle("active", s.id === `section-${name}`));
+  refresh();
+}
+
+function refresh(){
+  if (S.section === "overview") {
+    updateKPIs();
+    buildTrendChart();
+    buildTopChart();
+    buildCapacityChart();
+    buildAvgTrendChart();
+  } else if (S.section === "people") {
+    buildPersonDrill();
+    buildPersonProjectMatrix();
+  } else if (S.section === "projects") {
+    updateProjKPIs();
+    buildProjTrendChart();
+    buildProjTopChart();
+    buildProjTable();
+  } else if (S.section === "status") {
+    updateStatusKPIs();
+    buildStatusChart();
+    buildDoneTable();
+  } else if (S.section === "logic") {
+    buildLogicTab();
+  }
+}
+
+// ============================================================================
+//  LOGIC / METHODOLOGY TAB
+// ============================================================================
+function buildLogicTab(){
+  // Sprint coverage from data (sprints with at least one Done task)
+  const sprintTotals = DATA.sprints.map((_, i) =>
+    Object.values(DATA.points).reduce((a, arr) => a + (arr[i] || 0), 0)
+  );
+  const activeSprints = sprintTotals.map((v, i) => v > 0 ? i + 1 : null).filter(v => v !== null);
+  const sprintRangeLabel = activeSprints.length
+    ? `Sprint ${activeSprints[0]}–${activeSprints[activeSprints.length - 1]} (${activeSprints.length} sprints loaded)`
+    : "no data";
+
+  const totalDonePts = sum(Object.values(DATA.points).map(sum));
+  const totalDoneTasks = sum(Object.values(DATA.tasks).map(sum));
+  const totalAllPts = sum(Object.values(DATA.statusPersonPts).map(sum));
+  const totalAllTasks = sum(Object.values(DATA.statusPersonCount).map(sum));
+
+  // ---- Card 1: Filtering ----
+  const filterCard = `<div class="card">
+    <h3>1 · Filtering Rules <span class="tag">what gets included</span></h3>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; margin-top:8px;">
+      <div style="background:var(--panel-2); border-radius:10px; padding:14px; border-left:3px solid #6366f1;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; margin-bottom:6px;">Work Item Type</div>
+        <div style="font-size:15px; font-weight:600; color:#e2e8f0;">Task</div>
+        <div style="font-size:12px; color:#64748b; margin-top:4px;">ตัด Bug · Feature · PBI · Epic ออก</div>
+      </div>
+      <div style="background:var(--panel-2); border-radius:10px; padding:14px; border-left:3px solid #22d3ee;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; margin-bottom:6px;">Iteration</div>
+        <div style="font-size:15px; font-weight:600; color:#e2e8f0;">M\\2026\\1 → M\\2026\\9</div>
+        <div style="font-size:12px; color:#64748b; margin-top:4px;">${sprintRangeLabel} · auto-refresh ทุก sprint ที่อัปไฟล์</div>
+      </div>
+      <div style="background:var(--panel-2); border-radius:10px; padding:14px; border-left:3px solid #f59e0b;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; margin-bottom:6px;">Assignee</div>
+        <div style="font-size:15px; font-weight:600; color:#e2e8f0;">required</div>
+        <div style="font-size:12px; color:#64748b; margin-top:4px;">Task ไม่มีคน assign → ข้าม</div>
+      </div>
+      <div style="background:var(--panel-2); border-radius:10px; padding:14px; border-left:3px solid #10b981;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; margin-bottom:6px;">Backlog / Out-of-scope</div>
+        <div style="font-size:15px; font-weight:600; color:#e2e8f0;">excluded</div>
+        <div style="font-size:12px; color:#64748b; margin-top:4px;">M\\Backlog · M\\2025\\* · iteration ที่ไม่มี sprint number</div>
+      </div>
+    </div>
+  </div>`;
+
+  // ---- Card 2: Point Counting ----
+  const pointCard = `<div class="card" style="margin-top:14px;">
+    <h3>2 · Point Counting <span class="tag">Done-only</span></h3>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:8px;">
+      <div style="background:rgba(16,185,129,0.08); border:1px solid #10b98155; border-radius:10px; padding:14px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="width:10px; height:10px; border-radius:2px; background:#10b981;"></span>
+          <span style="font-weight:600; color:#6ee7b7;">นับ Point</span>
+        </div>
+        <div style="font-size:13px; color:#cbd5e1; line-height:1.7;">
+          เฉพาะ <code style="background:#1e293b; padding:1px 6px; border-radius:4px; color:#a5b4fc;">state == "Done"</code>
+          เท่านั้นที่บวกเข้า:<br>
+          • Total Points / Tasks per person<br>
+          • Project × Sprint contribution<br>
+          • Person × Project matrix<br>
+          • KPIs ในทุก tab (ยกเว้น Status)
+        </div>
+        <div style="margin-top:10px; padding:8px 10px; background:rgba(0,0,0,0.2); border-radius:6px; font-size:12px;">
+          <strong style="color:#6ee7b7;">${totalDonePts.toLocaleString()}</strong> pts ·
+          <strong style="color:#6ee7b7;">${totalDoneTasks}</strong> tasks · Done
+        </div>
+      </div>
+      <div style="background:rgba(148,163,184,0.06); border:1px solid #475569; border-radius:10px; padding:14px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="width:10px; height:10px; border-radius:2px; background:#94a3b8;"></span>
+          <span style="font-weight:600; color:#cbd5e1;">ไม่นับ Point</span>
+        </div>
+        <div style="font-size:13px; color:#cbd5e1; line-height:1.7;">
+          งานสถานะอื่น (In Progress, Ready for review/test, Waiting to deploy, To Do, Blocked, Bugged, Removed) →<br>
+          • <strong style="color:#fcd34d;">ไม่บวก</strong> เข้า KPI ใน Overview/People/Projects<br>
+          • <strong style="color:#22d3ee;">โชว์ครบ</strong> ใน Status tab (เห็น pipeline)
+        </div>
+        <div style="margin-top:10px; padding:8px 10px; background:rgba(0,0,0,0.2); border-radius:6px; font-size:12px;">
+          <strong style="color:#cbd5e1;">${totalAllPts.toLocaleString(undefined,{maximumFractionDigits:1})}</strong> pts ·
+          <strong style="color:#cbd5e1;">${totalAllTasks}</strong> tasks · all statuses
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // ---- Card 3: Status Buckets ----
+  const pillFor = (i) => i===0 ? "good" : (i===7||i===8 ? "bad" : (i>=1&&i<=5 ? "warn" : "neutral"));
+  const statusRows = DATA.statusLabels.map((lbl, i) => {
+    const c = DATA.statusColors[i];
+    const cls = pillFor(i);
+    const counted = i === 0 ? "✓ Counted" : "—";
+    return `<tr>
+      <td style="padding:10px 12px; text-align:left; border-bottom:1px solid var(--border);">
+        <span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:${c}; margin-right:10px; vertical-align:middle;"></span>
+        <span style="font-weight:500; color:#e2e8f0;">${lbl}</span>
+      </td>
+      <td style="padding:10px 12px; text-align:center; border-bottom:1px solid var(--border);">
+        <span style="font-family:monospace; font-size:11px; color:#94a3b8;">${c}</span>
+      </td>
+      <td style="padding:10px 12px; text-align:center; border-bottom:1px solid var(--border);">
+        <span class="pill ${cls}">${cls}</span>
+      </td>
+      <td style="padding:10px 12px; text-align:right; border-bottom:1px solid var(--border); color:${i===0?'#6ee7b7':'#64748b'}; font-weight:${i===0?600:400};">${counted}</td>
+    </tr>`;
+  }).join("");
+  const statusCard = `<div class="card" style="margin-top:14px;">
+    <h3>3 · Status Buckets <span class="tag">${DATA.statusLabels.length} statuses · ตรงตาม Azure 100%</span></h3>
+    <div style="overflow:auto; border-radius:10px; border:1px solid var(--border); margin-top:8px;">
+      <table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <thead>
+          <tr style="background:var(--panel-2);">
+            <th style="padding:10px 12px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#94a3b8; font-weight:600;">Status</th>
+            <th style="padding:10px 12px; text-align:center; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#94a3b8; font-weight:600;">Color</th>
+            <th style="padding:10px 12px; text-align:center; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#94a3b8; font-weight:600;">Pill</th>
+            <th style="padding:10px 12px; text-align:right; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#94a3b8; font-weight:600;">Counts in KPI?</th>
+          </tr>
+        </thead>
+        <tbody>${statusRows}</tbody>
+      </table>
+    </div>
+  </div>`;
+
+  // ---- Card 4: Project Mapping ----
+  const projectGroups = [
+    {name:"NCSWT", rules:["HCA / NCSWT / NSCWT prefix", "scholarship modules (Student, Fund Type, Fund Allocation, Academic)"]},
+    {name:"Gift-Card-2026", rules:["HCA Gift Card / Top-up"]},
+    {name:"Event-Registration-2026", rules:["HCA Event Registration"]},
+    {name:"P2CR2", rules:["ChangHP P2-CR2 / Coupon / Key account / Personal assistant"]},
+    {name:"Chang HomePro", rules:["Chang Homepro / Chang HP (other)"]},
+    {name:"InsureTech", rules:["IST: / Insurtech / [Insurtech] prefix"]},
+    {name:"Village Fund", rules:["VFM / VF- / VFM-PC prefix"]},
+    {name:"VFM-MA_25", rules:["VFM-MA_25 (specific)"]},
+    {name:"MorePOS", rules:["MorePOS / MPOS / POS:"]},
+    {name:"Breaking Par", rules:["BKP prefix"]},
+    {name:"Merlin", rules:["Merlin / Merlin POC / Merlin MVP / Merin"]},
+    {name:"Gamesmith", rules:["Gamesmith (anywhere)"]},
+    {name:"khaojai it", rules:["khaojai / Khojai"]},
+    {name:"AdelphiISRP", rules:["Adelphi / PAM01"]},
+    {name:"Ship360EXP", rules:["Ship360 / Ship 360"]},
+    {name:"POC", rules:["Thai Alexa / MoreChange / Maggie POC / ADO POC"]},
+    {name:"2026-1", rules:["Hatyai / HatYai (Hatyai project)"]},
+    {name:"Andaman Phuket", rules:["Vana Nava / Andaman"]},
+    {name:"Other singles", rules:["Zleep, GENCO, MeApp, OEG, Seree Golf, Market Village, Monty, AI, Campaign-Accumulate-2025, Additional Requirement"]},
+    {name:"Internal/Ops", rules:["Fallback: meetings, year review, recruitment, research, Morestudio internal, generic ops"]},
+  ];
+  const projChips = projectGroups.map(g => `
+    <div style="background:var(--panel-2); border-radius:10px; padding:12px 14px; border-left:3px solid var(--accent);">
+      <div style="font-weight:600; color:#a5b4fc; font-size:13px; margin-bottom:6px;">${g.name}</div>
+      <div style="font-size:12px; color:#94a3b8; line-height:1.5;">
+        ${g.rules.map(r => `• ${r}`).join("<br>")}
+      </div>
+    </div>`).join("");
+  const projectCard = `<div class="card" style="margin-top:14px;">
+    <h3>4 · Project Mapping <span class="tag">${Object.keys(DATA.projectSprint).length} projects · prefix-based rules</span></h3>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px; margin-top:8px;">
+      ${projChips}
+    </div>
+  </div>`;
+
+  // ---- Card 5: Roles ----
+  const roleGroups = ROLE_ORDER.map(role => ({
+    role,
+    members: Object.keys(ROLES).filter(n => ROLES[n] === role)
+  })).filter(g => g.members.length);
+  const roleRows = roleGroups.map(g => {
+    const c = ROLE_COLORS[g.role];
+    return `<div style="background:var(--panel-2); border-radius:10px; padding:14px; border-left:4px solid ${c};">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <span style="font-weight:700; color:${c}; font-size:14px;">${g.role}</span>
+        <span style="font-size:11px; color:#64748b;">${g.members.length} ${g.members.length === 1 ? 'person' : 'people'}</span>
+      </div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px;">
+        ${g.members.map(n => `<span style="background:${c}22; color:${c}; border:1px solid ${c}55; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:500;">${n}</span>`).join("")}
+      </div>
+    </div>`;
+  }).join("");
+  const totalPeople = Object.keys(ROLES).length;
+  const roleCard = `<div class="card" style="margin-top:14px;">
+    <h3>5 · Team Roles <span class="tag">${totalPeople} people · ${roleGroups.length} roles</span></h3>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-top:8px;">
+      ${roleRows}
+    </div>
+  </div>`;
+
+  // ---- Header ----
+  const header = `<div style="background:linear-gradient(135deg, rgba(99,102,241,0.15), rgba(34,211,238,0.05)); border:1px solid var(--border); border-radius:14px; padding:20px 24px; margin-bottom:14px;">
+    <h2 style="margin:0; font-size:20px; background:linear-gradient(90deg, #fff, #a5b4fc); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Methodology &amp; Logic</h2>
+    <div style="color:#94a3b8; font-size:13px; margin-top:6px;">วิธีคำนวณตัวเลขในแดชบอร์ด · refresh ทุกครั้งที่อัปไฟล์ CSV ใหม่</div>
+  </div>`;
+
+  document.getElementById("logicContent").innerHTML = header + filterCard + pointCard + statusCard + projectCard + roleCard;
+}
+
+function wireUp(){
+  document.querySelectorAll(".navtab").forEach(t => t.addEventListener("click", () => switchSection(t.dataset.section)));
+
+  document.getElementById("viewSelect").addEventListener("change", e => { S.view = e.target.value; refresh(); });
+  document.getElementById("memberSelect").addEventListener("change", e => { S.highlight = e.target.value; refresh(); });
+  document.getElementById("roleSelect").addEventListener("change", e => { S.role = e.target.value; refresh(); });
+  document.getElementById("sprintRange").addEventListener("change", e => { S.range = e.target.value; refresh(); });
+  document.getElementById("chartType").addEventListener("change", e => { S.chartType = e.target.value; buildTrendChart(); });
+  document.getElementById("topSprint").addEventListener("change", e => { S.topSprint = e.target.value; buildTopChart(); });
+
+  document.getElementById("personDrill").addEventListener("change", e => { S.person = e.target.value; refresh(); });
+  document.getElementById("personMetric").addEventListener("change", e => { S.personMetric = e.target.value; refresh(); });
+
+  document.getElementById("projSprintRange").addEventListener("change", e => { S.projRange = e.target.value; refresh(); });
+  document.getElementById("projTopN").addEventListener("change", e => { S.projTopN = e.target.value; refresh(); });
+
+  document.getElementById("statusMetric").addEventListener("change", e => { S.statusMetric = e.target.value; refresh(); });
+  document.getElementById("statusView").addEventListener("change", e => { S.statusView = e.target.value; refresh(); });
+}
+
+document.getElementById("updated").textContent = "Data updated: 21 April 2026";
+populateSelects();
+wireUp();
+refresh();
+</script>
+</body>
+</html>
