@@ -22,6 +22,11 @@
     --tick: #cbd5e1;
     --bg-gradient: radial-gradient(1200px 600px at 10% -10%, #1e293b 0%, #0f172a 60%);
     --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    --accent-text: #a5b4fc;
+    --good-text: #6ee7b7;
+    --warn-text: #fcd34d;
+    --warn-text-strong: #fde68a;
+    --bad-text: #fecaca;
   }
   :root[data-theme="light"] {
     --bg: #f8fafc;
@@ -39,6 +44,11 @@
     --tick: #475569;
     --bg-gradient: radial-gradient(1200px 600px at 10% -10%, #eef2ff 0%, #f8fafc 60%);
     --shadow: 0 1px 3px rgba(15,23,42,0.08);
+    --accent-text: #4338ca;
+    --good-text: #047857;
+    --warn-text: #b45309;
+    --warn-text-strong: #92400e;
+    --bad-text: #b91c1c;
   }
   * { box-sizing: border-box; }
   body {
@@ -254,8 +264,8 @@
     font-weight: 500;
     margin-right: 4px;
   }
-  .pill.good { background: rgba(16,185,129,0.15); color: #6ee7b7; }
-  .pill.warn { background: rgba(245,158,11,0.15); color: #fcd34d; }
+  .pill.good { background: rgba(16,185,129,0.15); color: var(--good-text); }
+  .pill.warn { background: rgba(245,158,11,0.15); color: var(--warn-text); }
   .pill.bad { background: rgba(239,68,68,0.15); color: #fca5a5; }
   .pill.neutral { background: rgba(148,163,184,0.15); color: var(--text); }
 
@@ -306,7 +316,7 @@
   .person-drill h4 {
     margin: 0 0 10px;
     font-size: 14px;
-    color: #a5b4fc;
+    color: var(--accent-text);
   }
 
   .stale-banner {
@@ -315,7 +325,7 @@
     background: linear-gradient(135deg, rgba(245,158,11,0.18), rgba(239,68,68,0.12));
     border: 1px solid rgba(245,158,11,0.45);
     border-radius: 12px;
-    color: #fcd34d;
+    color: var(--warn-text);
     font-size: 13px;
     line-height: 1.8;
   }
@@ -324,14 +334,14 @@
     margin-right: 8px;
     vertical-align: -2px;
   }
-  .stale-banner strong { color: #fde68a; margin-right: 4px; }
+  .stale-banner strong { color: var(--warn-text-strong); margin-right: 4px; }
   .stale-banner .stale-chip {
     display: inline-block;
     padding: 2px 10px;
     margin: 2px 4px 2px 0;
     border-radius: 999px;
     background: rgba(239,68,68,0.22);
-    color: #fecaca;
+    color: var(--bad-text);
     border: 1px solid rgba(239,68,68,0.4);
     font-weight: 600;
     font-size: 12px;
@@ -341,27 +351,35 @@
   .stale-banner.ok {
     background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(34,211,238,0.08));
     border-color: rgba(16,185,129,0.35);
-    color: #6ee7b7;
+    color: var(--good-text);
   }
 
-  .insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
   .insight {
     background: var(--panel-2);
     border: 1px solid var(--border);
-    border-left: 4px solid var(--accent);
-    border-radius: 10px;
-    padding: 12px 14px;
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 8px 10px 9px;
+    line-height: 1.35;
   }
   .insight.good { border-left-color: var(--good); }
   .insight.warn { border-left-color: var(--warn); }
   .insight.bad { border-left-color: var(--bad); }
   .insight.info { border-left-color: var(--accent-2); }
   .insight .ins-title {
-    font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em;
-    margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+    font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 3px; font-weight: 600;
   }
-  .insight .ins-value { font-size: 15px; font-weight: 600; color: var(--text); line-height: 1.45; }
-  .insight .ins-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .insight .ins-value { font-size: 13px; font-weight: 600; color: var(--text); }
+  .insight .ins-hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  @media (max-width: 600px) {
+    .insights-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .insight { padding: 7px 9px 8px; }
+    .insight .ins-title { font-size: 9px; }
+    .insight .ins-value { font-size: 12px; }
+    .insight .ins-hint { font-size: 10px; }
+  }
 
   .link-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
   .link-card {
@@ -392,7 +410,7 @@
   .link-body { flex: 1; min-width: 0; }
   .link-title { font-size: 14px; font-weight: 600; color: #fff; }
   .link-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .link-url { font-size: 11px; color: #a5b4fc; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .link-url { font-size: 11px; color: var(--accent-text); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .link-arrow { font-size: 18px; color: var(--muted); }
   .link-card:hover .link-arrow { color: var(--accent-2); }
 
@@ -631,7 +649,7 @@
         <span class="legend-sq" style="background:#312e81"></span>
         <span class="legend-sq" style="background:#4338ca"></span>
         <span class="legend-sq" style="background:#6366f1"></span>
-        <span class="legend-sq" style="background:#a5b4fc"></span> high
+        <span class="legend-sq" style="background:var(--accent-text)"></span> high
       </div>
     </div>
   </section>
@@ -733,8 +751,8 @@
 
   <!-- =========================== LINKS =========================== -->
   <section class="section" id="section-links">
-    <div class="card">
-      <h3>More Studio Links</h3>
+    <div class="card" style="margin-bottom:16px;">
+      <h3>🛠️ Tools &amp; Resources</h3>
       <div class="link-list">
         <a class="link-card" href="https://morestudio-knowledge.vercel.app/" target="_blank" rel="noopener">
           <div class="link-icon">📚</div>
@@ -778,6 +796,21 @@
             <div class="link-title">แบบฟอร์มขอคืนเงิน (Cash Out Request)</div>
             <div class="link-desc">Submit reimbursement requests via Airtable</div>
             <div class="link-url">airtable.com/.../form</div>
+          </div>
+          <div class="link-arrow">↗</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>💻 Git Repo</h3>
+      <div class="link-list">
+        <a class="link-card" href="https://github.com/Waaew/morestudio-sprint-contribution" target="_blank" rel="noopener">
+          <div class="link-icon">📊</div>
+          <div class="link-body">
+            <div class="link-title">Sprint Contribution</div>
+            <div class="link-desc">Source code of this dashboard on GitHub</div>
+            <div class="link-url">github.com/Waaew/morestudio-sprint-contribution</div>
           </div>
           <div class="link-arrow">↗</div>
         </a>
@@ -2648,10 +2681,10 @@ function buildLogicTab(){
       <div style="background:rgba(16,185,129,0.08); border:1px solid #10b98155; border-radius:10px; padding:14px;">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
           <span style="width:10px; height:10px; border-radius:2px; background:#10b981;"></span>
-          <span style="font-weight:600; color:#6ee7b7;">นับ Point</span>
+          <span style="font-weight:600; color:var(--good-text);">นับ Point</span>
         </div>
         <div style="font-size:13px; color:var(--text); line-height:1.7;">
-          เฉพาะ <code style="background:var(--panel); padding:1px 6px; border-radius:4px; color:#a5b4fc;">state == "Done"</code>
+          เฉพาะ <code style="background:var(--panel-2); border:1px solid var(--border); padding:1px 6px; border-radius:4px; color:var(--accent-text); font-weight:600;">state == "Done"</code>
           เท่านั้นที่บวกเข้า:<br>
           • Total Points / Tasks per person<br>
           • Project × Sprint contribution<br>
@@ -2659,8 +2692,8 @@ function buildLogicTab(){
           • KPIs ในทุก tab (ยกเว้น Status)
         </div>
         <div style="margin-top:10px; padding:8px 10px; background:rgba(0,0,0,0.2); border-radius:6px; font-size:12px;">
-          <strong style="color:#6ee7b7;">${totalDonePts.toLocaleString()}</strong> pts ·
-          <strong style="color:#6ee7b7;">${totalDoneTasks}</strong> tasks · Done
+          <strong style="color:var(--good-text);">${totalDonePts.toLocaleString()}</strong> pts ·
+          <strong style="color:var(--good-text);">${totalDoneTasks}</strong> tasks · Done
         </div>
       </div>
       <div style="background:rgba(148,163,184,0.06); border:1px solid #475569; border-radius:10px; padding:14px;">
@@ -2670,7 +2703,7 @@ function buildLogicTab(){
         </div>
         <div style="font-size:13px; color:var(--text); line-height:1.7;">
           งานสถานะอื่น (In Progress, Ready for review/test, Waiting to deploy, To Do, Blocked, Bugged, Removed) →<br>
-          • <strong style="color:#fcd34d;">ไม่บวก</strong> เข้า KPI ใน Overview/People/Projects<br>
+          • <strong style="color:var(--warn-text);">ไม่บวก</strong> เข้า KPI ใน Overview/People/Projects<br>
           • <strong style="color:#22d3ee;">โชว์ครบ</strong> ใน Status tab (เห็น pipeline)
         </div>
         <div style="margin-top:10px; padding:8px 10px; background:rgba(0,0,0,0.2); border-radius:6px; font-size:12px;">
@@ -2698,7 +2731,7 @@ function buildLogicTab(){
       <td style="padding:10px 12px; text-align:center; border-bottom:1px solid var(--border);">
         <span class="pill ${cls}">${cls}</span>
       </td>
-      <td style="padding:10px 12px; text-align:right; border-bottom:1px solid var(--border); color:${i===0?'#6ee7b7':'#64748b'}; font-weight:${i===0?600:400};">${counted}</td>
+      <td style="padding:10px 12px; text-align:right; border-bottom:1px solid var(--border); color:${i===0?'var(--good-text)':'#64748b'}; font-weight:${i===0?600:400};">${counted}</td>
     </tr>`;
   }).join("");
   const statusCard = `<div class="card" style="margin-top:14px;">
@@ -2743,7 +2776,7 @@ function buildLogicTab(){
   ];
   const projChips = projectGroups.map(g => `
     <div style="background:var(--panel-2); border-radius:10px; padding:12px 14px; border-left:3px solid var(--accent);">
-      <div style="font-weight:600; color:#a5b4fc; font-size:13px; margin-bottom:6px;">${g.name}</div>
+      <div style="font-weight:600; color:var(--accent-text); font-size:13px; margin-bottom:6px;">${g.name}</div>
       <div style="font-size:12px; color:var(--muted); line-height:1.5;">
         ${g.rules.map(r => `• ${r}`).join("<br>")}
       </div>
@@ -2795,9 +2828,9 @@ function buildLogicTab(){
   ];
   const insightChips = insightRules.map(r => `
     <div style="background:var(--panel-2); border-radius:10px; padding:12px 14px; border-left:3px solid var(--accent-2);">
-      <div style="font-weight:600; color:#a5b4fc; font-size:13px; margin-bottom:6px;">${r.icon} ${r.title}</div>
+      <div style="font-weight:600; color:var(--accent-text); font-size:13px; margin-bottom:6px;">${r.icon} ${r.title}</div>
       <div style="font-size:12px; color:var(--text); line-height:1.55; margin-bottom:6px;">${r.rule}</div>
-      <div style="font-size:11px; color:var(--muted);"><strong style="color:#fcd34d;">Flag:</strong> ${r.flag}</div>
+      <div style="font-size:11px; color:var(--muted);"><strong style="color:var(--warn-text);">Flag:</strong> ${r.flag}</div>
     </div>`).join("");
   const insightCard = `<div class="card" style="margin-top:14px;">
     <h3>6 · People · 🔍 Insights criteria <span class="tag">${insightRules.length} rules · auto per person</span></h3>
@@ -2807,14 +2840,14 @@ function buildLogicTab(){
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px;">
       ${insightChips}
     </div>
-    <div style="margin-top:12px; padding:10px 12px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:8px; font-size:12px; color:#fcd34d;">
+    <div style="margin-top:12px; padding:10px 12px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:8px; font-size:12px; color:var(--warn-text);">
       <strong>Stale rule (สอดคล้องกับ warning banner):</strong> ตรวจ sprint ล่าสุดที่ทีมใด ๆ มี activity แล้วดู 2 sprint ย้อนหลัง (latest-1, latest). ถ้าคน ๆ นั้นมี points = 0 และ tasks = 0 ทั้งสอง sprint → ถือว่า <strong>ขาดการอัปเดทเกิน 2 sprints</strong>
     </div>
   </div>`;
 
   // ---- Header ----
   const header = `<div style="background:linear-gradient(135deg, rgba(99,102,241,0.15), rgba(34,211,238,0.05)); border:1px solid var(--border); border-radius:14px; padding:20px 24px; margin-bottom:14px;">
-    <h2 style="margin:0; font-size:20px; background:linear-gradient(90deg, #fff, #a5b4fc); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Methodology &amp; Logic</h2>
+    <h2 style="margin:0; font-size:20px; color:var(--text); font-weight:700;">Methodology &amp; Logic</h2>
     <div style="color:var(--muted); font-size:13px; margin-top:6px;">วิธีคำนวณตัวเลขในแดชบอร์ด · refresh ทุกครั้งที่อัปไฟล์ CSV ใหม่</div>
   </div>`;
 
@@ -2833,9 +2866,9 @@ function buildLogicTab(){
   ];
   const projInsightChips = projInsightRules.map(r => `
     <div style="background:var(--panel-2); border-radius:10px; padding:12px 14px; border-left:3px solid var(--accent-2);">
-      <div style="font-weight:600; color:#a5b4fc; font-size:13px; margin-bottom:6px;">${r.icon} ${r.title}</div>
+      <div style="font-weight:600; color:var(--accent-text); font-size:13px; margin-bottom:6px;">${r.icon} ${r.title}</div>
       <div style="font-size:12px; color:var(--text); line-height:1.55; margin-bottom:6px;">${r.rule}</div>
-      <div style="font-size:11px; color:var(--muted);"><strong style="color:#fcd34d;">Flag:</strong> ${r.flag}</div>
+      <div style="font-size:11px; color:var(--muted);"><strong style="color:var(--warn-text);">Flag:</strong> ${r.flag}</div>
     </div>`).join("");
   const projInsightCard = `<div class="card" style="margin-top:14px;">
     <h3>7 · Projects · 🔍 Insights criteria <span class="tag">${projInsightRules.length} rules · auto</span></h3>
@@ -2845,7 +2878,7 @@ function buildLogicTab(){
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px;">
       ${projInsightChips}
     </div>
-    <div style="margin-top:12px; padding:10px 12px; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.3); border-radius:8px; font-size:12px; color:#a5b4fc;">
+    <div style="margin-top:12px; padding:10px 12px; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.3); border-radius:8px; font-size:12px; color:var(--accent-text);">
       <strong>Trend window:</strong> recent = 3 sprints สุดท้ายก่อน latest (inclusive) · prior = 3 sprints ก่อนหน้า · latest = sprint ล่าสุดที่ <em>ทีมใด ๆ</em> มี activity
     </div>
   </div>`;
