@@ -2600,7 +2600,11 @@ function switchSection(name){
   document.querySelectorAll(".navtab").forEach(t => t.classList.toggle("active", t.dataset.section === name));
   document.querySelectorAll(".section").forEach(s => s.classList.toggle("active", s.id === `section-${name}`));
   const banner = document.getElementById("staleBanner");
-  if (banner) banner.classList.toggle("section-only", name !== "people");
+  if (banner && banner.dataset.hasContent === "1") {
+    const only = name !== "people";
+    banner.classList.toggle("section-only", only);
+    banner.style.display = only ? "none" : "block";
+  }
   refresh();
 }
 
@@ -2920,7 +2924,8 @@ document.getElementById("updated").textContent = "Data updated: 21 April 2026";
   }
   const banner = document.getElementById("staleBanner");
   const onlyInPeople = S.section !== "people";
-  if (latest < 1) { banner.style.display = "none"; return; }
+  if (latest < 1) { banner.style.display = "none"; banner.dataset.hasContent = "0"; return; }
+  banner.dataset.hasContent = "1";
   const windowIdx = [latest - 1, latest]; // last 2 sprints
   const stale = names.filter(n => {
     const p = (DATA.points[n] || []);
