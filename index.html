@@ -805,12 +805,12 @@
     <div class="card">
       <h3>💻 Git Repo</h3>
       <div class="link-list">
-        <a class="link-card" href="https://github.com/Waaew/morestudio-sprint-contribution" target="_blank" rel="noopener">
+        <a class="link-card" href="https://github.com/morestudio/morestudio-sprint-contribution" target="_blank" rel="noopener">
           <div class="link-icon">📊</div>
           <div class="link-body">
             <div class="link-title">Sprint Contribution</div>
             <div class="link-desc">Source code of this dashboard on GitHub</div>
-            <div class="link-url">github.com/Waaew/morestudio-sprint-contribution</div>
+            <div class="link-url">github.com/morestudio/morestudio-sprint-contribution</div>
           </div>
           <div class="link-arrow">↗</div>
         </a>
@@ -2919,7 +2919,7 @@ document.getElementById("updated").textContent = "Data updated: 21 April 2026";
     if (any) { latest = i; break; }
   }
   const banner = document.getElementById("staleBanner");
-  if (S.section !== "people") banner.classList.add("section-only");
+  const onlyInPeople = S.section !== "people";
   if (latest < 1) { banner.style.display = "none"; return; }
   const windowIdx = [latest - 1, latest]; // last 2 sprints
   const stale = names.filter(n => {
@@ -2929,15 +2929,15 @@ document.getElementById("updated").textContent = "Data updated: 21 April 2026";
   });
   const windowLabel = `Sprint ${windowIdx[0]+1}–${windowIdx[1]+1}`;
   if (stale.length === 0) {
-    banner.className = "stale-banner ok";
+    banner.className = "stale-banner ok" + (onlyInPeople ? " section-only" : "");
     banner.innerHTML = `<span class="stale-icon">✅</span>ทุกคนมีการอัปเดทในช่วง <strong>${windowLabel}</strong> ที่ผ่านมา`;
-    banner.style.display = "block";
+    banner.style.display = onlyInPeople ? "none" : "block";
     return;
   }
   const chips = stale.map(n => `<span class="stale-chip">${n}${roleOf(n)!=="—"?` · ${roleOf(n)}`:""}</span>`).join("");
-  banner.className = "stale-banner";
+  banner.className = "stale-banner" + (onlyInPeople ? " section-only" : "");
   banner.innerHTML = `<span class="stale-icon">⚠️</span><strong>ขาดการอัปเดทเกิน 2 Sprints:</strong> ${chips}`;
-  banner.style.display = "block";
+  banner.style.display = onlyInPeople ? "none" : "block";
 })();
 populateSelects();
 wireUp();
