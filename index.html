@@ -268,6 +268,77 @@
     font-size: 14px;
     color: #a5b4fc;
   }
+
+  .stale-banner {
+    margin: 0 32px 12px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(245,158,11,0.18), rgba(239,68,68,0.12));
+    border: 1px solid rgba(245,158,11,0.45);
+    border-radius: 12px;
+    color: #fcd34d;
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .stale-banner .stale-icon { font-size: 18px; line-height: 1; }
+  .stale-banner strong { color: #fde68a; }
+  .stale-banner .stale-chip {
+    display: inline-block;
+    padding: 2px 10px;
+    margin: 2px 4px 2px 0;
+    border-radius: 999px;
+    background: rgba(239,68,68,0.22);
+    color: #fecaca;
+    border: 1px solid rgba(239,68,68,0.4);
+    font-weight: 600;
+    font-size: 12px;
+  }
+  .stale-banner.ok {
+    background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(34,211,238,0.08));
+    border-color: rgba(16,185,129,0.35);
+    color: #6ee7b7;
+  }
+
+  /* ================= Mobile Responsive ================= */
+  @media (max-width: 768px) {
+    header { padding: 16px 14px 4px; }
+    header h1 { font-size: 20px; }
+    header .sub { font-size: 12px; }
+    .container { padding: 10px 14px 32px; }
+    .stale-banner { margin: 0 14px 10px; font-size: 12px; padding: 10px 12px; }
+    .topnav .navtab { padding: 8px 12px; font-size: 13px; }
+    .controls { padding: 10px; gap: 8px; }
+    .control { min-width: 140px; flex: 1 1 140px; }
+    .control label { font-size: 10px; }
+    select, input[type="text"] { font-size: 13px; padding: 7px 8px; }
+    .kpis { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .kpi { padding: 12px 14px; }
+    .kpi .value { font-size: 20px; }
+    .kpi .label { font-size: 11px; }
+    .card { padding: 12px; }
+    .card h3 { font-size: 13px; flex-wrap: wrap; }
+    .chart-wrap { height: 260px; }
+    .chart-wrap.tall { height: 300px; }
+    .chart-wrap.xtall { height: 360px; }
+    .scroll { max-height: 420px; }
+    th, td { padding: 6px 8px; font-size: 12px; }
+    thead th { font-size: 10px; }
+    .tab { padding: 6px 10px; font-size: 12px; }
+    .card-inline-select { font-size: 11px; padding: 3px 6px; }
+  }
+  @media (max-width: 480px) {
+    header { flex-direction: column; align-items: flex-start; }
+    header h1 { font-size: 18px; }
+    .kpis { grid-template-columns: 1fr; }
+    .control { min-width: 0; width: 100%; }
+    .topnav { gap: 6px; }
+    .topnav .navtab { padding: 7px 10px; font-size: 12px; flex: 1 1 auto; text-align: center; }
+    .chart-wrap { height: 220px; }
+    .chart-wrap.tall { height: 260px; }
+    .chart-wrap.xtall { height: 300px; }
+  }
 </style>
 </head>
 <body>
@@ -278,6 +349,8 @@
   </div>
   <div class="sub" id="updated"></div>
 </header>
+
+<div id="staleBanner" class="stale-banner" style="display:none;"></div>
 
 <div class="container">
 
@@ -2056,6 +2129,36 @@ function wireUp(){
 }
 
 document.getElementById("updated").textContent = "Data updated: 21 April 2026";
+
+// ---- Stale contributor warning (no updates in last 2 sprints) ----
+(function renderStaleBanner(){
+  const names = Object.keys(DATA.points);
+  // Determine latest active sprint across team (last index with any points OR tasks)
+  let latest = -1;
+  for (let i = DATA.sprints.length - 1; i >= 0; i--) {
+    const any = names.some(n => (DATA.points[n][i]||0) > 0 || (DATA.tasks[n][i]||0) > 0);
+    if (any) { latest = i; break; }
+  }
+  const banner = document.getElementById("staleBanner");
+  if (latest < 1) { banner.style.display = "none"; return; }
+  const windowIdx = [latest - 1, latest]; // last 2 sprints
+  const stale = names.filter(n => {
+    const p = (DATA.points[n] || []);
+    const t = (DATA.tasks[n] || []);
+    return windowIdx.every(i => (p[i]||0) === 0 && (t[i]||0) === 0);
+  });
+  const windowLabel = `Sprint ${windowIdx[0]+1}–${windowIdx[1]+1}`;
+  if (stale.length === 0) {
+    banner.className = "stale-banner ok";
+    banner.innerHTML = `<span class="stale-icon">✅</span><div>ทุกคนมีการอัปเดทในช่วง <strong>${windowLabel}</strong> ที่ผ่านมา</div>`;
+    banner.style.display = "flex";
+    return;
+  }
+  const chips = stale.map(n => `<span class="stale-chip">${n}${roleOf(n)!=="—"?` · ${roleOf(n)}`:""}</span>`).join("");
+  banner.className = "stale-banner";
+  banner.innerHTML = `<span class="stale-icon">⚠️</span><div><strong>ขาดการอัปเดทเกิน 2 Sprints</strong> (ไม่มี points/tasks ใน ${windowLabel}): ${chips}</div>`;
+  banner.style.display = "flex";
+})();
 populateSelects();
 wireUp();
 refresh();
