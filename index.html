@@ -301,16 +301,21 @@
     color: #6ee7b7;
   }
 
+  /* Ensure canvas never overflows its container */
+  .chart-wrap { width: 100%; }
+  .chart-wrap canvas { max-width: 100% !important; }
+
   /* ================= Mobile Responsive ================= */
-  @media (max-width: 768px) {
-    header { padding: 16px 14px 4px; }
+  @media (max-width: 900px) {
+    header { padding: 16px 14px 4px; flex-direction: column; align-items: flex-start; }
     header h1 { font-size: 20px; }
     header .sub { font-size: 12px; }
     .container { padding: 10px 14px 32px; }
     .stale-banner { margin: 0 14px 10px; font-size: 12px; padding: 10px 12px; }
-    .topnav .navtab { padding: 8px 12px; font-size: 13px; }
+    .topnav { gap: 6px; }
+    .topnav .navtab { padding: 8px 12px; font-size: 13px; flex: 1 1 auto; text-align: center; }
     .controls { padding: 10px; gap: 8px; }
-    .control { min-width: 140px; flex: 1 1 140px; }
+    .control { min-width: 130px; flex: 1 1 140px; }
     .control label { font-size: 10px; }
     select, input[type="text"] { font-size: 13px; padding: 7px 8px; }
     .kpis { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -319,25 +324,38 @@
     .kpi .label { font-size: 11px; }
     .card { padding: 12px; }
     .card h3 { font-size: 13px; flex-wrap: wrap; }
-    .chart-wrap { height: 260px; }
-    .chart-wrap.tall { height: 300px; }
-    .chart-wrap.xtall { height: 360px; }
+    .chart-wrap { height: 280px; }
+    .chart-wrap.tall { height: 320px; }
+    .chart-wrap.xtall { height: 380px; }
     .scroll { max-height: 420px; }
     th, td { padding: 6px 8px; font-size: 12px; }
     thead th { font-size: 10px; }
     .tab { padding: 6px 10px; font-size: 12px; }
     .card-inline-select { font-size: 11px; padding: 3px 6px; }
   }
-  @media (max-width: 480px) {
-    header { flex-direction: column; align-items: flex-start; }
-    header h1 { font-size: 18px; }
+  @media (max-width: 600px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .kpi { padding: 10px 12px; }
+    .kpi .value { font-size: 18px; }
+    .kpi .label { font-size: 10px; letter-spacing: 0.05em; }
+    .kpi .hint { font-size: 11px; }
+    .chart-wrap { height: 240px; }
+    .chart-wrap.tall { height: 280px; }
+    .chart-wrap.xtall { height: 320px; }
+    .control { min-width: 0; flex: 1 1 calc(50% - 8px); }
+  }
+  @media (max-width: 420px) {
+    header h1 { font-size: 17px; }
+    header .sub { font-size: 11px; }
+    .container { padding: 8px 10px 24px; }
+    .stale-banner { margin: 0 10px 8px; font-size: 11px; padding: 8px 10px; }
     .kpis { grid-template-columns: 1fr; }
-    .control { min-width: 0; width: 100%; }
-    .topnav { gap: 6px; }
-    .topnav .navtab { padding: 7px 10px; font-size: 12px; flex: 1 1 auto; text-align: center; }
+    .control { flex: 1 1 100%; }
     .chart-wrap { height: 220px; }
-    .chart-wrap.tall { height: 260px; }
-    .chart-wrap.xtall { height: 300px; }
+    .chart-wrap.tall { height: 250px; }
+    .chart-wrap.xtall { height: 290px; }
+    .card { padding: 10px; }
+    .topnav .navtab { padding: 6px 8px; font-size: 11px; }
   }
 </style>
 </head>
@@ -1069,6 +1087,21 @@ const PROJ_PALETTE = [
 // ============================================================================
 //  STATE & CHARTS
 // ============================================================================
+// Chart.js global font sizing responsive to viewport width
+(function tuneChartDefaults(){
+  const w = window.innerWidth;
+  Chart.defaults.font.size = w <= 420 ? 9 : w <= 600 ? 10 : w <= 900 ? 11 : 12;
+  Chart.defaults.color = "#cbd5e1";
+})();
+window.addEventListener("resize", () => {
+  const w = window.innerWidth;
+  const newSize = w <= 420 ? 9 : w <= 600 ? 10 : w <= 900 ? 11 : 12;
+  if (Chart.defaults.font.size !== newSize) {
+    Chart.defaults.font.size = newSize;
+    if (typeof refresh === "function") refresh();
+  }
+});
+
 let trendChart, topChart, capacityChart, avgTrendChart,
     personProjChart, projTrendChart, projTopChart, statusChart;
 
