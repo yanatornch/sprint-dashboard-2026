@@ -337,8 +337,11 @@
   .link-card:hover .link-arrow { color: var(--accent-2); }
 
   /* Ensure canvas never overflows its container */
-  .chart-wrap { width: 100%; }
+  .chart-wrap { width: 100%; overflow: hidden; }
   .chart-wrap canvas { max-width: 100% !important; }
+
+  /* Status pills grid inside drill card */
+  #drillStatusPills > div { flex: 1 1 140px; }
 
   /* ================= Mobile Responsive ================= */
   @media (max-width: 900px) {
@@ -378,6 +381,21 @@
     .chart-wrap.tall { height: 280px; }
     .chart-wrap.xtall { height: 320px; }
     .control { min-width: 0; flex: 1 1 calc(50% - 8px); }
+    #drillStatusPills {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px !important;
+    }
+    #drillStatusPills > div {
+      flex: none !important;
+      min-width: 0 !important;
+      padding: 8px 10px !important;
+    }
+    #drillStatusPills > div > div:nth-child(1) { font-size: 10px !important; }
+    #drillStatusPills > div > div:nth-child(2) { font-size: 18px !important; }
+    #drillStatusPills > div > div:nth-child(3) { font-size: 10px !important; }
+    .card h3 { font-size: 13px; }
+    .card h3 .tag { font-size: 10px; }
   }
   @media (max-width: 420px) {
     header h1 { font-size: 17px; }
@@ -391,6 +409,7 @@
     .chart-wrap.xtall { height: 290px; }
     .card { padding: 10px; }
     .topnav .navtab { padding: 6px 8px; font-size: 11px; }
+    #drillStatusPills > div > div:nth-child(2) { font-size: 16px !important; }
   }
 </style>
 </head>
@@ -1619,7 +1638,7 @@ function buildPersonDrill(){
     const dim = c === 0 ? 'opacity:0.35;' : '';
     return `<div style="flex:1; min-width:130px; background:var(--panel-2); border:1px solid ${DATA.statusColors[i]}55; border-left:4px solid ${DATA.statusColors[i]}; border-radius:10px; padding:10px 12px; ${dim}">
       <div style="font-size:11px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.3px;">${lbl}</div>
-      <div style="font-size:20px; font-weight:700; color:${DATA.statusColors[i]}; margin-top:2px;">${c}<span style="font-size:11px; color:#64748b; font-weight:400;"> งาน</span></div>
+      <div style="font-size:20px; font-weight:700; color:${DATA.statusColors[i]}; margin-top:2px; white-space:nowrap;">${c}<span style="font-size:11px; color:#64748b; font-weight:400; margin-left:4px;">งาน</span></div>
       <div style="font-size:11px; color:#cbd5e1;">${p.toLocaleString(undefined,{maximumFractionDigits:1})} pts · ${pct}%</div>
     </div>`;
   }).join("");
