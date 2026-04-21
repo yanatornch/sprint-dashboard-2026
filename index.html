@@ -301,6 +301,7 @@
     font-size: 12px;
     white-space: nowrap;
   }
+  .stale-banner.section-only { display: none !important; }
   .stale-banner.ok {
     background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(34,211,238,0.08));
     border-color: rgba(16,185,129,0.35);
@@ -2248,6 +2249,8 @@ function switchSection(name){
   S.section = name;
   document.querySelectorAll(".navtab").forEach(t => t.classList.toggle("active", t.dataset.section === name));
   document.querySelectorAll(".section").forEach(s => s.classList.toggle("active", s.id === `section-${name}`));
+  const banner = document.getElementById("staleBanner");
+  if (banner) banner.classList.toggle("section-only", name !== "people");
   refresh();
 }
 
@@ -2500,6 +2503,7 @@ document.getElementById("updated").textContent = "Data updated: 21 April 2026";
     if (any) { latest = i; break; }
   }
   const banner = document.getElementById("staleBanner");
+  if (S.section !== "people") banner.classList.add("section-only");
   if (latest < 1) { banner.style.display = "none"; return; }
   const windowIdx = [latest - 1, latest]; // last 2 sprints
   const stale = names.filter(n => {
