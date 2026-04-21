@@ -656,6 +656,18 @@
           <option value="all">All Projects</option>
         </select>
       </div>
+      <div class="control">
+        <label for="projRole">Team (Role)</label>
+        <select id="projRole">
+          <option value="all">All Teams</option>
+          <option value="Dev">Dev</option>
+          <option value="Designer">Designer</option>
+          <option value="BA">BA</option>
+          <option value="Tester">Tester</option>
+          <option value="PC">PC</option>
+          <option value="CEO">CEO</option>
+        </select>
+      </div>
     </div>
 
     <div class="kpis" id="projKpis"></div>
@@ -1329,6 +1341,7 @@ let S = {
   personMetric: "points",
   projRange: "all",
   projTopN: "15",
+  projRole: "all",
   statusMetric: "points",
   statusView: "person",
   doneOnly: false,
@@ -1377,6 +1390,20 @@ function getProjectSprint(name) {
   if (!S.doneOnly) return a;
   const r = DONE_RATIO.projPts[name] || 0;
   return a.map(v => v * r);
+}
+// Role-filtered project-sprint array (used by Projects section only).
+// When S.projRole === "all" or not set, falls back to full project totals.
+function getProjectSprintFiltered(name) {
+  const role = S.projRole;
+  if (!role || role === "all") return getProjectSprint(name);
+  const members = peopleInRole(role);
+  const len = DATA.sprints.length;
+  const out = new Array(len).fill(0);
+  members.forEach(person => {
+    const contrib = (DATA.contribution[person] || {})[name] || [];
+    for (let i = 0; i < len; i++) out[i] += (+contrib[i] || 0);
+  });
+  return out;
 }
 function getContributionRow(person, project) {
   const a = (DATA.contribution[person] || {})[project] || [];
@@ -2052,6 +2079,8 @@ function renderProjectInsights(){
   if (!el) return;
   const idx = rangeIdx(S.projRange);
   const SPR = DATA.sprints.length;
+  const teamFiltered = S.projRole && S.projRole !== "all";
+  const teamLabel = teamFiltered ? ` · Team: ${S.projRole}` : "";
 
   // Team latest active sprint (across all projects)
   const allProjects = Object.keys(DATA.projectSprint);
@@ -2062,7 +2091,7 @@ function renderProjectInsights(){
 
   // Build per-project stats in range
   const stats = allProjects.map(n => {
-    const arr = getProjectSprint(n);
+    const arr = getProjectSprintFiltered(n);
     const rangeTotal = sum(idx.map(i => +arr[i]||0));
     const yearTotal = sum(arr);
     const activeSprintsInRange = idx.filter(i => (+arr[i]||0) > 0).length;
@@ -2108,7 +2137,9 @@ function renderProjectInsights(){
     cls: "info",
     title: "🗂️ Portfolio",
     value: `${totalProjects} active projects · ${totalPts.toFixed(0)} pts`,
-    hint: `ใน range ที่เลือก · รวม ${allProjects.length} projects ทั้งหมด`
+    hint: teamFiltered
+      ? `เฉพาะทีม ${S.projRole} (${peopleInRole(S.projRole).length} คน) · ใน range ที่เลือก`
+      : `ใน range ที่เลือก · รวม ${allProjects.length} projects ทั้งหมด`
   });
 
   // Top 3 share (concentration)
@@ -2171,6 +2202,10 @@ function renderProjectInsights(){
     });
   }
 
+  // Risk / Done rate / Backlog / WIP insights rely on project-wide status totals
+  // which are not split per-role, so skip them when a team filter is active.
+  if (!teamFiltered) {
+
   // Risk (blocked/bugged)
   const riskList = stats
     .filter(s => s.blocked > 0 || s.bugged > 0)
@@ -2229,6 +2264,17 @@ function renderProjectInsights(){
     });
   }
 
+  } // end !teamFiltered
+
+  if (teamFiltered) {
+    cards.push({
+      cls: "info",
+      title: "ℹ️ Team Filter Active",
+      value: `แสดงเฉพาะ contribution ของทีม ${S.projRole}`,
+      hint: `Done rate / Risk / Backlog / WIP ถูกซ่อน (project-level status ไม่ได้แยกตาม role)`
+    });
+  }
+
   el.innerHTML = cards.map(c =>
     `<div class="insight ${c.cls}">
        <div class="ins-title">${c.title}</div>
@@ -2244,17 +2290,18 @@ function renderProjectInsights(){
 function updateProjKPIs(){
   const idx = rangeIdx(S.projRange);
   const activeProjects = Object.keys(DATA.projectSprint).filter(n => {
-    const arr = getProjectSprint(n);
+    const arr = getProjectSprintFiltered(n);
     return idx.some(i => arr[i] > 0);
   });
-  const totalPts = sum(activeProjects.map(n => sum(idx.map(i => getProjectSprint(n)[i]||0))));
-  const top = activeProjects.map(n => ({n, v: sum(idx.map(i => getProjectSprint(n)[i]||0))})).sort((a,b)=>b.v-a.v);
+  const totalPts = sum(activeProjects.map(n => sum(idx.map(i => getProjectSprintFiltered(n)[i]||0))));
+  const top = activeProjects.map(n => ({n, v: sum(idx.map(i => getProjectSprintFiltered(n)[i]||0))})).sort((a,b)=>b.v-a.v);
   const topProj = top[0] || {n:"—", v:0};
   const concentration = totalPts ? (top.slice(0,3).reduce((a,b)=>a+b.v,0) / totalPts) : 0;
   const tag = S.doneOnly ? ' <span class="pill good">Done</span>' : '';
+  const teamTag = (S.projRole && S.projRole !== "all") ? ` <span class="pill neutral">${S.projRole}</span>` : '';
 
   document.getElementById("projKpis").innerHTML = `
-    <div class="kpi"><div class="label">Active Projects</div><div class="value">${activeProjects.length}</div><div class="hint">in range</div></div>
+    <div class="kpi"><div class="label">Active Projects${teamTag}</div><div class="value">${activeProjects.length}</div><div class="hint">in range</div></div>
     <div class="kpi"><div class="label">Total Points${tag}</div><div class="value">${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})}</div><div class="hint">across projects</div></div>
     <div class="kpi"><div class="label">#1 Project</div><div class="value" style="font-size:18px">${topProj.n}</div><div class="hint">${topProj.v.toFixed(1)} pts</div></div>
     <div class="kpi"><div class="label">Top-3 Share</div><div class="value">${percent(concentration)}</div><div class="hint">of total points</div></div>
@@ -2267,7 +2314,7 @@ function buildProjTrendChart(){
   const labels = idx.map(i=>DATA.sprints[i]);
 
   const proj = Object.keys(DATA.projectSprint)
-    .map(n => { const arr = getProjectSprint(n); return {n, arr:idx.map(i=>arr[i]||0), total:sum(idx.map(i=>arr[i]||0))}; })
+    .map(n => { const arr = getProjectSprintFiltered(n); return {n, arr:idx.map(i=>arr[i]||0), total:sum(idx.map(i=>arr[i]||0))}; })
     .filter(p=>p.total>0)
     .sort((a,b)=>b.total-a.total);
 
@@ -2308,7 +2355,7 @@ function buildProjTopChart(){
   const ctx = document.getElementById("projTopChart");
   const idx = rangeIdx(S.projRange);
   const proj = Object.keys(DATA.projectSprint)
-    .map(n => ({n, v: sum(idx.map(i => getProjectSprint(n)[i]||0))}))
+    .map(n => ({n, v: sum(idx.map(i => getProjectSprintFiltered(n)[i]||0))}))
     .filter(p=>p.v>0)
     .sort((a,b)=>b.v-a.v);
 
@@ -2336,7 +2383,7 @@ function buildProjTable(){
   const idx = rangeIdx(S.projRange);
   const sprintsShown = idx.map(i=>DATA.sprints[i]);
   const rows = Object.keys(DATA.projectSprint).map(n => {
-    const a = getProjectSprint(n);
+    const a = getProjectSprintFiltered(n);
     return {n, vals:idx.map(i=>a[i]||0), total:sum(idx.map(i=>a[i]||0))};
   }).filter(r=>r.total>0).sort((a,b)=>b.total-a.total);
   const maxVal = Math.max(1, ...rows.flatMap(r=>r.vals));
@@ -2821,6 +2868,7 @@ function wireUp(){
 
   document.getElementById("projSprintRange").addEventListener("change", e => { S.projRange = e.target.value; refresh(); });
   document.getElementById("projTopN").addEventListener("change", e => { S.projTopN = e.target.value; refresh(); });
+  document.getElementById("projRole").addEventListener("change", e => { S.projRole = e.target.value; refresh(); });
 
   document.getElementById("statusMetric").addEventListener("change", e => { S.statusMetric = e.target.value; refresh(); });
   document.getElementById("statusView").addEventListener("change", e => { S.statusView = e.target.value; refresh(); });
