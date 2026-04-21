@@ -307,6 +307,25 @@
     color: #6ee7b7;
   }
 
+  .insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .insight {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .insight.good { border-left-color: var(--good); }
+  .insight.warn { border-left-color: var(--warn); }
+  .insight.bad { border-left-color: var(--bad); }
+  .insight.info { border-left-color: var(--accent-2); }
+  .insight .ins-title {
+    font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+  }
+  .insight .ins-value { font-size: 15px; font-weight: 600; color: var(--text); line-height: 1.45; }
+  .insight .ins-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
   .link-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
   .link-card {
     display: flex;
@@ -548,6 +567,11 @@
       <div id="drillStatusPills" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;"></div>
     </div>
 
+    <div class="card" style="margin-bottom:16px;">
+      <h3>🔍 Insights <span class="tag">Auto-generated</span></h3>
+      <div id="personInsights" class="insights-grid"></div>
+    </div>
+
     <div class="grid-eq">
       <div class="card">
         <h3>Sprint-by-Sprint Contribution Chart <span class="tag" id="drillChartTag">Story Points</span></h3>
@@ -670,6 +694,33 @@
             <div class="link-title">Azure Query</div>
             <div class="link-desc">Sprint Tasks &amp; Bugs query on Azure DevOps</div>
             <div class="link-url">dev.azure.com/morestudio</div>
+          </div>
+          <div class="link-arrow">↗</div>
+        </a>
+        <a class="link-card" href="https://dev.azure.com/morestudio/M/_wiki/wikis/More%20Studio.wiki/23/Morestudio-Operations-Handbook" target="_blank" rel="noopener">
+          <div class="link-icon">📘</div>
+          <div class="link-body">
+            <div class="link-title">Morestudio Operations Handbook</div>
+            <div class="link-desc">Ops handbook &amp; policies on Azure Wiki</div>
+            <div class="link-url">dev.azure.com/morestudio/.../wiki</div>
+          </div>
+          <div class="link-arrow">↗</div>
+        </a>
+        <a class="link-card" href="https://morestudioco.sharepoint.com/sites/msteams_2bc180/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2Fmsteams%5F2bc180%2FShared%20Documents%2FGeneral%2FIdentity%20asset%2F2022&p=true&ga=1" target="_blank" rel="noopener">
+          <div class="link-icon">🎨</div>
+          <div class="link-body">
+            <div class="link-title">More Studio Identity &amp; Asset</div>
+            <div class="link-desc">Brand identity and asset library (SharePoint)</div>
+            <div class="link-url">morestudioco.sharepoint.com</div>
+          </div>
+          <div class="link-arrow">↗</div>
+        </a>
+        <a class="link-card" href="https://airtable.com/appgEfmVogREcWoeF/pagq3a9hDR3YOlUFI/form" target="_blank" rel="noopener">
+          <div class="link-icon">💸</div>
+          <div class="link-body">
+            <div class="link-title">แบบฟอร์มขอคืนเงิน (Cash Out Request)</div>
+            <div class="link-desc">Submit reimbursement requests via Airtable</div>
+            <div class="link-url">airtable.com/.../form</div>
           </div>
           <div class="link-arrow">↗</div>
         </a>
@@ -1617,6 +1668,193 @@ function buildAvgTrendChart(){
 }
 
 // ============================================================================
+//  PEOPLE — INSIGHTS
+// ============================================================================
+function renderPersonInsights(person){
+  const el = document.getElementById("personInsights");
+  if (!el) return;
+  const pts = DATA.points[person] || [];
+  const tks = DATA.tasks[person] || [];
+  const contrib = DATA.contribution[person] || {};
+  const statusCount = DATA.statusPersonCount[person] || [];
+  const statusPts = DATA.statusPersonPts[person] || [];
+  const SPR = DATA.sprints.length;
+
+  const totalPts = pts.reduce((a,b)=>a+(+b||0),0);
+  const totalTasks = tks.reduce((a,b)=>a+(+b||0),0);
+  const activeSprints = pts.filter((v,i)=>((+v||0)>0 || (+tks[i]||0)>0)).length;
+  const avgPerTask = totalTasks ? (totalPts/totalTasks) : 0;
+
+  // Latest active sprint across team
+  const names = Object.keys(DATA.points);
+  let latest = -1;
+  for (let i=SPR-1;i>=0;i--){
+    if (names.some(n => (+DATA.points[n][i]||0) > 0 || (+DATA.tasks[n][i]||0) > 0)) { latest = i; break; }
+  }
+  // Stale: no activity in last 2 sprints
+  const stale = latest >= 1 && (+pts[latest]||0)===0 && (+tks[latest]||0)===0 && (+pts[latest-1]||0)===0 && (+tks[latest-1]||0)===0;
+
+  // Trend: compare recent 3 sprints vs previous 3 (relative to latest)
+  let trendLabel = "—", trendClass = "info";
+  if (latest >= 2) {
+    const recent = pts.slice(Math.max(0,latest-2), latest+1).reduce((a,b)=>a+(+b||0),0);
+    const prior = pts.slice(Math.max(0,latest-5), Math.max(0,latest-2)).reduce((a,b)=>a+(+b||0),0);
+    if (recent === 0 && prior === 0) { trendLabel = "ไม่มีข้อมูลเพียงพอ"; trendClass = "info"; }
+    else if (prior === 0) { trendLabel = `เพิ่มขึ้น (+${recent.toFixed(0)} pts ช่วงหลัง)`; trendClass = "good"; }
+    else {
+      const delta = recent - prior;
+      const pct = (delta/prior)*100;
+      if (delta > 0) { trendLabel = `📈 กำลังเร่ง (+${pct.toFixed(0)}%)`; trendClass = "good"; }
+      else if (delta < 0) { trendLabel = `📉 ชะลอลง (${pct.toFixed(0)}%)`; trendClass = pct < -40 ? "warn" : "info"; }
+      else { trendLabel = "คงที่"; trendClass = "info"; }
+    }
+  }
+
+  // Top projects (by points)
+  const projEntries = Object.entries(contrib)
+    .map(([k,arr]) => [k, arr.reduce((a,b)=>a+(+b||0),0)])
+    .filter(([,v]) => v > 0)
+    .sort((a,b) => b[1]-a[1]);
+  const topProjects = projEntries.slice(0,3);
+
+  // Status insights
+  const SL = DATA.statusLabels;
+  const donePts = statusPts[SL.indexOf("Done")] || 0;
+  const blockedC = statusCount[SL.indexOf("Blocked")] || 0;
+  const buggedC = statusCount[SL.indexOf("Bugged")] || 0;
+  const wipC = (statusCount[SL.indexOf("In Progress")] || 0)
+             + (statusCount[SL.indexOf("Ready for review")] || 0)
+             + (statusCount[SL.indexOf("Ready for test")] || 0)
+             + (statusCount[SL.indexOf("Waiting to INT deploy")] || 0)
+             + (statusCount[SL.indexOf("Waiting to PRD deploy")] || 0);
+  const todoC = statusCount[SL.indexOf("To Do")] || 0;
+  const grandPts = statusPts.reduce((a,b)=>a+(+b||0),0);
+  const doneRate = grandPts ? (donePts/grandPts*100) : 0;
+
+  // Peak sprint
+  let peakIdx = 0, peakVal = 0;
+  pts.forEach((v,i) => { if ((+v||0) > peakVal) { peakVal = +v; peakIdx = i; } });
+
+  // Compose cards
+  const cards = [];
+
+  // Workload summary
+  cards.push({
+    cls: totalPts === 0 ? "warn" : "info",
+    title: "📊 Workload",
+    value: `${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts · ${totalTasks} tasks`,
+    hint: `Active in ${activeSprints}/${SPR} sprints · avg ${avgPerTask.toFixed(2)} pts/task`
+  });
+
+  // Done rate
+  cards.push({
+    cls: doneRate >= 70 ? "good" : doneRate >= 40 ? "info" : "warn",
+    title: "✅ Done Rate",
+    value: `${doneRate.toFixed(0)}% ของ points`,
+    hint: `${donePts.toLocaleString(undefined,{maximumFractionDigits:1})} / ${grandPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts`
+  });
+
+  // Trend
+  cards.push({
+    cls: trendClass,
+    title: "📈 Recent Trend",
+    value: trendLabel,
+    hint: `เทียบ 3 sprints ล่าสุด vs 3 sprints ก่อนหน้า`
+  });
+
+  // Peak
+  if (peakVal > 0) {
+    cards.push({
+      cls: "info",
+      title: "🏔️ Peak Sprint",
+      value: `Sprint ${peakIdx+1} — ${peakVal.toLocaleString(undefined,{maximumFractionDigits:1})} pts`,
+      hint: `สูงสุดของปี`
+    });
+  }
+
+  // Top projects
+  if (topProjects.length) {
+    const list = topProjects.map(([k,v]) => `${k} (${v.toFixed(0)})`).join(" · ");
+    cards.push({
+      cls: "info",
+      title: "🎯 Top Projects",
+      value: list,
+      hint: `${projEntries.length} projects contributed`
+    });
+  } else {
+    cards.push({
+      cls: "warn",
+      title: "🎯 Top Projects",
+      value: "ยังไม่มี contribution",
+      hint: "ไม่พบ project ในปีนี้"
+    });
+  }
+
+  // WIP + risk
+  if (blockedC > 0 || buggedC > 0) {
+    cards.push({
+      cls: "bad",
+      title: "⚠️ Risk Flags",
+      value: `${blockedC} Blocked · ${buggedC} Bugged`,
+      hint: "ต้องติดตามปลดล็อกและแก้ไข"
+    });
+  }
+  if (wipC > 0) {
+    cards.push({
+      cls: wipC > 15 ? "warn" : "info",
+      title: "🔄 Work in Progress",
+      value: `${wipC} tasks กำลังดำเนินการ`,
+      hint: `(In Progress + Review/Test + Waiting deploy)`
+    });
+  }
+  if (todoC > 0) {
+    cards.push({
+      cls: todoC > 20 ? "warn" : "info",
+      title: "📝 Backlog (To Do)",
+      value: `${todoC} tasks รอเริ่ม`,
+      hint: todoC > 20 ? "Backlog ค่อนข้างใหญ่" : "ปริมาณปกติ"
+    });
+  }
+
+  // Stale
+  if (stale) {
+    cards.push({
+      cls: "bad",
+      title: "⏰ Stale",
+      value: `ไม่มีการอัปเดท 2 sprints ล่าสุด`,
+      hint: `Sprint ${latest}-${latest+1} ไม่มี activity`
+    });
+  }
+
+  // Role-based observation
+  const role = roleOf(person);
+  if (role !== "—") {
+    const roleObs = {
+      "Dev": totalPts > 200 ? "Heavy delivery — dev หลักของทีม" : "Contributor สาย dev",
+      "Designer": totalPts > 100 ? "Core designer ของทีม" : "Designer contributor",
+      "BA": totalPts > 100 ? "BA/Analyst หลัก" : "BA/Analyst support",
+      "Tester": "QA/Tester — ดูแล test manual + automation",
+      "PC": "Project Coordinator — จัดการ cross-project ops",
+      "CEO": "Executive — leadership & oversight"
+    };
+    cards.push({
+      cls: "info",
+      title: `👤 Role · ${role}`,
+      value: roleObs[role] || role,
+      hint: `รวม ${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts ทั้งปี`
+    });
+  }
+
+  el.innerHTML = cards.map(c =>
+    `<div class="insight ${c.cls}">
+       <div class="ins-title">${c.title}</div>
+       <div class="ins-value">${c.value}</div>
+       <div class="ins-hint">${c.hint}</div>
+     </div>`
+  ).join("");
+}
+
+// ============================================================================
 //  PEOPLE — DRILL DOWN
 // ============================================================================
 function buildPersonDrill(){
@@ -1647,6 +1885,9 @@ function buildPersonDrill(){
     </div>`;
   }).join("");
   document.getElementById("drillStatusPills").innerHTML = pillsHtml;
+
+  // ---- insights (auto-generated analysis per person) ----
+  renderPersonInsights(person);
 
   // ---- sprint-by-sprint stacked chart (respects S.personMetric) ----
   const labels = DATA.sprints;
