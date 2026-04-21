@@ -26,6 +26,7 @@
     background: radial-gradient(1200px 600px at 10% -10%, #1e293b 0%, #0f172a 60%) fixed;
     color: var(--text);
     min-height: 100vh;
+    overflow-x: hidden;
   }
   header {
     padding: 28px 32px 8px;
@@ -135,6 +136,9 @@
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 16px 18px;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
   }
   .card h3 {
     margin: 0 0 12px;
@@ -205,7 +209,7 @@
     color: var(--accent-2);
     margin-right: 6px;
   }
-  .scroll { overflow: auto; max-height: 560px; border-radius: 10px; }
+  .scroll { overflow: auto; max-height: 560px; border-radius: 10px; -webkit-overflow-scrolling: touch; max-width: 100%; }
   .pill {
     display: inline-block;
     padding: 2px 8px;
