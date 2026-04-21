@@ -2462,13 +2462,45 @@ function buildLogicTab(){
     </div>
   </div>`;
 
+  // ---- Card 6: People Insights criteria ----
+  const insightRules = [
+    { icon:"📊", title:"Workload", rule:"รวม Story Points & Tasks ทั้งปี + นับจำนวน sprint ที่มี activity + Avg pts/task", flag:"warn เมื่อ total points = 0" },
+    { icon:"✅", title:"Done Rate", rule:"donePts / allStatusPts × 100 (จาก status sheet)", flag:"good ≥ 70% · info 40–69% · warn < 40%" },
+    { icon:"📈", title:"Recent Trend", rule:"เทียบผลรวมของ 3 sprints ล่าสุด (latest-2 ถึง latest) กับ 3 sprints ก่อนหน้า (latest-5 ถึง latest-3)", flag:"good = เพิ่มขึ้น · warn = ลดลง > 40% · info = ลดลง ≤ 40% หรือคงที่" },
+    { icon:"🏔️", title:"Peak Sprint", rule:"หา sprint ที่ได้ points สูงสุดทั้งปี", flag:"info เสมอ (ถ้ามี activity)" },
+    { icon:"🎯", title:"Top Projects", rule:"เลือก 3 project ที่ contribute points มากที่สุด (ตัดที่ 0)", flag:"warn ถ้าไม่มี project" },
+    { icon:"⚠️", title:"Risk Flags", rule:"แสดงเมื่อ Blocked > 0 หรือ Bugged > 0 (จำนวน tasks)", flag:"bad เสมอ (ถ้าเจอ)" },
+    { icon:"🔄", title:"Work in Progress", rule:"รวม In Progress + Ready for review + Ready for test + Waiting to INT/PRD deploy", flag:"warn > 15 · info ≤ 15" },
+    { icon:"📝", title:"Backlog (To Do)", rule:"จำนวน tasks สถานะ To Do", flag:"warn > 20 · info ≤ 20" },
+    { icon:"⏰", title:"Stale", rule:"ไม่มี points และ tasks ทั้งใน sprint ล่าสุด (latest) และ sprint ก่อนหน้า (latest-1)", flag:"bad · สอดคล้องกับ warning banner ด้านบน" },
+    { icon:"👤", title:"Role Observation", rule:"ข้อความสรุปตาม role ของบุคคล (Dev / Designer / BA / Tester / PC / CEO) + threshold ของ points รวมทั้งปี", flag:"info เสมอ" },
+  ];
+  const insightChips = insightRules.map(r => `
+    <div style="background:var(--panel-2); border-radius:10px; padding:12px 14px; border-left:3px solid var(--accent-2);">
+      <div style="font-weight:600; color:#a5b4fc; font-size:13px; margin-bottom:6px;">${r.icon} ${r.title}</div>
+      <div style="font-size:12px; color:#cbd5e1; line-height:1.55; margin-bottom:6px;">${r.rule}</div>
+      <div style="font-size:11px; color:#94a3b8;"><strong style="color:#fcd34d;">Flag:</strong> ${r.flag}</div>
+    </div>`).join("");
+  const insightCard = `<div class="card" style="margin-top:14px;">
+    <h3>6 · People · 🔍 Insights criteria <span class="tag">${insightRules.length} rules · auto per person</span></h3>
+    <div style="font-size:13px; color:#94a3b8; margin:4px 0 12px;">
+      เกณฑ์ที่ใช้คำนวณการ์ด Insight แต่ละใบในหน้า <strong style="color:#e2e8f0;">People</strong> (แสดงเฉพาะเมื่อเลือก person)
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px;">
+      ${insightChips}
+    </div>
+    <div style="margin-top:12px; padding:10px 12px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:8px; font-size:12px; color:#fcd34d;">
+      <strong>Stale rule (สอดคล้องกับ warning banner):</strong> ตรวจ sprint ล่าสุดที่ทีมใด ๆ มี activity แล้วดู 2 sprint ย้อนหลัง (latest-1, latest). ถ้าคน ๆ นั้นมี points = 0 และ tasks = 0 ทั้งสอง sprint → ถือว่า <strong>ขาดการอัปเดทเกิน 2 sprints</strong>
+    </div>
+  </div>`;
+
   // ---- Header ----
   const header = `<div style="background:linear-gradient(135deg, rgba(99,102,241,0.15), rgba(34,211,238,0.05)); border:1px solid var(--border); border-radius:14px; padding:20px 24px; margin-bottom:14px;">
     <h2 style="margin:0; font-size:20px; background:linear-gradient(90deg, #fff, #a5b4fc); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Methodology &amp; Logic</h2>
     <div style="color:#94a3b8; font-size:13px; margin-top:6px;">วิธีคำนวณตัวเลขในแดชบอร์ด · refresh ทุกครั้งที่อัปไฟล์ CSV ใหม่</div>
   </div>`;
 
-  document.getElementById("logicContent").innerHTML = header + filterCard + pointCard + statusCard + projectCard + roleCard;
+  document.getElementById("logicContent").innerHTML = header + filterCard + pointCard + statusCard + projectCard + roleCard + insightCard;
 }
 
 function wireUp(){
