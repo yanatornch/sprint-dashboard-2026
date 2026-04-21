@@ -18,16 +18,52 @@
     --good: #10b981;
     --warn: #f59e0b;
     --bad: #ef4444;
+    --grid: #334155;
+    --tick: #cbd5e1;
+    --bg-gradient: radial-gradient(1200px 600px at 10% -10%, #1e293b 0%, #0f172a 60%);
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  :root[data-theme="light"] {
+    --bg: #f8fafc;
+    --panel: #ffffff;
+    --panel-2: #f1f5f9;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #4f46e5;
+    --accent-2: #0891b2;
+    --good: #059669;
+    --warn: #d97706;
+    --bad: #dc2626;
+    --grid: #e2e8f0;
+    --tick: #475569;
+    --bg-gradient: radial-gradient(1200px 600px at 10% -10%, #eef2ff 0%, #f8fafc 60%);
+    --shadow: 0 1px 3px rgba(15,23,42,0.08);
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: radial-gradient(1200px 600px at 10% -10%, #1e293b 0%, #0f172a 60%) fixed;
+    background: var(--bg-gradient) fixed;
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
   }
+  .theme-toggle {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
   header {
     padding: 28px 32px 8px;
     display: flex;
@@ -40,7 +76,7 @@
     margin: 0;
     font-size: 26px;
     letter-spacing: -0.02em;
-    background: linear-gradient(90deg, #fff, #a5b4fc);
+    background: linear-gradient(90deg, var(--text), var(--accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -221,7 +257,7 @@
   .pill.good { background: rgba(16,185,129,0.15); color: #6ee7b7; }
   .pill.warn { background: rgba(245,158,11,0.15); color: #fcd34d; }
   .pill.bad { background: rgba(239,68,68,0.15); color: #fca5a5; }
-  .pill.neutral { background: rgba(148,163,184,0.15); color: #cbd5e1; }
+  .pill.neutral { background: rgba(148,163,184,0.15); color: var(--text); }
 
   .tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
   .tab {
@@ -443,7 +479,10 @@
     <h1>Sprint Contribution Dashboard 2026</h1>
     <div class="sub">Story points, tasks, projects, and status across Sprints 1–9 · 16 teammates · 25 projects · Task-level only</div>
   </div>
-  <div class="sub" id="updated"></div>
+  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+    <div class="sub" id="updated"></div>
+    <button type="button" class="theme-toggle" id="themeToggle" title="Toggle theme"><span id="themeIcon">🌙</span><span id="themeLabel">Dark</span></button>
+  </div>
 </header>
 
 <div id="staleBanner" class="stale-banner" style="display:none;"></div>
@@ -588,7 +627,7 @@
       <h3>Person × Project Matrix <span class="tag" id="matrixTag">Story Points</span></h3>
       <div class="scroll" id="matrixTable"></div>
       <div class="sub" style="margin-top:10px; font-size:12px;">
-        <span class="legend-sq" style="background:#1e293b; border:1px solid #334155"></span> low
+        <span class="legend-sq" style="background:var(--panel); border:1px solid var(--border)"></span> low
         <span class="legend-sq" style="background:#312e81"></span>
         <span class="legend-sq" style="background:#4338ca"></span>
         <span class="legend-sq" style="background:#6366f1"></span>
@@ -1228,13 +1267,45 @@ const PROJ_PALETTE = [
 ];
 
 // ============================================================================
+//  THEME (dark / light)
+// ============================================================================
+const THEME = { grid: "#334155", tick: "#cbd5e1" };
+function readThemeFromCSS(){
+  const cs = getComputedStyle(document.documentElement);
+  const g = cs.getPropertyValue("--grid").trim();
+  const t = cs.getPropertyValue("--tick").trim();
+  if (g) THEME.grid = g;
+  if (t) THEME.tick = t;
+}
+function applyTheme(mode){
+  const root = document.documentElement;
+  if (mode === "light") root.setAttribute("data-theme", "light");
+  else root.removeAttribute("data-theme");
+  readThemeFromCSS();
+  Chart.defaults.color = THEME.tick;
+  const btn = document.getElementById("themeToggle");
+  if (btn) {
+    document.getElementById("themeIcon").textContent = mode === "light" ? "☀️" : "🌙";
+    document.getElementById("themeLabel").textContent = mode === "light" ? "Light" : "Dark";
+  }
+  try { localStorage.setItem("theme", mode); } catch(e){}
+  if (typeof refresh === "function") refresh();
+}
+(function initTheme(){
+  let saved = "dark";
+  try { saved = localStorage.getItem("theme") || "dark"; } catch(e){}
+  if (saved === "light") document.documentElement.setAttribute("data-theme","light");
+  readThemeFromCSS();
+})();
+
+// ============================================================================
 //  STATE & CHARTS
 // ============================================================================
 // Chart.js global font sizing responsive to viewport width
 (function tuneChartDefaults(){
   const w = window.innerWidth;
   Chart.defaults.font.size = w <= 420 ? 9 : w <= 600 ? 10 : w <= 900 ? 11 : 12;
-  Chart.defaults.color = "#cbd5e1";
+  Chart.defaults.color = THEME.tick;
 })();
 window.addEventListener("resize", () => {
   const w = window.innerWidth;
@@ -1495,11 +1566,11 @@ function buildTrendChart(){
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:"index", intersect:false },
       scales: {
-        x: { stacked: S.chartType==="bar", grid:{color:"#334155"}, ticks:{color:"#cbd5e1"} },
-        y: { stacked: S.chartType==="bar", beginAtZero:true, grid:{color:"#334155"}, ticks:{color:"#cbd5e1"} }
+        x: { stacked: S.chartType==="bar", grid:{color:THEME.grid}, ticks:{color:THEME.tick} },
+        y: { stacked: S.chartType==="bar", beginAtZero:true, grid:{color:THEME.grid}, ticks:{color:THEME.tick} }
       },
       plugins: {
-        legend: { position:"bottom", labels:{color:"#cbd5e1", boxWidth:10, font:{size:11}} },
+        legend: { position:"bottom", labels:{color:THEME.tick, boxWidth:10, font:{size:11}} },
         tooltip: {
           callbacks: { footer: its => "Total: " + its.reduce((a,b)=>a+(b.parsed.y||0),0).toLocaleString(undefined,{maximumFractionDigits:2}) }
         }
@@ -1564,8 +1635,8 @@ function buildTopChart(){
       },
       onHover: (e, els) => { e.native.target.style.cursor = els.length && !isFilter ? 'pointer' : 'default'; },
       scales:{
-        x:{beginAtZero:true, grid:{color:"#334155"}, ticks:{color:"#cbd5e1"}},
-        y:{grid:{display:false}, ticks:{color:"#cbd5e1"}}
+        x:{beginAtZero:true, grid:{color:THEME.grid}, ticks:{color:THEME.tick}},
+        y:{grid:{display:false}, ticks:{color:THEME.tick}}
       },
       plugins:{
         legend:{display:false},
@@ -1613,11 +1684,11 @@ function buildCapacityChart(){
       responsive:true, maintainAspectRatio:false,
       interaction:{mode:"index",intersect:false},
       scales:{
-        x:{grid:{color:"#334155"},ticks:{color:"#cbd5e1"}},
-        y:{beginAtZero:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"},title:{display:true,text:"Points",color:"#94a3b8"}},
-        y1:{beginAtZero:true,grid:{display:false},ticks:{color:"#cbd5e1"},position:"right",title:{display:true,text:"Tasks",color:"#94a3b8"}}
+        x:{grid:{color:THEME.grid},ticks:{color:THEME.tick}},
+        y:{beginAtZero:true,grid:{color:THEME.grid},ticks:{color:THEME.tick},title:{display:true,text:"Points",color:"#94a3b8"}},
+        y1:{beginAtZero:true,grid:{display:false},ticks:{color:THEME.tick},position:"right",title:{display:true,text:"Tasks",color:"#94a3b8"}}
       },
-      plugins:{legend:{labels:{color:"#cbd5e1"}}}
+      plugins:{legend:{labels:{color:THEME.tick}}}
     }
   });
 }
@@ -1665,10 +1736,10 @@ function buildAvgTrendChart(){
     options:{
       responsive:true, maintainAspectRatio:false,
       scales:{
-        x:{grid:{color:"#334155"},ticks:{color:"#cbd5e1"}},
-        y:{beginAtZero:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"}}
+        x:{grid:{color:THEME.grid},ticks:{color:THEME.tick}},
+        y:{beginAtZero:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}}
       },
-      plugins:{legend:{labels:{color:"#cbd5e1"}}}
+      plugins:{legend:{labels:{color:THEME.tick}}}
     }
   });
 }
@@ -1885,9 +1956,9 @@ function buildPersonDrill(){
     const pct = grandCount ? (c/grandCount*100).toFixed(0) : 0;
     const dim = c === 0 ? 'opacity:0.35;' : '';
     return `<div style="flex:1; min-width:130px; background:var(--panel-2); border:1px solid ${DATA.statusColors[i]}55; border-left:4px solid ${DATA.statusColors[i]}; border-radius:10px; padding:10px 12px; ${dim}">
-      <div style="font-size:11px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.3px;">${lbl}</div>
-      <div style="font-size:20px; font-weight:700; color:${DATA.statusColors[i]}; margin-top:2px; white-space:nowrap;">${c}<span style="font-size:11px; color:#64748b; font-weight:400; margin-left:4px;">งาน</span></div>
-      <div style="font-size:11px; color:#cbd5e1;">${p.toLocaleString(undefined,{maximumFractionDigits:1})} pts · ${pct}%</div>
+      <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.3px;">${lbl}</div>
+      <div style="font-size:20px; font-weight:700; color:${DATA.statusColors[i]}; margin-top:2px; white-space:nowrap;">${c}<span style="font-size:11px; color:var(--muted); font-weight:400; margin-left:4px;">งาน</span></div>
+      <div style="font-size:11px; color:var(--text);">${p.toLocaleString(undefined,{maximumFractionDigits:1})} pts · ${pct}%</div>
     </div>`;
   }).join("");
   document.getElementById("drillStatusPills").innerHTML = pillsHtml;
@@ -1914,11 +1985,11 @@ function buildPersonDrill(){
       responsive:true, maintainAspectRatio:false,
       interaction:{mode:"index",intersect:false},
       scales:{
-        x:{stacked:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"}},
-        y:{stacked:true,beginAtZero:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"}}
+        x:{stacked:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}},
+        y:{stacked:true,beginAtZero:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}}
       },
       plugins:{
-        legend:{position:"bottom",labels:{color:"#cbd5e1",boxWidth:10,font:{size:11}}},
+        legend:{position:"bottom",labels:{color:THEME.tick,boxWidth:10,font:{size:11}}},
         tooltip:{callbacks:{footer:its=>"Total: "+its.reduce((a,b)=>a+(b.parsed.y||0),0).toFixed(2)}}
       }
     }
@@ -1937,7 +2008,7 @@ function buildPersonDrill(){
           + `<td style="font-weight:600">${fmt(tot)}</td></tr>`;
   });
   if (projects.filter(p => sum(getContributionRowByMetric(person,p)) > 0).length === 0) {
-    html += `<tr><td colspan="11" style="text-align:center;color:#94a3b8">No completed contributions recorded</td></tr>`;
+    html += `<tr><td colspan="11" style="text-align:center;color:var(--muted)">No completed contributions recorded</td></tr>`;
   }
   html += "</tbody></table>";
   document.getElementById("personTable").innerHTML = html;
@@ -2221,11 +2292,11 @@ function buildProjTrendChart(){
       responsive:true, maintainAspectRatio:false,
       interaction:{mode:"index",intersect:false},
       scales:{
-        x:{stacked:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"}},
-        y:{stacked:true,beginAtZero:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"}}
+        x:{stacked:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}},
+        y:{stacked:true,beginAtZero:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}}
       },
       plugins:{
-        legend:{position:"bottom",labels:{color:"#cbd5e1",boxWidth:10,font:{size:11}}},
+        legend:{position:"bottom",labels:{color:THEME.tick,boxWidth:10,font:{size:11}}},
         tooltip:{callbacks:{footer:its=>"Total: "+its.reduce((a,b)=>a+(b.parsed.y||0),0).toFixed(2)}}
       }
     }
@@ -2253,8 +2324,8 @@ function buildProjTopChart(){
     options:{
       indexAxis:"y", responsive:true, maintainAspectRatio:false,
       scales:{
-        x:{beginAtZero:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"}},
-        y:{grid:{display:false},ticks:{color:"#cbd5e1"}}
+        x:{beginAtZero:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}},
+        y:{grid:{display:false},ticks:{color:THEME.tick}}
       },
       plugins:{legend:{display:false}}
     }
@@ -2363,11 +2434,11 @@ function buildStatusChart(){
         applyStatusHover(newIdx);
       },
       scales:{
-        x:{stacked:true,beginAtZero:true,grid:{color:"#334155"},ticks:{color:"#cbd5e1"}},
-        y:{stacked:true,grid:{display:false},ticks:{color:"#cbd5e1"}}
+        x:{stacked:true,beginAtZero:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}},
+        y:{stacked:true,grid:{display:false},ticks:{color:THEME.tick}}
       },
       plugins:{
-        legend:{position:"bottom",labels:{color:"#cbd5e1",boxWidth:10,font:{size:11}}},
+        legend:{position:"bottom",labels:{color:THEME.tick,boxWidth:10,font:{size:11}}},
         tooltip:{
           callbacks:{
             footer: its => {
@@ -2501,24 +2572,24 @@ function buildLogicTab(){
     <h3>1 · Filtering Rules <span class="tag">what gets included</span></h3>
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; margin-top:8px;">
       <div style="background:var(--panel-2); border-radius:10px; padding:14px; border-left:3px solid #6366f1;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; margin-bottom:6px;">Work Item Type</div>
-        <div style="font-size:15px; font-weight:600; color:#e2e8f0;">Task</div>
-        <div style="font-size:12px; color:#64748b; margin-top:4px;">ตัด Bug · Feature · PBI · Epic ออก</div>
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:6px;">Work Item Type</div>
+        <div style="font-size:15px; font-weight:600; color:var(--text);">Task</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:4px;">ตัด Bug · Feature · PBI · Epic ออก</div>
       </div>
       <div style="background:var(--panel-2); border-radius:10px; padding:14px; border-left:3px solid #22d3ee;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; margin-bottom:6px;">Iteration</div>
-        <div style="font-size:15px; font-weight:600; color:#e2e8f0;">M\\2026\\1 → M\\2026\\9</div>
-        <div style="font-size:12px; color:#64748b; margin-top:4px;">${sprintRangeLabel} · auto-refresh ทุก sprint ที่อัปไฟล์</div>
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:6px;">Iteration</div>
+        <div style="font-size:15px; font-weight:600; color:var(--text);">M\\2026\\1 → M\\2026\\9</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:4px;">${sprintRangeLabel} · auto-refresh ทุก sprint ที่อัปไฟล์</div>
       </div>
       <div style="background:var(--panel-2); border-radius:10px; padding:14px; border-left:3px solid #f59e0b;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; margin-bottom:6px;">Assignee</div>
-        <div style="font-size:15px; font-weight:600; color:#e2e8f0;">required</div>
-        <div style="font-size:12px; color:#64748b; margin-top:4px;">Task ไม่มีคน assign → ข้าม</div>
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:6px;">Assignee</div>
+        <div style="font-size:15px; font-weight:600; color:var(--text);">required</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:4px;">Task ไม่มีคน assign → ข้าม</div>
       </div>
       <div style="background:var(--panel-2); border-radius:10px; padding:14px; border-left:3px solid #10b981;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; margin-bottom:6px;">Backlog / Out-of-scope</div>
-        <div style="font-size:15px; font-weight:600; color:#e2e8f0;">excluded</div>
-        <div style="font-size:12px; color:#64748b; margin-top:4px;">M\\Backlog · M\\2025\\* · iteration ที่ไม่มี sprint number</div>
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:6px;">Backlog / Out-of-scope</div>
+        <div style="font-size:15px; font-weight:600; color:var(--text);">excluded</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:4px;">M\\Backlog · M\\2025\\* · iteration ที่ไม่มี sprint number</div>
       </div>
     </div>
   </div>`;
@@ -2532,8 +2603,8 @@ function buildLogicTab(){
           <span style="width:10px; height:10px; border-radius:2px; background:#10b981;"></span>
           <span style="font-weight:600; color:#6ee7b7;">นับ Point</span>
         </div>
-        <div style="font-size:13px; color:#cbd5e1; line-height:1.7;">
-          เฉพาะ <code style="background:#1e293b; padding:1px 6px; border-radius:4px; color:#a5b4fc;">state == "Done"</code>
+        <div style="font-size:13px; color:var(--text); line-height:1.7;">
+          เฉพาะ <code style="background:var(--panel); padding:1px 6px; border-radius:4px; color:#a5b4fc;">state == "Done"</code>
           เท่านั้นที่บวกเข้า:<br>
           • Total Points / Tasks per person<br>
           • Project × Sprint contribution<br>
@@ -2548,16 +2619,16 @@ function buildLogicTab(){
       <div style="background:rgba(148,163,184,0.06); border:1px solid #475569; border-radius:10px; padding:14px;">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
           <span style="width:10px; height:10px; border-radius:2px; background:#94a3b8;"></span>
-          <span style="font-weight:600; color:#cbd5e1;">ไม่นับ Point</span>
+          <span style="font-weight:600; color:var(--text);">ไม่นับ Point</span>
         </div>
-        <div style="font-size:13px; color:#cbd5e1; line-height:1.7;">
+        <div style="font-size:13px; color:var(--text); line-height:1.7;">
           งานสถานะอื่น (In Progress, Ready for review/test, Waiting to deploy, To Do, Blocked, Bugged, Removed) →<br>
           • <strong style="color:#fcd34d;">ไม่บวก</strong> เข้า KPI ใน Overview/People/Projects<br>
           • <strong style="color:#22d3ee;">โชว์ครบ</strong> ใน Status tab (เห็น pipeline)
         </div>
         <div style="margin-top:10px; padding:8px 10px; background:rgba(0,0,0,0.2); border-radius:6px; font-size:12px;">
-          <strong style="color:#cbd5e1;">${totalAllPts.toLocaleString(undefined,{maximumFractionDigits:1})}</strong> pts ·
-          <strong style="color:#cbd5e1;">${totalAllTasks}</strong> tasks · all statuses
+          <strong style="color:var(--text);">${totalAllPts.toLocaleString(undefined,{maximumFractionDigits:1})}</strong> pts ·
+          <strong style="color:var(--text);">${totalAllTasks}</strong> tasks · all statuses
         </div>
       </div>
     </div>
@@ -2572,10 +2643,10 @@ function buildLogicTab(){
     return `<tr>
       <td style="padding:10px 12px; text-align:left; border-bottom:1px solid var(--border);">
         <span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:${c}; margin-right:10px; vertical-align:middle;"></span>
-        <span style="font-weight:500; color:#e2e8f0;">${lbl}</span>
+        <span style="font-weight:500; color:var(--text);">${lbl}</span>
       </td>
       <td style="padding:10px 12px; text-align:center; border-bottom:1px solid var(--border);">
-        <span style="font-family:monospace; font-size:11px; color:#94a3b8;">${c}</span>
+        <span style="font-family:monospace; font-size:11px; color:var(--muted);">${c}</span>
       </td>
       <td style="padding:10px 12px; text-align:center; border-bottom:1px solid var(--border);">
         <span class="pill ${cls}">${cls}</span>
@@ -2589,10 +2660,10 @@ function buildLogicTab(){
       <table style="width:100%; border-collapse:collapse; font-size:13px;">
         <thead>
           <tr style="background:var(--panel-2);">
-            <th style="padding:10px 12px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#94a3b8; font-weight:600;">Status</th>
-            <th style="padding:10px 12px; text-align:center; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#94a3b8; font-weight:600;">Color</th>
-            <th style="padding:10px 12px; text-align:center; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#94a3b8; font-weight:600;">Pill</th>
-            <th style="padding:10px 12px; text-align:right; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#94a3b8; font-weight:600;">Counts in KPI?</th>
+            <th style="padding:10px 12px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:600;">Status</th>
+            <th style="padding:10px 12px; text-align:center; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:600;">Color</th>
+            <th style="padding:10px 12px; text-align:center; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:600;">Pill</th>
+            <th style="padding:10px 12px; text-align:right; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:600;">Counts in KPI?</th>
           </tr>
         </thead>
         <tbody>${statusRows}</tbody>
@@ -2626,7 +2697,7 @@ function buildLogicTab(){
   const projChips = projectGroups.map(g => `
     <div style="background:var(--panel-2); border-radius:10px; padding:12px 14px; border-left:3px solid var(--accent);">
       <div style="font-weight:600; color:#a5b4fc; font-size:13px; margin-bottom:6px;">${g.name}</div>
-      <div style="font-size:12px; color:#94a3b8; line-height:1.5;">
+      <div style="font-size:12px; color:var(--muted); line-height:1.5;">
         ${g.rules.map(r => `• ${r}`).join("<br>")}
       </div>
     </div>`).join("");
@@ -2647,7 +2718,7 @@ function buildLogicTab(){
     return `<div style="background:var(--panel-2); border-radius:10px; padding:14px; border-left:4px solid ${c};">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
         <span style="font-weight:700; color:${c}; font-size:14px;">${g.role}</span>
-        <span style="font-size:11px; color:#64748b;">${g.members.length} ${g.members.length === 1 ? 'person' : 'people'}</span>
+        <span style="font-size:11px; color:var(--muted);">${g.members.length} ${g.members.length === 1 ? 'person' : 'people'}</span>
       </div>
       <div style="display:flex; flex-wrap:wrap; gap:6px;">
         ${g.members.map(n => `<span style="background:${c}22; color:${c}; border:1px solid ${c}55; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:500;">${n}</span>`).join("")}
@@ -2678,13 +2749,13 @@ function buildLogicTab(){
   const insightChips = insightRules.map(r => `
     <div style="background:var(--panel-2); border-radius:10px; padding:12px 14px; border-left:3px solid var(--accent-2);">
       <div style="font-weight:600; color:#a5b4fc; font-size:13px; margin-bottom:6px;">${r.icon} ${r.title}</div>
-      <div style="font-size:12px; color:#cbd5e1; line-height:1.55; margin-bottom:6px;">${r.rule}</div>
-      <div style="font-size:11px; color:#94a3b8;"><strong style="color:#fcd34d;">Flag:</strong> ${r.flag}</div>
+      <div style="font-size:12px; color:var(--text); line-height:1.55; margin-bottom:6px;">${r.rule}</div>
+      <div style="font-size:11px; color:var(--muted);"><strong style="color:#fcd34d;">Flag:</strong> ${r.flag}</div>
     </div>`).join("");
   const insightCard = `<div class="card" style="margin-top:14px;">
     <h3>6 · People · 🔍 Insights criteria <span class="tag">${insightRules.length} rules · auto per person</span></h3>
-    <div style="font-size:13px; color:#94a3b8; margin:4px 0 12px;">
-      เกณฑ์ที่ใช้คำนวณการ์ด Insight แต่ละใบในหน้า <strong style="color:#e2e8f0;">People</strong> (แสดงเฉพาะเมื่อเลือก person)
+    <div style="font-size:13px; color:var(--muted); margin:4px 0 12px;">
+      เกณฑ์ที่ใช้คำนวณการ์ด Insight แต่ละใบในหน้า <strong style="color:var(--text);">People</strong> (แสดงเฉพาะเมื่อเลือก person)
     </div>
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px;">
       ${insightChips}
@@ -2697,7 +2768,7 @@ function buildLogicTab(){
   // ---- Header ----
   const header = `<div style="background:linear-gradient(135deg, rgba(99,102,241,0.15), rgba(34,211,238,0.05)); border:1px solid var(--border); border-radius:14px; padding:20px 24px; margin-bottom:14px;">
     <h2 style="margin:0; font-size:20px; background:linear-gradient(90deg, #fff, #a5b4fc); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Methodology &amp; Logic</h2>
-    <div style="color:#94a3b8; font-size:13px; margin-top:6px;">วิธีคำนวณตัวเลขในแดชบอร์ด · refresh ทุกครั้งที่อัปไฟล์ CSV ใหม่</div>
+    <div style="color:var(--muted); font-size:13px; margin-top:6px;">วิธีคำนวณตัวเลขในแดชบอร์ด · refresh ทุกครั้งที่อัปไฟล์ CSV ใหม่</div>
   </div>`;
 
   // ---- Card 7: Project Insights criteria ----
@@ -2716,13 +2787,13 @@ function buildLogicTab(){
   const projInsightChips = projInsightRules.map(r => `
     <div style="background:var(--panel-2); border-radius:10px; padding:12px 14px; border-left:3px solid var(--accent-2);">
       <div style="font-weight:600; color:#a5b4fc; font-size:13px; margin-bottom:6px;">${r.icon} ${r.title}</div>
-      <div style="font-size:12px; color:#cbd5e1; line-height:1.55; margin-bottom:6px;">${r.rule}</div>
-      <div style="font-size:11px; color:#94a3b8;"><strong style="color:#fcd34d;">Flag:</strong> ${r.flag}</div>
+      <div style="font-size:12px; color:var(--text); line-height:1.55; margin-bottom:6px;">${r.rule}</div>
+      <div style="font-size:11px; color:var(--muted);"><strong style="color:#fcd34d;">Flag:</strong> ${r.flag}</div>
     </div>`).join("");
   const projInsightCard = `<div class="card" style="margin-top:14px;">
     <h3>7 · Projects · 🔍 Insights criteria <span class="tag">${projInsightRules.length} rules · auto</span></h3>
-    <div style="font-size:13px; color:#94a3b8; margin:4px 0 12px;">
-      เกณฑ์ที่ใช้คำนวณการ์ด Insight ในหน้า <strong style="color:#e2e8f0;">Projects</strong> (reactive ตาม Sprint Range ที่เลือก)
+    <div style="font-size:13px; color:var(--muted); margin:4px 0 12px;">
+      เกณฑ์ที่ใช้คำนวณการ์ด Insight ในหน้า <strong style="color:var(--text);">Projects</strong> (reactive ตาม Sprint Range ที่เลือก)
     </div>
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px;">
       ${projInsightChips}
@@ -2789,6 +2860,18 @@ document.getElementById("updated").textContent = "Data updated: 21 April 2026";
 })();
 populateSelects();
 wireUp();
+// Theme toggle button wiring + restore saved label
+(function wireTheme(){
+  const btn = document.getElementById("themeToggle");
+  if (!btn) return;
+  const saved = (function(){ try { return localStorage.getItem("theme") || "dark"; } catch(e){ return "dark"; } })();
+  document.getElementById("themeIcon").textContent = saved === "light" ? "☀️" : "🌙";
+  document.getElementById("themeLabel").textContent = saved === "light" ? "Light" : "Dark";
+  btn.addEventListener("click", () => {
+    const current = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+    applyTheme(current === "light" ? "dark" : "light");
+  });
+})();
 refresh();
 </script>
 </body>
