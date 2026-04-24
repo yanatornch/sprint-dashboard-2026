@@ -291,6 +291,18 @@
   .section.active { display: block; }
 
   .footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 24px; }
+
+  /* Carryover compact layout */
+  .carry-grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+  @media (max-width: 900px) { .carry-grid { grid-template-columns: 1fr; } }
+  .carry-compact h3 { font-size: 14px; margin: 0 0 8px 0; }
+  .carry-compact table { width:100%; border-collapse:collapse; font-size:12px; }
+  .carry-compact th,
+  .carry-compact td { padding:4px 6px; border-bottom:1px solid var(--border); }
+  .carry-compact th { font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color: var(--muted); text-align:left; }
+  .carry-compact td.num { text-align:right; font-variant-numeric: tabular-nums; }
+  .carry-compact .mini-chip { display:inline-block; padding:0 5px; border-radius:4px; font-size:10px; line-height:16px; margin-right:2px; }
+  .carry-compact .sp-chip { font-size:10px; color:var(--muted); margin-right:4px; }
   .legend-sq {
     display: inline-block;
     width: 10px; height: 10px;
@@ -748,16 +760,10 @@
   <!-- =========================== LOGIC =========================== -->
   <!-- =========================== CARRYOVER =========================== -->
   <section class="section" id="section-carryover">
-    <div class="card" style="margin-bottom:16px;">
-      <h3>🔄 Task Movement across Sprints
-        <span class="tag" id="carryTag">—</span>
-      </h3>
-      <p class="hint" style="margin:4px 0 10px 0;">
-        เลือก Sprint ที่ต้องการเป็น "มุมมอง" เพื่อดูว่า <b>ตอนอยู่ Sprint นั้น</b> มีใคร
-        ① <b>หยิบของจาก Sprint ถัดไป</b> มาทำก่อน และ ② <b>ค้างงานจาก Sprint ก่อน</b> ไว้บ้าง
-      </p>
-      <div class="filters">
-        <label>มุมมอง Sprint
+    <div class="card" style="margin-bottom:12px;">
+      <h3>🔄 Task Movement <span class="tag" id="carryTag">—</span></h3>
+      <div class="filters" style="margin-top:6px;">
+        <label>View Sprint
           <select id="carrySprintView"></select>
         </label>
         <label>Person
@@ -769,33 +775,14 @@
       </div>
     </div>
 
-    <div class="card" style="margin-bottom:16px;">
-      <h3>⏩ Pulled from Next Sprints <span class="tag" id="carryPullTag">—</span></h3>
-      <p class="hint">Task ที่ iteration อยู่ Sprint ถัดไป (หลัง Sprint ที่เลือก) แต่มีคนเริ่มทำไปแล้ว (In Progress / Ready / Waiting / Done).</p>
-      <div id="carryPullByPerson"></div>
-      <div class="table-wrap" style="overflow-x:auto; margin-top:10px;">
-        <table id="carryPullTable">
-          <thead><tr>
-            <th>Person</th><th>Origin Sprint</th><th>Status</th><th>Project</th>
-            <th style="text-align:right">Points</th><th>Task</th>
-          </tr></thead>
-          <tbody></tbody>
-        </table>
+    <div class="carry-grid">
+      <div class="card carry-compact">
+        <h3>⏩ Pulled from Next <span class="tag" id="carryPullTag">—</span></h3>
+        <div id="carryPullByPerson"></div>
       </div>
-    </div>
-
-    <div class="card">
-      <h3>⏮ Carried from Past Sprints <span class="tag" id="carryPastTag">—</span></h3>
-      <p class="hint">Task ที่ iteration ยังเป็น Sprint ก่อนหน้า Sprint ที่เลือก และยังไม่ Done/Removed.</p>
-      <div id="carryPastByPerson"></div>
-      <div class="table-wrap" style="overflow-x:auto; margin-top:10px;">
-        <table id="carryPastTable">
-          <thead><tr>
-            <th>Person</th><th>Origin Sprint</th><th>Status</th><th>Project</th>
-            <th style="text-align:right">Points</th><th>Task</th>
-          </tr></thead>
-          <tbody></tbody>
-        </table>
+      <div class="card carry-compact">
+        <h3>⏮ Carried from Past <span class="tag" id="carryPastTag">—</span></h3>
+        <div id="carryPastByPerson"></div>
       </div>
     </div>
   </section>
@@ -3761,43 +3748,25 @@ function renderPersonRollup(containerId, rows){
   const personRows = Object.entries(byPerson).sort((a,b) => b[1].pts - a[1].pts);
   const html = personRows.length === 0
     ? `<p class="hint" style="padding:8px 0;">—</p>`
-    : `<table><thead><tr><th>Person</th><th>Role</th>
-         <th style="text-align:right">Tasks</th>
-         <th style="text-align:right">Points</th>
-         <th>Origin Sprint(s)</th>
-         <th>Status Breakdown</th></tr></thead><tbody>` +
+    : `<table><thead><tr>
+         <th>Person</th>
+         <th class="num">Tasks</th>
+         <th class="num">Pts</th>
+         <th>From</th>
+         <th>Status</th></tr></thead><tbody>` +
         personRows.map(([name, v]) => {
           const states = Object.entries(v.byState).sort((a,b)=>b[1]-a[1])
-            .map(([s,c]) => `<span class="chip" style="background:${statusColor(s)}22;border:1px solid ${statusColor(s)}55;color:${statusColor(s)}">${s}: ${c}</span>`)
-            .join(" ");
-          const sps = Array.from(v.sprints).sort((a,b)=>a-b).map(n=>`Sp${n}`).join(", ");
-          return `<tr><td style="font-weight:500">${name}</td>
-                   <td class="hint">${roleOf(name) || "—"}</td>
-                   <td style="text-align:right">${v.tasks}</td>
-                   <td style="text-align:right;font-weight:600">${fmt(v.pts)}</td>
-                   <td class="hint">${sps}</td>
+            .map(([s,c]) => `<span class="mini-chip" title="${s}" style="background:${statusColor(s)}33;color:${statusColor(s)}">${c}</span>`)
+            .join("");
+          const sps = Array.from(v.sprints).sort((a,b)=>a-b)
+            .map(n=>`<span class="sp-chip">Sp${n}</span>`).join("");
+          return `<tr><td>${name}</td>
+                   <td class="num">${v.tasks}</td>
+                   <td class="num" style="font-weight:600">${fmt(v.pts)}</td>
+                   <td>${sps}</td>
                    <td>${states}</td></tr>`;
         }).join("") + `</tbody></table>`;
   document.getElementById(containerId).innerHTML = html;
-}
-function renderTaskList(tbodySel, rows){
-  const tbody = document.querySelector(tbodySel);
-  if (rows.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="hint" style="padding:12px;">No tasks match the current view.</td></tr>`;
-    return;
-  }
-  tbody.innerHTML = rows.map(r => {
-    const color = statusColor(r.state);
-    const url = `https://dev.azure.com/morestudio/M/_workitems/edit/${r.id}`;
-    return `<tr>
-      <td>${r.person}</td>
-      <td>Sprint ${r.sprint}</td>
-      <td><span class="chip" style="background:${color}22;border:1px solid ${color}55;color:${color}">${r.state}</span></td>
-      <td>${r.project}</td>
-      <td style="text-align:right">${fmt(r.points || 0)}</td>
-      <td><a href="${url}" target="_blank" rel="noopener" title="Open in Azure DevOps">#${r.id}</a> ${escapeHtml(r.title)}</td>
-    </tr>`;
-  }).join("");
 }
 function renderCarryover(){
   const rows = (DATA.movement || []).filter(carryMatches);
@@ -3813,16 +3782,14 @@ function renderCarryover(){
   const pulledPeople = new Set(pulled.map(r=>r.person)).size;
   const pastPeople = new Set(past.map(r=>r.person)).size;
 
-  document.getElementById("carryTag").textContent = `viewing Sprint ${view}`;
+  document.getElementById("carryTag").textContent = `Sprint ${view}`;
   document.getElementById("carryPullTag").textContent =
-    `${pulled.length} tasks · ${fmt(pulledPts)} pts · ${pulledPeople} people`;
+    `${pulledPeople}👤 · ${pulled.length} tasks · ${fmt(pulledPts)} pts`;
   document.getElementById("carryPastTag").textContent =
-    `${past.length} tasks · ${fmt(pastPts)} pts · ${pastPeople} people`;
+    `${pastPeople}👤 · ${past.length} tasks · ${fmt(pastPts)} pts`;
 
   renderPersonRollup("carryPullByPerson", pulled);
   renderPersonRollup("carryPastByPerson", past);
-  renderTaskList("#carryPullTable tbody", pulled);
-  renderTaskList("#carryPastTable tbody", past);
 }
 function statusColor(s){
   const i = (DATA.statusLabels || []).indexOf(s);
