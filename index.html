@@ -355,31 +355,61 @@
     color: var(--good-text);
   }
 
-  .insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+  .insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
   .insight {
+    --c: var(--accent);
     background: var(--panel-2);
     border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    border-radius: 8px;
-    padding: 8px 10px 9px;
-    line-height: 1.35;
+    border-radius: 12px;
+    padding: 12px 14px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   }
-  .insight.good { border-left-color: var(--good); }
-  .insight.warn { border-left-color: var(--warn); }
-  .insight.bad { border-left-color: var(--bad); }
-  .insight.info { border-left-color: var(--accent-2); }
+  .insight::before {
+    content: "";
+    position: absolute;
+    top: 0; right: 0;
+    width: 56px; height: 56px;
+    background: radial-gradient(circle at top right, color-mix(in srgb, var(--c) 16%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+  .insight:hover {
+    border-color: color-mix(in srgb, var(--c) 38%, var(--border));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px -8px color-mix(in srgb, var(--c) 50%, transparent);
+  }
+  .insight.good { --c: var(--good); }
+  .insight.warn { --c: var(--warn); }
+  .insight.bad { --c: var(--bad); }
+  .insight.info { --c: var(--accent-2); }
   .insight .ins-title {
-    font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
-    margin-bottom: 3px; font-weight: 600;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    position: relative;
   }
-  .insight .ins-value { font-size: 13px; font-weight: 600; color: var(--text); }
-  .insight .ins-hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .insight .ins-title::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 999px;
+    background: var(--c);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent);
+    flex-shrink: 0;
+  }
+  .insight .ins-value { font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.4; position: relative; }
+  .insight .ins-hint { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; position: relative; }
   @media (max-width: 600px) {
-    .insights-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-    .insight { padding: 7px 9px 8px; }
-    .insight .ins-title { font-size: 9px; }
-    .insight .ins-value { font-size: 12px; }
-    .insight .ins-hint { font-size: 10px; }
+    .insights-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .insight { padding: 10px 12px; border-radius: 10px; }
+    .insight .ins-title { font-size: 10px; margin-bottom: 4px; }
+    .insight .ins-value { font-size: 12.5px; }
+    .insight .ins-hint { font-size: 10.5px; }
   }
 
   .link-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
@@ -420,7 +450,41 @@
   .chart-wrap canvas { max-width: 100% !important; }
 
   /* Status pills grid inside drill card */
-  #drillStatusPills > div { flex: 1 1 140px; }
+  #drillStatusPills { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .status-pill {
+    --c: var(--accent);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .status-pill::before {
+    content: "";
+    position: absolute;
+    top: 0; right: 0;
+    width: 60px; height: 60px;
+    background: radial-gradient(circle at top right, color-mix(in srgb, var(--c) 18%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+  .status-pill:hover { border-color: color-mix(in srgb, var(--c) 45%, var(--border)); transform: translateY(-1px); box-shadow: 0 4px 14px -8px color-mix(in srgb, var(--c) 50%, transparent); }
+  .status-pill .sp-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .status-pill .sp-dot { width: 7px; height: 7px; border-radius: 999px; background: var(--c); flex-shrink: 0; box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent); }
+  .status-pill .sp-label { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .status-pill .sp-num { display: flex; align-items: baseline; gap: 5px; line-height: 1; }
+  .status-pill .sp-count { font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .status-pill .sp-unit { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .status-pill .sp-bar { height: 2px; background: var(--panel-2); border-radius: 999px; overflow: hidden; }
+  .status-pill .sp-bar > i { display: block; height: 100%; width: 0; background: var(--c); border-radius: 999px; transition: width 0.4s ease; }
+  .status-pill .sp-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .status-pill .sp-pct { color: var(--c); font-weight: 600; }
+  .status-pill.is-empty { opacity: 0.42; }
+  .status-pill.is-empty:hover { transform: none; box-shadow: none; }
 
   /* ================= Mobile Responsive ================= */
   @media (max-width: 900px) {
@@ -460,19 +524,11 @@
     .chart-wrap.tall { height: 280px; }
     .chart-wrap.xtall { height: 320px; }
     .control { min-width: 0; flex: 1 1 calc(50% - 8px); }
-    #drillStatusPills {
-      display: grid !important;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px !important;
-    }
-    #drillStatusPills > div {
-      flex: none !important;
-      min-width: 0 !important;
-      padding: 8px 10px !important;
-    }
-    #drillStatusPills > div > div:nth-child(1) { font-size: 10px !important; }
-    #drillStatusPills > div > div:nth-child(2) { font-size: 18px !important; }
-    #drillStatusPills > div > div:nth-child(3) { font-size: 10px !important; }
+    #drillStatusPills { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .status-pill { padding: 11px 12px 10px; gap: 8px; border-radius: 10px; }
+    .status-pill .sp-count { font-size: 19px; }
+    .status-pill .sp-label { font-size: 10px; }
+    .status-pill .sp-unit, .status-pill .sp-foot { font-size: 10px; }
     .card h3 { font-size: 13px; }
     .card h3 .tag { font-size: 10px; }
   }
@@ -488,7 +544,7 @@
     .chart-wrap.xtall { height: 290px; }
     .card { padding: 10px; }
     .topnav .navtab { padding: 6px 8px; font-size: 11px; }
-    #drillStatusPills > div > div:nth-child(2) { font-size: 16px !important; }
+    .status-pill .sp-count { font-size: 17px; }
   }
 </style>
 </head>
@@ -496,7 +552,7 @@
 <header>
   <div>
     <h1>Sprint Contribution Dashboard 2026</h1>
-    <div class="sub">Story points, tasks, projects, and status across Sprints 1–9 · 16 teammates · 25 projects · Task-level only</div>
+    <div class="sub">Story points, tasks, projects, and status across Sprints 1–10 · 16 teammates · 32 projects · Task-level only</div>
   </div>
   <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
     <div class="sub" id="updated"></div>
@@ -623,7 +679,7 @@
 
     <div class="card" style="margin-bottom:16px;">
       <h3><span id="drillName">Select a person</span> <span class="tag" id="drillStat">—</span></h3>
-      <div id="drillStatusPills" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;"></div>
+      <div id="drillStatusPills" style="gap:10px; margin-top:12px;"></div>
     </div>
 
     <div class="card" style="margin-bottom:16px;">
@@ -671,7 +727,9 @@
         <label for="projTopN">Show Top</label>
         <select id="projTopN">
           <option value="10">Top 10</option>
-          <option value="15" selected>Top 15</option>
+          <option value="15">Top 15</option>
+          <option value="20">Top 20</option>
+          <option value="25" selected>Top 25</option>
           <option value="all">All Projects</option>
         </select>
       </div>
@@ -830,11 +888,11 @@ const DATA = {
   sprints: ["Sprint 1", "Sprint 2", "Sprint 3", "Sprint 4", "Sprint 5", "Sprint 6", "Sprint 7", "Sprint 8", "Sprint 9", "Sprint 10"],
 
   points: {
-    "Ohm":[10, 16, 132, 93, 104, 58, 161, 30, 0, 0],
+    "Ohm":[10, 16, 132, 93, 104, 58, 161, 30, 17, 0],
     "Nust":[74, 63, 39, 38, 66, 80, 11, 37, 16, 0],
-    "Waew":[12, 13, 47, 28, 39, 39, 22, 21, 27, 0],
-    "Ploy":[15, 18, 17, 15, 16.5, 17, 13.5, 16.25, 18, 0],
-    "Gib":[24, 11, 21, 7, 18.5, 16, 12.5, 11.25, 9, 0],
+    "Waew":[12, 13, 47, 28, 39, 39, 23, 21, 55, 0],
+    "Ploy":[15, 18, 17, 15, 16.5, 17, 13.5, 16, 22.75, 0],
+    "Gib":[24, 11, 21, 7, 18.5, 16, 12.5, 11.25, 15, 0],
     "Unn":[0, 8, 24, 33, 13, 3, 11, 13, 0, 0],
     "Nine":[2, 23, 16, 7, 17, 22, 27, 2, 0, 0],
     "Ping":[0, 0, 28, 38, 13, 11, 12, 15, 8, 0],
@@ -849,11 +907,11 @@ const DATA = {
   },
 
   tasks: {
-    "Ohm":[10, 3, 19, 21, 19, 11, 40, 5, 0, 0],
+    "Ohm":[10, 3, 19, 21, 19, 11, 40, 5, 16, 0],
     "Nust":[30, 23, 16, 15, 22, 22, 4, 13, 6, 0],
-    "Waew":[4, 5, 25, 15, 17, 15, 6, 15, 10, 0],
-    "Ploy":[15, 19, 18, 16, 16, 17, 17, 25, 13, 0],
-    "Gib":[12, 10, 12, 6, 11, 7, 8, 13, 6, 0],
+    "Waew":[4, 5, 25, 15, 17, 15, 7, 15, 24, 0],
+    "Ploy":[15, 19, 18, 16, 16, 17, 17, 24, 18, 0],
+    "Gib":[12, 10, 12, 6, 11, 7, 8, 13, 13, 0],
     "Unn":[0, 1, 11, 16, 5, 3, 5, 6, 1, 0],
     "Nine":[3, 13, 8, 4, 9, 11, 12, 2, 0, 0],
     "Ping":[2, 1, 5, 10, 3, 3, 4, 3, 2, 0],
@@ -868,23 +926,25 @@ const DATA = {
   },
 
   projectSprint: {
-    "NCSWT":[5, 32, 190, 161, 156, 151, 246, 64, 16, 0],
-    "Internal/Ops":[127, 40, 33, 25, 31, 31, 65.5, 44, 17, 0],
+    "NCSWT":[5, 32, 190, 161, 156, 151, 246, 64, 35, 0],
+    "Internal/Ops":[127, 40, 30, 20, 31, 28, 65.5, 43.75, 20.25, 0],
     "Gift-Card-2026":[0, 0, 0, 10, 37, 52, 2, 18, 17, 0],
-    "InsureTech":[0, 8, 7, 40, 37, 3, 7, 5, 11, 0],
-    "P2CR2":[0, 15, 5, 5, 0, 22, 18, 6.5, 0, 0],
+    "InsureTech":[0, 8, 7, 40, 37, 3, 7, 5, 0, 0],
+    "P2CR2":[0, 15, 8, 10, 0, 25, 19, 6.5, 5, 0],
     "MorePOS":[31, 5, 1, 0, 25, 6, 0, 0, 0, 0],
+    "TailMed":[0, 0, 15, 7, 9, 0, 3, 16, 12, 0],
     "Merlin":[8, 0, 20, 19, 11.5, 1, 0, 0, 0, 0],
     "Event-Registration-2026":[15, 12, 17, 0, 1, 3, 0, 8, 0, 0],
-    "TailMed":[0, 0, 15, 7, 9, 0, 3, 16, 5.5, 0],
     "Village Fund":[0, 31, 5, 5, 0, 2, 0, 0, 0, 0],
     "Chang HomePro":[0, 0, 27, 2, 0, 7, 3, 3.5, 0, 0],
     "Breaking Par":[1, 1, 5, 7, 7, 0, 15, 2, 0, 0],
     "Campaign-Accumulate-2025":[17, 9, 6, 1, 3, 0, 0, 0, 0, 0],
     "Gamesmith":[0, 5, 0, 0, 4, 3.5, 9, 0, 0, 0],
     "2026-1":[0, 0, 0, 0, 0, 1, 8, 0, 12.5, 0],
-    "khaojai it":[0, 0, 0, 4, 2, 7, 4.5, 0, 0, 0],
+    "khaojai it":[0, 0, 0, 4, 2, 7, 4.5, 0, 1, 0],
     "AdelphiISRP":[0, 0, 0, 1, 0, 8, 1, 6.5, 1, 0],
+    "BKK Living":[0, 0, 0, 0, 0, 0, 0, 0, 16, 0],
+    "Vi-System":[0, 0, 0, 0, 0, 0, 0, 0, 16, 0],
     "MeApp":[0, 2, 1, 1, 1, 3, 0, 3, 3, 0],
     "Ship360EXP":[0, 0, 0, 0, 0, 2.5, 0, 3, 6, 0],
     "POC":[0, 0, 0, 0, 0, 5, 3, 3, 0, 0],
@@ -902,7 +962,7 @@ const DATA = {
 
   personProject: {
     "Ohm":{
-      "NCSWT":543,
+      "NCSWT":560,
       "InsureTech":29,
       "Internal/Ops":13,
       "Campaign-Accumulate-2025":10,
@@ -923,18 +983,18 @@ const DATA = {
       "Chang HomePro":1,
       "P3":1,
       "GENCO":1,
-      "TailMed":1,
-      "AI":0
+      "TailMed":1
     },
     "Waew":{
+      "P2CR2":50,
       "TailMed":45,
+      "NCSWT":38,
       "Gift-Card-2026":38,
-      "NCSWT":36,
-      "Internal/Ops":36,
-      "P2CR2":33,
+      "Internal/Ops":25,
+      "BKK Living":16,
+      "Vi-System":16,
       "Campaign-Accumulate-2025":14,
       "Merlin":12,
-      "InsureTech":11,
       "Event-Registration-2026":9,
       "MeApp":6,
       "Gamesmith":3,
@@ -943,7 +1003,7 @@ const DATA = {
       "Andaman Phuket":1
     },
     "Ploy":{
-      "Internal/Ops":26.25,
+      "Internal/Ops":27.25,
       "2026-1":18.5,
       "P2CR2":16.5,
       "Chang HomePro":14.5,
@@ -954,6 +1014,7 @@ const DATA = {
       "khaojai it":5.5,
       "AdelphiISRP":5.5,
       "Ship360EXP":4.5,
+      "TailMed":3.5,
       "Breaking Par":3,
       "Andaman Phuket":3,
       "POC":3,
@@ -961,20 +1022,20 @@ const DATA = {
       "Market Village":1
     },
     "Gib":{
+      "Internal/Ops":28.25,
       "Event-Registration-2026":27,
-      "Internal/Ops":26.25,
       "Gift-Card-2026":16,
-      "khaojai it":12,
+      "khaojai it":13,
       "AdelphiISRP":12,
       "Chang HomePro":10,
       "Ship360EXP":7,
+      "TailMed":4.5,
       "Andaman Phuket":4,
       "MorePOS":3,
       "NCSWT":3,
       "2026-1":3,
       "Campaign-Accumulate-2025":2,
       "Monty":1.5,
-      "TailMed":1.5,
       "P2CR2":1,
       "Merlin":1
     },
@@ -1051,7 +1112,7 @@ const DATA = {
 
   contribution: {
     "Ohm":{
-      "NCSWT":[0, 11, 115, 64, 104, 58, 161, 30, 0, 0],
+      "NCSWT":[0, 11, 115, 64, 104, 58, 161, 30, 17, 0],
       "InsureTech":[0, 0, 0, 29, 0, 0, 0, 0, 0, 0],
       "Internal/Ops":[0, 0, 13, 0, 0, 0, 0, 0, 0, 0],
       "Campaign-Accumulate-2025":[10, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -1072,18 +1133,18 @@ const DATA = {
       "Chang HomePro":[0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
       "P3":[0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
       "GENCO":[0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-      "TailMed":[0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-      "AI":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      "TailMed":[0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
     },
     "Waew":{
+      "P2CR2":[0, 0, 7, 5, 0, 15, 18, 0, 5, 0],
       "TailMed":[0, 0, 15, 7, 8, 0, 3, 11, 1, 0],
+      "NCSWT":[5, 0, 7, 7, 0, 6, 0, 0, 13, 0],
       "Gift-Card-2026":[0, 0, 0, 4, 19, 9, 0, 2, 4, 0],
-      "NCSWT":[5, 0, 7, 7, 0, 6, 0, 0, 11, 0],
-      "Internal/Ops":[2, 8, 4, 8, 0, 6, 1, 7, 0, 0],
-      "P2CR2":[0, 0, 4, 0, 0, 12, 17, 0, 0, 0],
+      "Internal/Ops":[2, 8, 1, 3, 0, 3, 1, 7, 0, 0],
+      "BKK Living":[0, 0, 0, 0, 0, 0, 0, 0, 16, 0],
+      "Vi-System":[0, 0, 0, 0, 0, 0, 0, 0, 16, 0],
       "Campaign-Accumulate-2025":[5, 3, 6, 0, 0, 0, 0, 0, 0, 0],
       "Merlin":[0, 0, 5, 1, 6, 0, 0, 0, 0, 0],
-      "InsureTech":[0, 0, 0, 0, 0, 0, 0, 0, 11, 0],
       "Event-Registration-2026":[0, 0, 5, 0, 1, 3, 0, 0, 0, 0],
       "MeApp":[0, 2, 1, 1, 1, 0, 0, 1, 0, 0],
       "Gamesmith":[0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
@@ -1092,7 +1153,7 @@ const DATA = {
       "Andaman Phuket":[0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
     },
     "Ploy":{
-      "Internal/Ops":[5, 1, 2, 1, 1, 2, 5, 5.75, 3.5, 0],
+      "Internal/Ops":[5, 1, 2, 1, 1, 2, 5, 5.5, 4.75, 0],
       "2026-1":[0, 0, 0, 0, 0, 1, 5, 0, 12.5, 0],
       "P2CR2":[0, 5, 0, 5, 0, 0, 0, 6.5, 0, 0],
       "Chang HomePro":[0, 0, 8, 2, 0, 2, 0, 2.5, 0, 0],
@@ -1103,6 +1164,7 @@ const DATA = {
       "khaojai it":[0, 0, 0, 2, 1, 1, 1.5, 0, 0, 0],
       "AdelphiISRP":[0, 0, 0, 1, 0, 2, 1, 0.5, 1, 0],
       "Ship360EXP":[0, 0, 0, 0, 0, 2.5, 0, 1, 1, 0],
+      "TailMed":[0, 0, 0, 0, 0, 0, 0, 0, 3.5, 0],
       "Breaking Par":[1, 1, 0, 0, 1, 0, 0, 0, 0, 0],
       "Andaman Phuket":[0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
       "POC":[0, 0, 0, 0, 0, 3, 0, 0, 0, 0],
@@ -1110,20 +1172,20 @@ const DATA = {
       "Market Village":[0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
     },
     "Gib":{
+      "Internal/Ops":[9, 3, 2, 2, 0, 0, 4.5, 3.25, 4.5, 0],
       "Event-Registration-2026":[10, 7, 10, 0, 0, 0, 0, 0, 0, 0],
-      "Internal/Ops":[9, 3, 2, 2, 0, 0, 4.5, 3.25, 2.5, 0],
       "Gift-Card-2026":[0, 0, 0, 2, 9, 3, 2, 0, 0, 0],
-      "khaojai it":[0, 0, 0, 2, 1, 6, 3, 0, 0, 0],
+      "khaojai it":[0, 0, 0, 2, 1, 6, 3, 0, 1, 0],
       "AdelphiISRP":[0, 0, 0, 0, 0, 6, 0, 6, 0, 0],
       "Chang HomePro":[0, 0, 9, 0, 0, 1, 0, 0, 0, 0],
       "Ship360EXP":[0, 0, 0, 0, 0, 0, 0, 2, 5, 0],
+      "TailMed":[0, 0, 0, 0, 0, 0, 0, 0, 4.5, 0],
       "Andaman Phuket":[0, 0, 0, 0, 4, 0, 0, 0, 0, 0],
       "MorePOS":[3, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       "NCSWT":[0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
       "2026-1":[0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
       "Campaign-Accumulate-2025":[2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       "Monty":[0, 0, 0, 0, 1.5, 0, 0, 0, 0, 0],
-      "TailMed":[0, 0, 0, 0, 0, 0, 0, 0, 1.5, 0],
       "P2CR2":[0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
       "Merlin":[0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
     },
@@ -1199,17 +1261,17 @@ const DATA = {
   },
 
   statusPersonCount: {
-    "Ohm":[129, 1, 17, 0, 0, 0, 4, 1, 0, 1],
+    "Ohm":[145, 2, 25, 3, 0, 0, 0, 1, 0, 1],
     "Nust":[152, 3, 1, 0, 1, 0, 10, 4, 0, 4],
-    "Waew":[112, 1, 0, 0, 0, 0, 5, 2, 0, 3],
-    "Ploy":[156, 1, 0, 0, 0, 0, 32, 0, 0, 0],
-    "Gib":[85, 1, 0, 0, 0, 0, 18, 2, 0, 2],
-    "Unn":[48, 1, 1, 0, 0, 4, 7, 10, 0, 1],
+    "Waew":[127, 1, 0, 0, 0, 0, 4, 2, 0, 3],
+    "Ploy":[160, 5, 0, 0, 0, 0, 29, 0, 0, 0],
+    "Gib":[92, 4, 0, 0, 0, 0, 13, 0, 0, 2],
+    "Unn":[48, 1, 1, 1, 0, 4, 7, 10, 0, 1],
     "Nine":[63, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-    "Ping":[34, 1, 0, 0, 0, 0, 2, 2, 1, 2],
+    "Ping":[34, 0, 0, 0, 0, 0, 1, 0, 6, 2],
     "Praew":[53, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "P":[51, 1, 0, 0, 1, 0, 6, 0, 0, 0],
-    "No":[51, 4, 1, 0, 0, 0, 40, 0, 0, 0],
+    "P":[51, 1, 0, 0, 1, 0, 9, 0, 0, 0],
+    "No":[51, 4, 2, 0, 0, 0, 40, 0, 0, 0],
     "Tae":[52, 0, 0, 0, 0, 0, 1, 0, 0, 4],
     "Tum":[3, 0, 0, 0, 0, 0, 1, 0, 0, 0],
     "Karn":[10, 1, 0, 0, 0, 0, 4, 0, 0, 0],
@@ -1218,17 +1280,17 @@ const DATA = {
   },
 
   statusPersonPts: {
-    "Ohm":[607, 3, 24, 0, 0, 0, 14, 5, 0, 8],
+    "Ohm":[624, 6, 0, 18, 0, 0, 0, 5, 0, 8],
     "Nust":[425, 10, 0, 0, 1, 0, 34, 8, 0, 16],
-    "Waew":[248, 1, 0, 0, 0, 0, 1, 1, 0, 2],
-    "Ploy":[146.25, 0, 0, 0, 0, 0, 61, 0, 0, 0],
-    "Gib":[130.25, 1.5, 0, 0, 0, 0, 24.4, 7.5, 0, 2],
-    "Unn":[105, 5, 0, 0, 0, 19, 31, 25, 0, 0],
+    "Waew":[277, 1, 0, 0, 0, 0, 1, 1, 0, 2],
+    "Ploy":[150.75, 14.5, 0, 0, 0, 0, 45.5, 0, 0, 0],
+    "Gib":[136.25, 7, 0, 0, 0, 0, 20.4, 0, 0, 2],
+    "Unn":[105, 5, 0, 5, 0, 19, 31, 25, 0, 0],
     "Nine":[117, 0, 0, 0, 0, 0, 4, 0, 0, 0],
-    "Ping":[125, 8, 0, 0, 0, 0, 10, 10, 3, 3],
+    "Ping":[125, 0, 0, 0, 0, 0, 3, 0, 34, 3],
     "Praew":[121, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "P":[116, 5, 0, 0, 0, 0, 16, 0, 0, 0],
-    "No":[103, 8, 3, 0, 0, 0, 140, 0, 0, 0],
+    "P":[116, 5, 0, 0, 0, 0, 27, 0, 0, 0],
+    "No":[103, 8, 6, 0, 0, 0, 140, 0, 0, 0],
     "Tae":[64, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "Tum":[13, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "Karn":[6, 0, 0, 0, 0, 0, 13, 0, 0, 0],
@@ -1237,30 +1299,32 @@ const DATA = {
   },
 
   statusProjectCount: {
-    "NCSWT":[262, 1, 18, 0, 0, 0, 7, 4, 1, 7],
-    "Internal/Ops":[272, 8, 0, 0, 0, 0, 51, 0, 0, 8],
-    "Gift-Card-2026":[51, 1, 0, 0, 0, 0, 0, 6, 0, 0],
-    "InsureTech":[41, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-    "P2CR2":[33, 0, 0, 0, 0, 0, 9, 0, 0, 1],
-    "MorePOS":[50, 0, 0, 0, 1, 0, 6, 0, 0, 1],
+    "NCSWT":[285, 2, 27, 3, 0, 0, 35, 16, 6, 9],
+    "Internal/Ops":[275, 8, 1, 0, 0, 0, 72, 0, 0, 14],
+    "Gift-Card-2026":[51, 1, 0, 1, 0, 0, 0, 6, 0, 0],
+    "InsureTech":[36, 1, 0, 0, 0, 0, 0, 5, 0, 0],
+    "P2CR2":[42, 0, 0, 0, 0, 0, 10, 0, 0, 1],
+    "MorePOS":[50, 0, 0, 0, 1, 0, 8, 0, 0, 1],
+    "TailMed":[32, 5, 0, 0, 0, 0, 41, 1, 0, 4],
     "Merlin":[29, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "Event-Registration-2026":[34, 1, 0, 0, 1, 0, 9, 2, 0, 0],
-    "TailMed":[28, 2, 0, 0, 0, 0, 20, 3, 0, 0],
-    "Village Fund":[17, 0, 0, 0, 0, 0, 1, 3, 0, 0],
-    "Chang HomePro":[25, 0, 0, 0, 0, 0, 3, 0, 0, 0],
-    "Breaking Par":[25, 0, 0, 0, 0, 4, 0, 2, 0, 0],
-    "Campaign-Accumulate-2025":[23, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+    "Event-Registration-2026":[34, 1, 0, 0, 1, 0, 25, 2, 0, 2],
+    "Village Fund":[17, 0, 0, 0, 0, 0, 1, 5, 0, 0],
+    "Chang HomePro":[25, 0, 0, 0, 0, 0, 3, 0, 0, 2],
+    "Breaking Par":[25, 0, 0, 0, 0, 4, 0, 2, 0, 1],
+    "Campaign-Accumulate-2025":[23, 0, 2, 0, 0, 0, 0, 1, 0, 0],
     "Gamesmith":[17, 0, 0, 0, 0, 0, 4, 0, 0, 0],
-    "2026-1":[14, 0, 0, 0, 0, 0, 5, 0, 0, 0],
-    "khaojai it":[12, 0, 0, 0, 0, 0, 8, 0, 0, 0],
+    "2026-1":[14, 0, 0, 0, 0, 0, 6, 0, 0, 0],
+    "khaojai it":[13, 2, 0, 0, 0, 0, 5, 0, 0, 0],
     "AdelphiISRP":[11, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    "BKK Living":[6, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Vi-System":[9, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "MeApp":[9, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "Ship360EXP":[7, 0, 0, 0, 0, 0, 2, 0, 0, 0],
-    "POC":[6, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "Andaman Phuket":[5, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Ship360EXP":[7, 3, 0, 0, 0, 0, 3, 0, 0, 0],
+    "POC":[6, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    "Andaman Phuket":[5, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     "Market Village":[5, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "AI":[9, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-    "GENCO":[5, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    "AI":[8, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+    "GENCO":[5, 1, 0, 0, 0, 0, 1, 0, 0, 0],
     "OEG Support 2025":[3, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "Zleep":[2, 0, 0, 0, 0, 0, 5, 0, 0, 0],
     "Seree Golf Club":[2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -1270,30 +1334,32 @@ const DATA = {
   },
 
   statusProjectPts: {
-    "NCSWT":[1021, 8, 27, 0, 0, 0, 24, 17, 3, 24],
-    "Internal/Ops":[423.5, 15, 0, 0, 0, 0, 147.5, 0, 0, 7],
-    "Gift-Card-2026":[136, 3, 0, 0, 0, 0, 0, 21, 0, 0],
-    "InsureTech":[118, 5, 0, 0, 0, 0, 0, 0, 0, 0],
-    "P2CR2":[71.5, 0, 0, 0, 0, 0, 10, 0, 0, 0],
+    "NCSWT":[1045, 16, 5, 18, 0, 0, 152, 45, 34, 31],
+    "Internal/Ops":[415.5, 15, 3, 0, 0, 0, 214, 0, 0, 13],
+    "Gift-Card-2026":[136, 3, 0, 5, 0, 0, 0, 21, 0, 0],
+    "InsureTech":[107, 5, 0, 0, 0, 0, 0, 8, 0, 0],
+    "P2CR2":[88.5, 0, 0, 0, 0, 0, 14, 0, 0, 0],
     "MorePOS":[68, 0, 0, 0, 0, 0, 16, 0, 0, 0],
+    "TailMed":[62, 18.5, 0, 0, 0, 0, 78.4, 1, 0, 12.5],
     "Merlin":[59.5, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "Event-Registration-2026":[57, 5, 0, 0, 1, 0, 44, 4, 0, 0],
-    "TailMed":[55.5, 2.5, 0, 0, 0, 0, 50.4, 8.5, 0, 0],
+    "Event-Registration-2026":[57, 5, 0, 0, 1, 0, 82, 4, 0, 2],
     "Village Fund":[43, 0, 0, 0, 0, 0, 0, 6, 0, 0],
-    "Chang HomePro":[42.5, 0, 0, 0, 0, 0, 6.5, 0, 0, 0],
-    "Breaking Par":[38, 0, 0, 0, 0, 19, 0, 0, 0, 0],
+    "Chang HomePro":[42.5, 0, 0, 0, 0, 0, 6.5, 0, 0, 2],
+    "Breaking Par":[38, 0, 0, 0, 0, 19, 0, 0, 0, 1],
     "Campaign-Accumulate-2025":[39, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "Gamesmith":[21.5, 0, 0, 0, 0, 0, 9.5, 0, 0, 0],
-    "2026-1":[21.5, 0, 0, 0, 0, 0, 7.5, 0, 0, 0],
-    "khaojai it":[17.5, 0, 0, 0, 0, 0, 11, 0, 0, 0],
+    "2026-1":[21.5, 0, 0, 0, 0, 0, 8.5, 0, 0, 0],
+    "khaojai it":[18.5, 2, 0, 0, 0, 0, 8, 0, 0, 0],
     "AdelphiISRP":[17.5, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    "BKK Living":[16, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Vi-System":[19, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "MeApp":[14, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "Ship360EXP":[11.5, 0, 0, 0, 0, 0, 2, 0, 0, 0],
-    "POC":[11, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "Andaman Phuket":[8, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "Ship360EXP":[11.5, 5, 0, 0, 0, 0, 3, 0, 0, 0],
+    "POC":[11, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    "Andaman Phuket":[8, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     "Market Village":[7, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "AI":[7, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "GENCO":[7, 3, 0, 0, 0, 0, 0, 0, 0, 0],
+    "GENCO":[7, 3, 0, 0, 0, 0, 3, 0, 0, 0],
     "OEG Support 2025":[6, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "Zleep":[3, 0, 0, 0, 0, 0, 19, 0, 0, 0],
     "Seree Golf Club":[2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -1450,17 +1516,32 @@ const DATA = {
     {"id": "30374", "person": "Waew", "title": "HCA: Internal Test", "points": 5, "state": "Done", "project": "Campaign-Accumulate-2025", "sprint": 1},
     {"id": "30366", "person": "Gib", "title": "HCA: Workshop Registration - 1st Mockup draft", "points": 5, "state": "Done", "project": "Event-Registration-2026", "sprint": 1},
     {"id": "30371", "person": "Ploy", "title": "26-SP1 Daily management", "points": 0, "state": "Done", "project": "Internal/Ops", "sprint": 1},
+    {"id": "31686", "person": "Ploy", "title": "Slide proposal for 1st draft design session", "points": 2, "state": "To Do", "project": "P2CR2", "sprint": 10},
+    {"id": "31690", "person": "Ploy", "title": "EXT - Design session#1", "points": 1, "state": "To Do", "project": "P2CR2", "sprint": 10},
     {"id": "31692", "person": "Ploy", "title": "Design session2- draft WC", "points": 1, "state": "To Do", "project": "P2CR2", "sprint": 10},
-    {"id": "32397", "person": "Ploy", "title": "Revision: Homepage (1 screen, R3)", "points": 1, "state": "To Do", "project": "Gamesmith", "sprint": 10},
-    {"id": "32745", "person": "Ploy", "title": "INT: Present research resuสt and what to handoff to the client", "points": 1, "state": "To Do", "project": "Chang HomePro", "sprint": 10},
-    {"id": "32752", "person": "Ploy", "title": "Workcheck: [Identity manual] R1", "points": 1, "state": "To Do", "project": "khaojai it", "sprint": 10},
+    {"id": "31696", "person": "Ploy", "title": "design session2- Initiation business logic", "points": 1, "state": "To Do", "project": "P2CR2", "sprint": 10},
+    {"id": "33082", "person": "Ping", "title": "HCA: Test Cases - Event Registration - Update test cases", "points": 3, "state": "To Do", "project": "Event-Registration-2026", "sprint": 10},
+    {"id": "33002", "person": "Ploy", "title": "Revision: Product listing+Detail (6 screens, R2)", "points": 3, "state": "To Do", "project": "2026-1", "sprint": 10},
+    {"id": "33003", "person": "Ploy", "title": "Final: Sub-Menu (3 screens, R2)", "points": 1, "state": "To Do", "project": "2026-1", "sprint": 10},
+    {"id": "33004", "person": "Ploy", "title": "Final: Product listing+Detail (6 screens, R3)", "points": 1.5, "state": "To Do", "project": "2026-1", "sprint": 10},
+    {"id": "33025", "person": "Ploy", "title": "Analysis: Adelphi Itsaraphap Project Status & Outstanding Items", "points": 1, "state": "To Do", "project": "AdelphiISRP", "sprint": 10},
+    {"id": "33073", "person": "Ploy", "title": "Revision: Sub-Menu (2 screens, R2)", "points": 1, "state": "To Do", "project": "2026-1", "sprint": 10},
+    {"id": "33000", "person": "Ploy", "title": "EXT meeting: design session R2", "points": 1, "state": "To Do", "project": "2026-1", "sprint": 10},
+    {"id": "33001", "person": "Ploy", "title": "EXT meeting: design session Final", "points": 1, "state": "To Do", "project": "2026-1", "sprint": 10},
+    {"id": "32901", "person": "Ploy", "title": "Final Draft: [MVP Phase]", "points": 2.5, "state": "To Do", "project": "TailMed", "sprint": 10},
+    {"id": "32902", "person": "Ploy", "title": "Handoff: [MVP Phase]", "points": 2.5, "state": "To Do", "project": "TailMed", "sprint": 10},
     {"id": "32915", "person": "Waew", "title": "Pawrent: User Test Coordination & Feedback Collection", "points": 0, "state": "To Do", "project": "TailMed", "sprint": 10},
-    {"id": "32732", "person": "Gib", "title": "R1: identity manual 1doc", "points": 4, "state": "To Do", "project": "khaojai it", "sprint": 10},
+    {"id": "32899", "person": "Ploy", "title": "Revision: [MVP Phase] (6 screens, R1)\"", "points": 4, "state": "To Do", "project": "TailMed", "sprint": 10},
+    {"id": "32752", "person": "Ploy", "title": "Workcheck: [Identity manual] R1", "points": 1, "state": "To Do", "project": "khaojai it", "sprint": 10},
     {"id": "32739", "person": "Ploy", "title": "Website Design R1 - Detail Pages (Private, Event, Promotion and Food)(3BP responsive)", "points": 6.5, "state": "To Do", "project": "Gamesmith", "sprint": 10},
     {"id": "32740", "person": "Ploy", "title": "INT meeting: for R1 → Delivery", "points": 1, "state": "To Do", "project": "Gamesmith", "sprint": 10},
     {"id": "32741", "person": "Ploy", "title": "EXT meeting: Design session1", "points": 1, "state": "To Do", "project": "Gamesmith", "sprint": 10},
     {"id": "32743", "person": "Ploy", "title": "User Research: [Behaviour How user find their technician] (1 session)", "points": 3.5, "state": "To Do", "project": "Chang HomePro", "sprint": 10},
     {"id": "32744", "person": "Ploy", "title": "Slide: Behaviour How user find their technician Research summary", "points": 2, "state": "To Do", "project": "Chang HomePro", "sprint": 10},
+    {"id": "32745", "person": "Ploy", "title": "INT: Present research resuสt and what to handoff to the client", "points": 1, "state": "To Do", "project": "Chang HomePro", "sprint": 10},
+    {"id": "32204", "person": "Ploy", "title": "Initiation business logic for 1 draft design session- 2", "points": 2, "state": "To Do", "project": "P2CR2", "sprint": 10},
+    {"id": "32397", "person": "Ploy", "title": "Revision: Homepage (1 screen, R3)", "points": 1, "state": "To Do", "project": "Gamesmith", "sprint": 10},
+    {"id": "32732", "person": "Gib", "title": "R1: identity manual 1doc", "points": 4, "state": "To Do", "project": "khaojai it", "sprint": 10},
     {"id": "31749", "person": "Tae", "title": "Research GPS for bike and Fleet management system", "points": 0, "state": "Done", "project": "Internal/Ops", "sprint": 2},
     {"id": "31752", "person": "Unn", "title": "NCSWT: Approve / Reject Request (procurement)", "points": 8, "state": "Done", "project": "NCSWT", "sprint": 2},
     {"id": "31797", "person": "Nust", "title": "VF-PC : Technical support", "points": 2, "state": "To Do", "project": "Internal/Ops", "sprint": 2},
@@ -1497,7 +1578,7 @@ const DATA = {
     {"id": "31595", "person": "Tae", "title": "Create and Present New Feature to CEO", "points": 0, "state": "Done", "project": "MorePOS", "sprint": 2},
     {"id": "31596", "person": "Tae", "title": "Analyst How to add AI to MorePOS Feature", "points": 0, "state": "To Do", "project": "MorePOS", "sprint": 2},
     {"id": "31597", "person": "Ohm", "title": "NCSWT: Request Form Lists/Detail (Procurement) - Integrate", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 2},
-    {"id": "31447", "person": "Nust", "title": "ceo - dashboard : List All Query Logic of every Dashboard for Checking and Test", "points": 0, "state": "Done", "project": "AI", "sprint": 2},
+    {"id": "31447", "person": "Nust", "title": "ceo - dashboard : List All Query Logic of every Dashboard for Checking and Test", "points": 0, "state": "Done", "project": "Internal/Ops", "sprint": 2},
     {"id": "31449", "person": "Tae", "title": "Create Quotation", "points": 0, "state": "Done", "project": "Internal/Ops", "sprint": 2},
     {"id": "31450", "person": "Ploy", "title": "INT Meeting for Market Village Conclude Recommendation", "points": 1, "state": "Done", "project": "Market Village", "sprint": 2},
     {"id": "31588", "person": "Ploy", "title": "26-SP2 Daily operation", "points": 0, "state": "Done", "project": "Internal/Ops", "sprint": 2},
@@ -1602,7 +1683,7 @@ const DATA = {
     {"id": "31876", "person": "No", "title": "[Insurtech] Build end-to-end AI chatbot with ADK framework (FB and Line) for กองทุนหมู่บ้าน", "points": 0, "state": "Done", "project": "AI", "sprint": 3},
     {"id": "31878", "person": "No", "title": "IST: BUG#1 Chatbot - incorrect phone number format, no warning", "points": 0, "state": "Done", "project": "AI", "sprint": 3},
     {"id": "31859", "person": "Ploy", "title": "Blog WC", "points": 1, "state": "Done", "project": "Internal/Ops", "sprint": 3},
-    {"id": "31860", "person": "Waew", "title": "MoreStudio_BrandRadar_Prompt_Strategy", "points": 1, "state": "Done", "project": "Internal/Ops", "sprint": 3},
+    {"id": "31860", "person": "Waew", "title": "MoreStudio_BrandRadar_Prompt_Strategy", "points": 1, "state": "Done", "project": "P2CR2", "sprint": 3},
     {"id": "31865", "person": "Waew", "title": "Manual Insert Data Source for Notebook LM", "points": 1, "state": "Done", "project": "TailMed", "sprint": 3},
     {"id": "31843", "person": "Ploy", "title": "EXT AIA insurance", "points": 0, "state": "Done", "project": "Internal/Ops", "sprint": 3},
     {"id": "31844", "person": "Gib", "title": "HCA : Explore Lottie Animations and Generate JSON Files", "points": 2, "state": "Done", "project": "Event-Registration-2026", "sprint": 3},
@@ -1631,7 +1712,7 @@ const DATA = {
     {"id": "31791", "person": "Ohm", "title": "Academic Results & Evaluation", "points": 6, "state": "Done", "project": "NCSWT", "sprint": 3},
     {"id": "31792", "person": "Nust", "title": "NCSWT : Technical support", "points": 5, "state": "Removed", "project": "NCSWT", "sprint": 3},
     {"id": "31779", "person": "Ohm", "title": "GENCO: Export vendor data", "points": 2, "state": "Done", "project": "GENCO", "sprint": 3},
-    {"id": "31765", "person": "Waew", "title": "Prompt Optimization & Brand Alignment", "points": 2, "state": "Done", "project": "Internal/Ops", "sprint": 3},
+    {"id": "31765", "person": "Waew", "title": "Prompt Optimization & Brand Alignment", "points": 2, "state": "Done", "project": "P2CR2", "sprint": 3},
     {"id": "31766", "person": "Nust", "title": "Merlin : (Internal meeting) Project 35M (26/02/09)", "points": 1, "state": "Done", "project": "Internal/Ops", "sprint": 3},
     {"id": "31767", "person": "Nust", "title": "HSA : consult เรื่องแสกน QRCide แล้วเก็บ Coupon /w nine", "points": 1, "state": "Done", "project": "Chang HomePro", "sprint": 3},
     {"id": "31768", "person": "Nust", "title": "OEG (Work and travel) : Check Error", "points": 2, "state": "Done", "project": "OEG Support 2025", "sprint": 3},
@@ -1762,8 +1843,8 @@ const DATA = {
     {"id": "32110", "person": "Ping", "title": "NCSWT: INT Test - Create Member procurement approval listing automated test", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 4},
     {"id": "32111", "person": "Ping", "title": "NCSWT: INT Test - Create Member procurement request creation automated test", "points": 5, "state": "Done", "project": "NCSWT", "sprint": 4},
     {"id": "32097", "person": "Waew", "title": "Palantir Ontology Architecture Overview", "points": 1, "state": "Done", "project": "Merlin", "sprint": 4},
-    {"id": "32099", "person": "Waew", "title": "Set Branding Data for AEO Search and Monitoring Data", "points": 2, "state": "Done", "project": "Internal/Ops", "sprint": 4},
-    {"id": "32101", "person": "Waew", "title": "Product benchmarking", "points": 3, "state": "Done", "project": "Internal/Ops", "sprint": 4},
+    {"id": "32099", "person": "Waew", "title": "Set Branding Data for AEO Search and Monitoring Data", "points": 2, "state": "Done", "project": "P2CR2", "sprint": 4},
+    {"id": "32101", "person": "Waew", "title": "Product benchmarking", "points": 3, "state": "Done", "project": "P2CR2", "sprint": 4},
     {"id": "32102", "person": "Praew", "title": "NCSWT: BUG#14 REG - Improvement prevent random name", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 4},
     {"id": "32103", "person": "Ping", "title": "NCSWT: INT Test - Create Login automated test", "points": 5, "state": "Done", "project": "NCSWT", "sprint": 4},
     {"id": "32106", "person": "Ping", "title": "NCSWT: INT Test - Create Member procurement request listing automated test", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 4},
@@ -2017,7 +2098,7 @@ const DATA = {
     {"id": "32440", "person": "Nust", "title": "HCA (Gift card) : role management for gift card log page", "points": 5, "state": "Done", "project": "Gift-Card-2026", "sprint": 6},
     {"id": "32424", "person": "Ohm", "title": "NCSWT : [lotto] (CRUD) transactions & UI", "points": 5, "state": "Done", "project": "NCSWT", "sprint": 6},
     {"id": "32425", "person": "Ohm", "title": "NCSWT : [lotto] generate contract pdf file", "points": 8, "state": "Done", "project": "NCSWT", "sprint": 6},
-    {"id": "32426", "person": "Waew", "title": "Set Branding Data for AEO Search and Monitoring Data 'CHANG HOMEPRO'", "points": 3, "state": "Done", "project": "Internal/Ops", "sprint": 6},
+    {"id": "32426", "person": "Waew", "title": "Set Branding Data for AEO Search and Monitoring Data 'CHANG HOMEPRO'", "points": 3, "state": "Done", "project": "P2CR2", "sprint": 6},
     {"id": "32428", "person": "Waew", "title": "2 month use - research", "points": 3, "state": "Done", "project": "Internal/Ops", "sprint": 6},
     {"id": "32429", "person": "Ploy", "title": "Workcheck: Homepage + Pre-launch (Junior)", "points": 1.5, "state": "Done", "project": "Gamesmith", "sprint": 6},
     {"id": "32418", "person": "Ohm", "title": "NCSWT : [lotto] check duplication code", "points": 5, "state": "Done", "project": "NCSWT", "sprint": 6},
@@ -2094,6 +2175,7 @@ const DATA = {
     {"id": "32737", "person": "Ohm", "title": "NCSWT : [scholarship] View only UI", "points": 8, "state": "Done", "project": "NCSWT", "sprint": 7},
     {"id": "32867", "person": "Praew", "title": "NCSWT : [Permission] set permission for HR, ORG, USER module", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 7},
     {"id": "32868", "person": "Praew", "title": "NCSWT: Create / Edit User page สามารถ Assign Permission / Roles", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 7},
+    {"id": "33083", "person": "Waew", "title": "GEO-Ready-Build-Playbook", "points": 1, "state": "Done", "project": "P2CR2", "sprint": 7},
     {"id": "32704", "person": "Unn", "title": "BKP: BUG#1 Get the look - เลือก Get the look บางอันแล้วแสดงหน้าจอเพี้ยน", "points": 0, "state": "Done", "project": "Breaking Par", "sprint": 7},
     {"id": "32712", "person": "Ping", "title": "BKP: INT Test - Improvement Feb 2026", "points": 2, "state": "Done", "project": "Breaking Par", "sprint": 7},
     {"id": "32735", "person": "Ohm", "title": "NCSWT : [donor] View only UI", "points": 8, "state": "Done", "project": "NCSWT", "sprint": 7},
@@ -2229,68 +2311,67 @@ const DATA = {
     {"id": "31997", "person": "Ohm", "title": "NCSWT : [hr] (CRUD) Master Data - รหัสตำแหน่ง", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 7},
     {"id": "31693", "person": "Ploy", "title": "Design session#1- draft WC", "points": 1, "state": "Done", "project": "P2CR2", "sprint": 8},
     {"id": "31868", "person": "P", "title": "MorePOS: Setup SUPABASE for Forgot Password", "points": 0, "state": "Waiting to INT deploy", "project": "MorePOS", "sprint": 8},
-    {"id": "32987", "person": "Nust", "title": "NCSWT : Support (Clean DB Dev) - 260423", "points": 2, "state": "Done", "project": "NCSWT", "sprint": 8},
-    {"id": "32993", "person": "No", "title": "Magic Box: remove permission lock so that every account can view and use magic box", "points": 2, "state": "Done", "project": "NCSWT", "sprint": 8},
     {"id": "32995", "person": "Karn", "title": "Follow up with Applicable", "points": 0, "state": "Done", "project": "Internal/Ops", "sprint": 8},
     {"id": "32997", "person": "Dream", "title": "Send Invoice to Hyper", "points": 0, "state": "Done", "project": "Internal/Ops", "sprint": 8},
-    {"id": "32972", "person": "Unn", "title": "HCA: Gift Card INT BUG#1 - EXP bagde แสดงเป็นยอดเงินคงเหลือ", "points": 0, "state": "Done", "project": "Gift-Card-2026", "sprint": 8},
-    {"id": "32973", "person": "Waew", "title": "HCA: Check Internal Test & Prep Report", "points": 1, "state": "Done", "project": "Gift-Card-2026", "sprint": 8},
     {"id": "32975", "person": "Waew", "title": "MeApp: Add New Requiremet 22/04/26 PBX Chat", "points": 1, "state": "Done", "project": "MeApp", "sprint": 8},
     {"id": "32976", "person": "Nust", "title": "OEG - HSP : Update payment value data type (increase maximum value)", "points": 1, "state": "Done", "project": "OEG Support 2025", "sprint": 8},
     {"id": "32977", "person": "Nust", "title": "MeApp : List new env list for deploy PRD & recheck auto open chat condition", "points": 2, "state": "Done", "project": "MeApp", "sprint": 8},
     {"id": "32986", "person": "Nust", "title": "NCSWT : Meeting (NCSWT: API Integration บุคคล ลาขาดมาสาย) - 260420", "points": 1, "state": "Done", "project": "NCSWT", "sprint": 8},
-    {"id": "32960", "person": "No", "title": "Magic box: create new module in a main program, transform codebase from python to TS, transform backend framework from python API to Next.js", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 8},
+    {"id": "32987", "person": "Nust", "title": "NCSWT : Support (Clean DB Dev) - 260423", "points": 2, "state": "Done", "project": "NCSWT", "sprint": 8},
+    {"id": "32993", "person": "No", "title": "Magic Box: remove permission lock so that every account can view and use magic box", "points": 2, "state": "Done", "project": "NCSWT", "sprint": 8},
     {"id": "32962", "person": "Gib", "title": "Recruitment Process - ทิพย์ธัญญา อุทัยประดิษฐ์", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
     {"id": "32963", "person": "Waew", "title": "content-marketer-jd-interview-kit", "points": 3, "state": "Done", "project": "Internal/Ops", "sprint": 8},
     {"id": "32964", "person": "Waew", "title": "TailMed: Influencer Lead & Rate Card Required", "points": 1, "state": "In Progress", "project": "TailMed", "sprint": 8},
-    {"id": "32946", "person": "Waew", "title": "Pawrent: Assigned Task", "points": 1, "state": "Done", "project": "TailMed", "sprint": 8},
+    {"id": "32972", "person": "Unn", "title": "HCA: Gift Card INT BUG#1 - EXP bagde แสดงเป็นยอดเงินคงเหลือ", "points": 0, "state": "Done", "project": "Gift-Card-2026", "sprint": 8},
+    {"id": "32973", "person": "Waew", "title": "HCA: Check Internal Test & Prep Report", "points": 1, "state": "Done", "project": "Gift-Card-2026", "sprint": 8},
     {"id": "32947", "person": "Waew", "title": "Pawrent: Grantt Chart Timeline Project", "points": 1, "state": "Done", "project": "TailMed", "sprint": 8},
     {"id": "32951", "person": "Karn", "title": "Pawrent: Confirm Pricing Model & Revenue Projection", "points": 0, "state": "Done", "project": "TailMed", "sprint": 8},
     {"id": "32956", "person": "Waew", "title": "Service-to-Product Transition สำหรับ More Studio", "points": 1, "state": "Done", "project": "Internal/Ops", "sprint": 8},
     {"id": "32957", "person": "Waew", "title": "Pawrent: University Shortlist & Research", "points": 1, "state": "Done", "project": "TailMed", "sprint": 8},
+    {"id": "32960", "person": "No", "title": "Magic box: create new module in a main program, transform codebase from python to TS, transform backend framework from python API to Next.js", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 8},
     {"id": "32906", "person": "Dream", "title": "Pawrent: University Shortlist & Research", "points": 5, "state": "Done", "project": "TailMed", "sprint": 8},
-    {"id": "32873", "person": "Ploy", "title": "Webinar Meeting: The push and pull of AI + design", "points": 0.5, "state": "Done", "project": "Internal/Ops", "sprint": 8},
+    {"id": "32946", "person": "Waew", "title": "Pawrent: Assigned Task", "points": 1, "state": "Done", "project": "TailMed", "sprint": 8},
     {"id": "32878", "person": "Waew", "title": "Pawrent: Pitch Desk Slide", "points": 1, "state": "Done", "project": "TailMed", "sprint": 8},
     {"id": "32879", "person": "No", "title": "Magic Box: review codebase and prepare for merging to the main program", "points": 1, "state": "Done", "project": "NCSWT", "sprint": 8},
     {"id": "32880", "person": "Ploy", "title": "Recruitment Process- Thitikan Anurat", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
-    {"id": "32864", "person": "Waew", "title": "Data Dictionary", "points": 1, "state": "Done", "project": "Gift-Card-2026", "sprint": 8},
     {"id": "32866", "person": "Unn", "title": "Data Dictionary — Multi-Language Strings", "points": 3, "state": "Done", "project": "Gift-Card-2026", "sprint": 8},
     {"id": "32871", "person": "No", "title": "Magic box: Improve UI and dashboard, add filter and sort by, add a section to derive the total budget in a donut chart and create a project detail in a new page instead of pop-up", "points": 2, "state": "Done", "project": "NCSWT", "sprint": 8},
     {"id": "32872", "person": "No", "title": "Magic box: fix the Timeline chart problem, where AI cannot correctly fill the gantt chart from the docx file (error due to the docx to text process)", "points": 2, "state": "Done", "project": "NCSWT", "sprint": 8},
-    {"id": "32856", "person": "No", "title": "[research] Maggie POC: study chatbot behavior from META AI. look at how user can teach chatbot to answer a correct information.", "points": 1, "state": "Done", "project": "Internal/Ops", "sprint": 8},
-    {"id": "32857", "person": "Gib", "title": "Recruitment Process - Nanthanit Nanthanatwirot", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
+    {"id": "32873", "person": "Ploy", "title": "Webinar Meeting: The push and pull of AI + design", "points": 0.5, "state": "Done", "project": "Internal/Ops", "sprint": 8},
     {"id": "32858", "person": "Ploy", "title": "Recruitment Process - Siwakorn Karinpong", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
     {"id": "32860", "person": "Ohm", "title": "NCSWT : [Permission] set permission for each module", "points": 13, "state": "Done", "project": "NCSWT", "sprint": 8},
     {"id": "32861", "person": "P", "title": "NSCWT - [inv] log viewer", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 8},
     {"id": "32862", "person": "Waew", "title": "Pawrent: ทำ wireframe consult 2nd draft", "points": 1, "state": "Done", "project": "TailMed", "sprint": 8},
+    {"id": "32864", "person": "Waew", "title": "Data Dictionary", "points": 1, "state": "Done", "project": "Gift-Card-2026", "sprint": 8},
     {"id": "32854", "person": "No", "title": "Merlin POC: extract more 90 data from e-GP website (alternative approach since the previous one is blocked)", "points": 3, "state": "Done", "project": "POC", "sprint": 8},
     {"id": "32855", "person": "Waew", "title": "Pawrent: planning project pawrent", "points": 1, "state": "Done", "project": "TailMed", "sprint": 8},
-    {"id": "32844", "person": "P", "title": "NSCWT - [inv] สร้างโมดูล บริจากสิ่งของ", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 8},
-    {"id": "32845", "person": "Ploy", "title": "Recruitment Process- Nanthanit Nanthanatwirot", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
-    {"id": "32814", "person": "Waew", "title": "Sprint Contribution Dashboard 2026 - https://morestudio-th.netlify.app/", "points": 3, "state": "Done", "project": "Internal/Ops", "sprint": 8},
-    {"id": "32815", "person": "Unn", "title": "BKP: BUG#2 [UAT] Menu - iPad size กรณีเปิดดูแนวตั้งและเปลี่ยนเป็นแนวนอน menu bar จะทับ logo", "points": 0, "state": "Done", "project": "Breaking Par", "sprint": 8},
+    {"id": "32856", "person": "No", "title": "[research] Maggie POC: study chatbot behavior from META AI. look at how user can teach chatbot to answer a correct information.", "points": 1, "state": "Done", "project": "Internal/Ops", "sprint": 8},
+    {"id": "32857", "person": "Gib", "title": "Recruitment Process - Nanthanit Nanthanatwirot", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
     {"id": "32816", "person": "Ping", "title": "BKP: INT Test - Improvement Feb 2026 - Investigate & Retest", "points": 2, "state": "Done", "project": "Breaking Par", "sprint": 8},
     {"id": "32841", "person": "Gib", "title": "Handoff: Identity manual (Print Production)", "points": 2.5, "state": "Done", "project": "AdelphiISRP", "sprint": 8},
     {"id": "32842", "person": "P", "title": "NSCWT - [inv] load test 100k record", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 8},
     {"id": "32843", "person": "P", "title": "NSCWT - [inv] change table to pagination", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 8},
-    {"id": "32803", "person": "Ohm", "title": "NCSWT : [document] View only UI", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 8},
-    {"id": "32784", "person": "Ohm", "title": "NCSWT : [request-management] View only UI", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 8},
+    {"id": "32844", "person": "P", "title": "NSCWT - [inv] สร้างโมดูล บริจากสิ่งของ", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 8},
+    {"id": "32845", "person": "Ploy", "title": "Recruitment Process- Nanthanit Nanthanatwirot", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
+    {"id": "32814", "person": "Waew", "title": "Sprint Contribution Dashboard 2026 - https://morestudio-th.netlify.app/", "points": 3, "state": "Done", "project": "Internal/Ops", "sprint": 8},
+    {"id": "32815", "person": "Unn", "title": "BKP: BUG#2 [UAT] Menu - iPad size กรณีเปิดดูแนวตั้งและเปลี่ยนเป็นแนวนอน menu bar จะทับ logo", "points": 0, "state": "Done", "project": "Breaking Par", "sprint": 8},
     {"id": "32790", "person": "Ping", "title": "HCA: Test Cases - Event Registration", "points": 8, "state": "Done", "project": "Event-Registration-2026", "sprint": 8},
     {"id": "32795", "person": "Ohm", "title": "NCSWT : [revenue] View only UI", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 8},
-    {"id": "32774", "person": "Praew", "title": "Content for test : เจ้าหน้าที่", "points": 8, "state": "Done", "project": "NCSWT", "sprint": 8},
+    {"id": "32803", "person": "Ohm", "title": "NCSWT : [document] View only UI", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 8},
     {"id": "32780", "person": "No", "title": "ลองนำเข้าข้อมูล - input given data to Magic box system", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 8},
     {"id": "32782", "person": "Nust", "title": "Check API ที่ทาง HomePro จะส่งมาให้", "points": 3, "state": "Done", "project": "Gift-Card-2026", "sprint": 8},
-    {"id": "32767", "person": "Gib", "title": "Recruitment Process - Thitikan Anurat", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
+    {"id": "32784", "person": "Ohm", "title": "NCSWT : [request-management] View only UI", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 8},
     {"id": "32768", "person": "Gib", "title": "Recruitment Process - Yuttana Pati", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
-    {"id": "32769", "person": "Ploy", "title": "Recruitment Process - korawan prasertsri", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
     {"id": "32770", "person": "Ploy", "title": "Recruitment Process - Yuttana Pati", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
     {"id": "32771", "person": "Waew", "title": "เพิ่มเรื่อง security & pricing", "points": 1, "state": "Done", "project": "TailMed", "sprint": 8},
     {"id": "32772", "person": "Waew", "title": "Pawrent: ทำ wireframe consult 1st draft", "points": 3, "state": "Done", "project": "TailMed", "sprint": 8},
+    {"id": "32774", "person": "Praew", "title": "Content for test : เจ้าหน้าที่", "points": 8, "state": "Done", "project": "NCSWT", "sprint": 8},
     {"id": "32757", "person": "Ploy", "title": "Recruitment Process - Chayawat Narongchai", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
     {"id": "32758", "person": "Ploy", "title": "Recruitment Process - Thipthanya Uthaipradit", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
     {"id": "32760", "person": "Gib", "title": "Recruitment Process - Soe Moe Ko", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
     {"id": "32761", "person": "Ploy", "title": "Recruitment Process - Soe Moe Ko", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
     {"id": "32766", "person": "Ploy", "title": "Recruitment Process - Thitikan Anurat", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
+    {"id": "32767", "person": "Gib", "title": "Recruitment Process - Thitikan Anurat", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
     {"id": "32753", "person": "Ploy", "title": "Workcheck: [Identity manual] Handoff document", "points": 0.5, "state": "Done", "project": "AdelphiISRP", "sprint": 8},
     {"id": "32754", "person": "Ploy", "title": "Slide: Workflow alignment", "points": 2.5, "state": "Done", "project": "Chang HomePro", "sprint": 8},
     {"id": "32756", "person": "Gib", "title": "Recruitment Process - Chayawat Narongchai", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 8},
@@ -2334,154 +2415,187 @@ const DATA = {
     {"id": "32439", "person": "Unn", "title": "HCA: [Gift Card] Integrate expired forecast API", "points": 2, "state": "Done", "project": "Gift-Card-2026", "sprint": 8},
     {"id": "31664", "person": "P", "title": "MorePOS: Setup SUPABASE for PRODUCTION", "points": 5, "state": "To Do", "project": "MorePOS", "sprint": 9},
     {"id": "31665", "person": "P", "title": "MorePOS: Setup POWER SYNC for PRODUCTION", "points": 3, "state": "To Do", "project": "MorePOS", "sprint": 9},
-    {"id": "31686", "person": "Ploy", "title": "Slide proposal for 1st draft design session", "points": 2, "state": "To Do", "project": "P2CR2", "sprint": 9},
-    {"id": "31690", "person": "Ploy", "title": "EXT - Design session#1", "points": 1, "state": "To Do", "project": "P2CR2", "sprint": 9},
     {"id": "31694", "person": "Gib", "title": "EXT - Design session#1", "points": 1, "state": "To Do", "project": "P2CR2", "sprint": 9},
-    {"id": "33061", "person": "Waew", "title": "Manual Book V1", "points": 8, "state": "Done", "project": "NCSWT", "sprint": 9},
-    {"id": "33062", "person": "Ohm", "title": "NCSWT: ผู้บริจาค BUG#02 - ระบบผู้บริจาคไม่มีเมนูข้อมูลตั้งต้น", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33063", "person": "Waew", "title": "UX/UI Audit (Internal) - 300426", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "32027", "person": "Nust", "title": "NCSWT : [hr] feature นำเข้าข้อมูลลงเวลา", "points": 0, "state": "To Do", "project": "NCSWT", "sprint": 9},
+    {"id": "33132", "person": "Ohm", "title": "NCSWT: เจ้าหน้าที่ BUG#15 - แก้ไขสถานะคำขอลา เจอ error time invalid", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33133", "person": "Ploy", "title": "26-SP10 Create/report/planning design team", "points": 0, "state": "To Do", "project": "Internal/Ops", "sprint": 9},
+    {"id": "33136", "person": "Waew", "title": "BKK Living Proposal - V2", "points": 1, "state": "Done", "project": "BKK Living", "sprint": 9},
+    {"id": "33126", "person": "Ohm", "title": "NCSWT: เจ้าหน้าที่ BUG#12 - ข้อมูล dropdown ปรับเงินเดือน / ครองตำแหน่ง เลื่อนด้วยเมาส์ไม่ได้", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33128", "person": "Waew", "title": "BKK Living Web - V1", "points": 1, "state": "Done", "project": "BKK Living", "sprint": 9},
+    {"id": "33129", "person": "Waew", "title": "Re-Design ภาพรวมระบบงานองค์กรสมาชิก", "points": 1, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "33130", "person": "Waew", "title": "Data Dictionary for BI", "points": 1, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "33119", "person": "Waew", "title": "BKK Living Interactive Mockup - V3 (Final)", "points": 1, "state": "Done", "project": "BKK Living", "sprint": 9},
+    {"id": "33121", "person": "Waew", "title": "TRO Proposal for Insurtech", "points": 1, "state": "Done", "project": "Vi-System", "sprint": 9},
+    {"id": "33122", "person": "Ohm", "title": "NCSWT: เจ้าหน้าที่ BUG#08 - UI ข้อมูลการทำงาน ช่องกรอกข้อมูลซ้อนกัน กรณีข้อมูลยาว", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33113", "person": "Ohm", "title": "NCSWT: รายได้ BUG#05 - ค้นหารายการสินค้าและสถานที่เลื่อนขึ้น-ลงด้วยเมาส์ไม่ได้", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33116", "person": "Ohm", "title": "NCSWT: เจ้าหน้าที่ BUG#04 - แก้ไขข้อมูลเจ้าหน้าที่ รายการข้อมูล dropdown เลื่อนด้วยเมาส์ไม่ได้", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33107", "person": "Ohm", "title": "NCSWT: รายได้ BUG#01 - กดเพิ่มแผนกโดยที่ไม่กรอกข้อความได้", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33109", "person": "Ohm", "title": "NCSWT: รายได้ BUG#03 - เพิ่มรายการขาย เกิดข้อผิดพลาด invalid time value", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33112", "person": "Ohm", "title": "NCSWT: รายได้ BUG#04 - ตารางรายการขายตกขอบจอ", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33098", "person": "Ohm", "title": "NCSWT: กองสลาก BUG#11 - [Improvement] แก้ไข table หน้ารายละเอียดข้อมูลผู้รับสลาก", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33099", "person": "Ohm", "title": "NCSWT: ผู้บริจาค BUG#03 - แก้ไขข้อมูลตั้งต้น ต้อง manual refresh page ถึงจะแสดงข้อมูล", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33100", "person": "Waew", "title": "Back Office Wireframe V4 - 060526", "points": 3, "state": "Done", "project": "Vi-System", "sprint": 9},
+    {"id": "33101", "person": "Waew", "title": "TRO Customer LIFF V2 - 060526", "points": 1, "state": "Done", "project": "Vi-System", "sprint": 9},
+    {"id": "33105", "person": "Ploy", "title": "Workcheck: logo R2 → Delivery (Senior)", "points": 1.5, "state": "In Progress", "project": "Ship360EXP", "sprint": 9},
+    {"id": "33092", "person": "Ohm", "title": "NCSWT: กองสลาก BUG#05 - ลบรายชื่อผู้รับสลากไม่ได้", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33093", "person": "Ohm", "title": "NCSWT: กองสลาก BUG#06 - สร้างรายชื่อผู้รับสลาก ข้อมูลบางส่วนไม่บันทึก", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33094", "person": "Ohm", "title": "NCSWT: กองสลาก BUG#07 - เพิ่มประวัติ รายชื่อสัญญาเก่าเลื่อนขึ้น-ลงด้วยเมาส์ไม่ได้", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33095", "person": "Ohm", "title": "NCSWT: กองสลาก BUG#08 - ไม่มีให้ปรับสถานะเสียชีวิตของผู้รับสลาก", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33096", "person": "Ohm", "title": "NCSWT: กองสลาก BUG#09 - แก้ไขข้อมูลตั้งต้น ต้อง manual refresh page ถึงจะแสดงข้อมูล", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33097", "person": "Ohm", "title": "NCSWT: กองสลาก BUG#10 - Filter สถานะใช้งานอยู่ หน้าสัญญาการซื้อสลาก ไม่ทำงาน", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33085", "person": "No", "title": "Maggie POC: POC for dev's daily standup x Maggie (Line OA channel)", "points": 3, "state": "Ready for review", "project": "Internal/Ops", "sprint": 9},
+    {"id": "33086", "person": "Waew", "title": "BKK Living Proposal - V1", "points": 3, "state": "Done", "project": "BKK Living", "sprint": 9},
+    {"id": "33087", "person": "Gib", "title": "Revision: 2nd - Ship360 Logo Draft", "points": 1.5, "state": "In Progress", "project": "Ship360EXP", "sprint": 9},
+    {"id": "33088", "person": "Gib", "title": "Slide : 2nd - Ship360 Logo Presentation", "points": 2, "state": "In Progress", "project": "Ship360EXP", "sprint": 9},
+    {"id": "33089", "person": "Gib", "title": "EXT Meeting : Ship360 for 2nd > final for feedback", "points": 1, "state": "To Do", "project": "Ship360EXP", "sprint": 9},
+    {"id": "33077", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#09 - สร้างข้อมูลทุนการศึกษา ข้อมูลบางส่วนไม่ถูกบันทึก", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33078", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#10 - สร้างสถานศึกษา ข้อมูลบางส่วนไม่ถูกบันทึก", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33079", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#11 - log เกี่ยวกับ master data ไม่มีในบันทึกการทำรายการ", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33080", "person": "Waew", "title": "สรุป report เทียบ 3 เจ้า", "points": 2, "state": "Done", "project": "P2CR2", "sprint": 9},
+    {"id": "33081", "person": "Unn", "title": "HCA: Issue Edit Profile บันทึกเบอร์โทรแล้ว redirect ไป Login แทนที่จะบันทึกสำเร็จ", "points": 5, "state": "Ready for test", "project": "Gift-Card-2026", "sprint": 9},
+    {"id": "33084", "person": "Waew", "title": "BKK Living Analyst & Interactive Mockup - V2", "points": 5, "state": "Done", "project": "BKK Living", "sprint": 9},
+    {"id": "33072", "person": "Waew", "title": "Improvement 1 st check up", "points": 2, "state": "Done", "project": "P2CR2", "sprint": 9},
+    {"id": "33074", "person": "Ohm", "title": "NCSWT: องค์กรสมาชิก BUG#04 - รายชื่อองค์กรสมาชิกไม่ auto update หลังลบข้อมูลจากหน้าแก้ไขรายละเอียด", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33075", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#07 - สร้างนักเรียนสำเร็จ ข้อมูลบางส่วนไม่ถูกบันทึก", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33076", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#08 - แก้ไขข้อมูลนักเรียนไม่สำเร็จ กรณีมีบันทึกข้อมูลผู้ปกครอง", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
     {"id": "33064", "person": "Gib", "title": "Component : Tailmed logo brand guide", "points": 2.5, "state": "To Do", "project": "TailMed", "sprint": 9},
-    {"id": "33055", "person": "Ohm", "title": "NCSWT: ผู้บริจาค BUG#01 - date picker เดือนเป็นภาษาอังกฤษ", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33056", "person": "P", "title": "MorePOS: add draft order", "points": 0, "state": "To Do", "project": "Internal/Ops", "sprint": 9},
-    {"id": "33058", "person": "Waew", "title": "TRO Customer LIFF V1 - 300426", "points": 3, "state": "Done", "project": "InsureTech", "sprint": 9},
-    {"id": "33059", "person": "Waew", "title": "Gathering Requirement - 2", "points": 1, "state": "Done", "project": "InsureTech", "sprint": 9},
-    {"id": "33048", "person": "Waew", "title": "Back Office Wireframe V2 - 290426", "points": 1, "state": "Done", "project": "InsureTech", "sprint": 9},
-    {"id": "33050", "person": "Ohm", "title": "NCSWT: กองสลาก BUG#01 - รายละเอียดไม่ตรงกับรายชื่อผู้รับสลากที่เลือก", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33051", "person": "Ohm", "title": "NCSWT: กองสลาก BUG#02 - พิมพ์ PDF สัญญาการซื้อสลากไม่สำเร็จ \"เกิดข้อผิดพลาดในการสร้าง PDF\"", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33052", "person": "Ohm", "title": "NCSWT: กองสลาก BUG#03 - หน้าสร้างผู้รับสลาก กรอกเบอร์โทรเกิน 20 ตัวไม่ได้", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33053", "person": "Ohm", "title": "NCSWT: กองสลาก BUG#04 - หน้าสร้างผู้รับสลาก date picker เดือนเป็นภาษาอังกฤษ", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33042", "person": "Waew", "title": "HCA: Support & Update UAT Progress 280426", "points": 3, "state": "Done", "project": "Gift-Card-2026", "sprint": 9},
-    {"id": "33044", "person": "Waew", "title": "Back Office Wireframe V1 - 280426", "points": 5, "state": "Done", "project": "InsureTech", "sprint": 9},
-    {"id": "33045", "person": "Waew", "title": "Gathering Requirement - 1", "points": 1, "state": "Done", "project": "InsureTech", "sprint": 9},
-    {"id": "33036", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#04 - หน้าสร้างสถานศึกษา เบอร์โทรศัพน์จำกัด 20 หลัก", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33037", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#05 - หน้าสร้างสถานศึกษา รหัสไปรษณีย์กรอกได้ 10 หลักและกรอกตัวอักษรได้", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33038", "person": "Waew", "title": "HCA: Update UAT Progress 270426", "points": 1, "state": "Done", "project": "Gift-Card-2026", "sprint": 9},
+    {"id": "33066", "person": "Waew", "title": "BKK Living Interactive Mockup - V1", "points": 5, "state": "Done", "project": "BKK Living", "sprint": 9},
+    {"id": "33067", "person": "Gib", "title": "1st Draft: Tailmed Facebook Artwork", "points": 2.5, "state": "In Progress", "project": "TailMed", "sprint": 9},
+    {"id": "33068", "person": "Ploy", "title": "26-SP9 Create/report/review design team", "points": 0, "state": "In Progress", "project": "Internal/Ops", "sprint": 9},
+    {"id": "33069", "person": "Gib", "title": "Recruitment Process - Urasaya Katianurak", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 9},
+    {"id": "33058", "person": "Waew", "title": "TRO Customer LIFF V1 - 300426", "points": 3, "state": "Done", "project": "Vi-System", "sprint": 9},
+    {"id": "33059", "person": "Waew", "title": "Gathering Requirement - 2", "points": 1, "state": "Done", "project": "Vi-System", "sprint": 9},
+    {"id": "33061", "person": "Waew", "title": "Manual Book V1", "points": 8, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "33062", "person": "Ohm", "title": "NCSWT: ผู้บริจาค BUG#02 - ระบบผู้บริจาคไม่มีเมนูข้อมูลตั้งต้น", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "33063", "person": "Waew", "title": "UX/UI Audit (Internal) - 300426", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "33051", "person": "Ohm", "title": "NCSWT: กองสลาก BUG#02 - พิมพ์ PDF สัญญาการซื้อสลากไม่สำเร็จ \"เกิดข้อผิดพลาดในการสร้าง PDF\"", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "33052", "person": "Ohm", "title": "NCSWT: กองสลาก BUG#03 - หน้าสร้างผู้รับสลาก กรอกเบอร์โทรเกิน 20 ตัวไม่ได้", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "33053", "person": "Ohm", "title": "NCSWT: กองสลาก BUG#04 - หน้าสร้างผู้รับสลาก date picker เดือนเป็นภาษาอังกฤษ", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "33055", "person": "Ohm", "title": "NCSWT: ผู้บริจาค BUG#01 - date picker เดือนเป็นภาษาอังกฤษ", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "33045", "person": "Waew", "title": "Gathering Requirement - 1", "points": 1, "state": "Done", "project": "Vi-System", "sprint": 9},
+    {"id": "33048", "person": "Waew", "title": "Back Office Wireframe V2 - 290426", "points": 1, "state": "Done", "project": "Vi-System", "sprint": 9},
+    {"id": "33050", "person": "Ohm", "title": "NCSWT: กองสลาก BUG#01 - รายละเอียดไม่ตรงกับรายชื่อผู้รับสลากที่เลือก", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 9},
     {"id": "33039", "person": "No", "title": "Magic Box: improve budget detail section, add version to the gantt chart edit and fix kpi generation error", "points": 3, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33040", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#06 - สร้างนักเรียนสำเร็จ แต่ไม่แสดงที่หน้ารายชื่อนักเรียน", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33040", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#06 - สร้างนักเรียนสำเร็จ แต่ไม่แสดงที่หน้ารายชื่อนักเรียน", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 9},
     {"id": "33041", "person": "Ohm", "title": "NCSWT : [hr] API สำหรับเพิ่มข้อมูลการเข้างาน", "points": 5, "state": "Blocked", "project": "NCSWT", "sprint": 9},
-    {"id": "33030", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#03 - หน้าสร้างนักเรียน รหัสไปรษณีย์กรอกได้ 6 หลักและกรอกตัวอักษรได้", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33042", "person": "Waew", "title": "HCA: Support & Update UAT Progress 280426", "points": 3, "state": "Done", "project": "Gift-Card-2026", "sprint": 9},
+    {"id": "33044", "person": "Waew", "title": "Back Office Wireframe V1 - 280426", "points": 5, "state": "Done", "project": "Vi-System", "sprint": 9},
+    {"id": "33033", "person": "P", "title": "MorePOS: Upload app to Play store for PRODUCTION", "points": 3, "state": "To Do", "project": "MorePOS", "sprint": 9},
+    {"id": "33036", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#04 - หน้าสร้างสถานศึกษา เบอร์โทรศัพน์จำกัด 20 หลัก", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "33037", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#05 - หน้าสร้างสถานศึกษา รหัสไปรษณีย์กรอกได้ 10 หลักและกรอกตัวอักษรได้", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "33038", "person": "Waew", "title": "HCA: Update UAT Progress 270426", "points": 1, "state": "Done", "project": "Gift-Card-2026", "sprint": 9},
+    {"id": "33028", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#01 - หน้าสร้างนักเรียน เลขบัตรประชาชนกรอกเกิน 13 หลักได้", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "33029", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#02 - หน้าสร้างนักเรียน เบอร์โทรศัพน์จำกัด 20 หลัก", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33030", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#03 - หน้าสร้างนักเรียน รหัสไปรษณีย์กรอกได้ 6 หลักและกรอกตัวอักษรได้", "points": 0, "state": "Done", "project": "NCSWT", "sprint": 9},
     {"id": "33031", "person": "P", "title": "MorePOS: Setup VERCEL for PRODUCTION", "points": 2, "state": "To Do", "project": "MorePOS", "sprint": 9},
     {"id": "33032", "person": "P", "title": "MorePOS: Upload app to App store for PRODUCTION", "points": 3, "state": "To Do", "project": "MorePOS", "sprint": 9},
-    {"id": "33033", "person": "P", "title": "MorePOS: Upload app to Play store for PRODUCTION", "points": 3, "state": "To Do", "project": "MorePOS", "sprint": 9},
-    {"id": "33025", "person": "Ploy", "title": "Analysis: Adelphi Itsaraphap Project Status & Outstanding Items", "points": 1, "state": "To Do", "project": "AdelphiISRP", "sprint": 9},
+    {"id": "33020", "person": "Ohm", "title": "NCSWT : [hr] API สำหรับเพิ่มข้อมูลการลา", "points": 5, "state": "Ready for test", "project": "NCSWT", "sprint": 9},
+    {"id": "33021", "person": "Ohm", "title": "NCSWT : [hr] แสดงรายการ การลา", "points": 5, "state": "Ready for test", "project": "NCSWT", "sprint": 9},
+    {"id": "33022", "person": "Ohm", "title": "NCSWT : [hr] db schema", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "33023", "person": "Ohm", "title": "NCSWT : [hr] แสดงประวัติเวลาเข้างาน ออกงาน", "points": 8, "state": "Ready for test", "project": "NCSWT", "sprint": 9},
     {"id": "33026", "person": "Ploy", "title": "Doc: Final Billing", "points": 1, "state": "Done", "project": "AdelphiISRP", "sprint": 9},
-    {"id": "33028", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#01 - หน้าสร้างนักเรียน เลขบัตรประชาชนกรอกเกิน 13 หลักได้", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33029", "person": "Ohm", "title": "NCSWT: ทุนการศึกษา BUG#02 - หน้าสร้างนักเรียน เบอร์โทรศัพน์จำกัด 20 หลัก", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33019", "person": "Ohm", "title": "NCSWT : [hr] db schema", "points": 3, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33020", "person": "Ohm", "title": "NCSWT : [hr] API สำหรับเพิ่มข้อมูลการลา", "points": 5, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33021", "person": "Ohm", "title": "NCSWT : [hr] แสดงรายการ การลา", "points": 5, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33022", "person": "Ohm", "title": "NCSWT : [hr] db schema", "points": 3, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33023", "person": "Ohm", "title": "NCSWT : [hr] แสดงประวัติเวลาเข้างาน ออกงาน", "points": 8, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
-    {"id": "33008", "person": "Gib", "title": "1st Draft: Tailmed logo", "points": 1.5, "state": "In Progress", "project": "TailMed", "sprint": 9},
-    {"id": "33009", "person": "Gib", "title": "Handoff: Tailmed logo", "points": 1.5, "state": "To Do", "project": "TailMed", "sprint": 9},
+    {"id": "33012", "person": "Unn", "title": "BKP: BUG [UAT] Product - Out of stock ไม่แสดงขีดฆ่าที่ variation ต้องกดก่อนถึงแสดง", "points": 0, "state": "Done", "project": "Breaking Par", "sprint": 9},
+    {"id": "33015", "person": "Ohm", "title": "NCSWT: องค์กรสมาชิก BUG#01 - หน้าสร้างองค์กร ไม่สามารถกรอกรหัสไปรษณีย์ได้", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33016", "person": "Ohm", "title": "NCSWT: องค์กรสมาชิก BUG#02 - หน้าสร้างองค์กร อายุกรอก - + 0 นำหน้าเลขได้", "points": 0, "state": "Ready for review", "project": "NCSWT", "sprint": 9},
+    {"id": "33019", "person": "Ohm", "title": "NCSWT : [hr] db schema", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "33007", "person": "Gib", "title": "Research: Tailmed Logo", "points": 1.5, "state": "Done", "project": "TailMed", "sprint": 9},
+    {"id": "33008", "person": "Gib", "title": "1st Draft: Tailmed logo", "points": 1.5, "state": "Done", "project": "TailMed", "sprint": 9},
+    {"id": "33009", "person": "Gib", "title": "Handoff: Tailmed logo", "points": 1.5, "state": "Done", "project": "TailMed", "sprint": 9},
     {"id": "33010", "person": "Gib", "title": "1st Draft: Tailmed Social Media Templates", "points": 2.5, "state": "To Do", "project": "TailMed", "sprint": 9},
     {"id": "33011", "person": "Gib", "title": "INT Meeting : Logo & Social Media Templates", "points": 1, "state": "To Do", "project": "TailMed", "sprint": 9},
-    {"id": "33012", "person": "Unn", "title": "BKP: BUG [UAT] Product - Out of stock ไม่แสดงขีดฆ่าที่ variation ต้องกดก่อนถึงแสดง", "points": 0, "state": "Done", "project": "Breaking Par", "sprint": 9},
-    {"id": "33002", "person": "Ploy", "title": "Revision: [Product listing+Detail] ([6] screens, R2)", "points": 3, "state": "To Do", "project": "2026-1", "sprint": 9},
-    {"id": "33003", "person": "Ploy", "title": "Final: [Sub-Menu] (3 screens, R2)", "points": 1, "state": "To Do", "project": "2026-1", "sprint": 9},
-    {"id": "33004", "person": "Ploy", "title": "Final: [Product listing+Detail] ([6] screens, R3)", "points": 1.5, "state": "To Do", "project": "2026-1", "sprint": 9},
-    {"id": "33005", "person": "Gib", "title": "Component: [CMS MVP Phase] (Full style guide setup)", "points": 5, "state": "Blocked", "project": "TailMed", "sprint": 9},
-    {"id": "33006", "person": "Gib", "title": "Handoff: [CMS MVP Phase]", "points": 2.5, "state": "Blocked", "project": "TailMed", "sprint": 9},
-    {"id": "33007", "person": "Gib", "title": "Research: Tailmed Logo", "points": 1.5, "state": "Done", "project": "TailMed", "sprint": 9},
+    {"id": "32992", "person": "Ploy", "title": "26-SP9 Daily operation", "points": 0, "state": "To Do", "project": "Internal/Ops", "sprint": 9},
     {"id": "32994", "person": "No", "title": "Magic box: create a table template so that the table can be read correctly by AI", "points": 2, "state": "Done", "project": "NCSWT", "sprint": 9},
     {"id": "32996", "person": "Karn", "title": "Make Appointment with สทบ and new contractor", "points": 0, "state": "In Progress", "project": "Internal/Ops", "sprint": 9},
     {"id": "32998", "person": "Karn", "title": "TailMed: Content for landing page", "points": 0, "state": "To Do", "project": "TailMed", "sprint": 9},
     {"id": "32999", "person": "Gib", "title": "INT Meeting: Design draft", "points": 1, "state": "To Do", "project": "TailMed", "sprint": 9},
-    {"id": "33000", "person": "Ploy", "title": "EXT meeting: design session R2", "points": 1, "state": "To Do", "project": "2026-1", "sprint": 9},
-    {"id": "33001", "person": "Ploy", "title": "EXT meeting: design session Final", "points": 1, "state": "To Do", "project": "2026-1", "sprint": 9},
+    {"id": "32984", "person": "Nust", "title": "HCA : Support (Deploy Switch Chat model feature to UAT)", "points": 2, "state": "Done", "project": "Gift-Card-2026", "sprint": 9},
     {"id": "32985", "person": "Nust", "title": "HCA (Chat) : Support (Deploy Switch Chat model feature to UAT)", "points": 2, "state": "Done", "project": "Internal/Ops", "sprint": 9},
     {"id": "32988", "person": "Nust", "title": "More : Check project that use aenlhung AWS Key", "points": 2, "state": "In Progress", "project": "Internal/Ops", "sprint": 9},
     {"id": "32989", "person": "Nust", "title": "HCA (Event) : Add utility for access event page", "points": 1, "state": "Waiting to INT deploy", "project": "Event-Registration-2026", "sprint": 9},
     {"id": "32990", "person": "Nust", "title": "HCA (Event)  : Update cronjob to fetch data for event", "points": 5, "state": "To Do", "project": "Event-Registration-2026", "sprint": 9},
     {"id": "32991", "person": "Ploy", "title": "26-SP9 Daily management", "points": 0, "state": "To Do", "project": "Internal/Ops", "sprint": 9},
-    {"id": "32992", "person": "Ploy", "title": "26-SP9 Daily operation", "points": 0, "state": "To Do", "project": "Internal/Ops", "sprint": 9},
     {"id": "32974", "person": "Tum", "title": "เพิ่ม Numpad ที่ใช้สำหรับส่งข้อมูลไปยังระบบตอบกลับ/Call center", "points": 3, "state": "Done", "project": "MeApp", "sprint": 9},
     {"id": "32980", "person": "Nust", "title": "HCA (Chat) : Add multi chat model", "points": 3, "state": "Done", "project": "Internal/Ops", "sprint": 9},
     {"id": "32981", "person": "Nust", "title": "HCA : Update to keep encrypt HC No (Update from meeting 260423)", "points": 3, "state": "Done", "project": "Gift-Card-2026", "sprint": 9},
     {"id": "32982", "person": "Nust", "title": "HCA : Update to add masking HC No and ECN on log (Update from meeting 260423)", "points": 3, "state": "Done", "project": "Gift-Card-2026", "sprint": 9},
     {"id": "32983", "person": "Nust", "title": "HCA : Support (Internal test)", "points": 3, "state": "In Progress", "project": "Gift-Card-2026", "sprint": 9},
-    {"id": "32984", "person": "Nust", "title": "HCA : Support (Deploy Switch Chat model feature to UAT)", "points": 2, "state": "Done", "project": "Gift-Card-2026", "sprint": 9},
-    {"id": "32961", "person": "Gib", "title": "Recruitment Process - korawan prasertsri", "points": 0.5, "state": "To Do", "project": "Internal/Ops", "sprint": 9},
-    {"id": "32965", "person": "Ploy", "title": "INT Meeting Pawrent Brief Design Guideline & Audit", "points": 1, "state": "To Do", "project": "TailMed", "sprint": 9},
+    {"id": "32959", "person": "Ploy", "title": "26-SP9 Create/report/planning design team", "points": 0, "state": "Done", "project": "Internal/Ops", "sprint": 9},
+    {"id": "32961", "person": "Gib", "title": "Recruitment Process - korawan prasertsri", "points": 1, "state": "Done", "project": "Internal/Ops", "sprint": 9},
+    {"id": "32965", "person": "Ploy", "title": "INT Meeting Pawrent Brief Design Guideline & Audit", "points": 1, "state": "Done", "project": "TailMed", "sprint": 9},
     {"id": "32952", "person": "Ploy", "title": "Component: [Breaking par website- Luxury Revamp 2026] rename to the standard", "points": 1.5, "state": "Done", "project": "2026-1", "sprint": 9},
-    {"id": "32953", "person": "Gib", "title": "Recruitment Process - Siwakorn Karinpong", "points": 0.5, "state": "To Do", "project": "Internal/Ops", "sprint": 9},
-    {"id": "32954", "person": "Gib", "title": "Recruitment Process - Chalisa Jarernsawat", "points": 0.5, "state": "Done", "project": "Internal/Ops", "sprint": 9},
+    {"id": "32953", "person": "Gib", "title": "Recruitment Process - Siwakorn Karinpong", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 9},
+    {"id": "32954", "person": "Gib", "title": "Recruitment Process - Chalisa Jarernsawat", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 9},
     {"id": "32955", "person": "Gib", "title": "INT Meeting Pawrent Brift Design Guideline & Audit", "points": 1, "state": "To Do", "project": "TailMed", "sprint": 9},
-    {"id": "32959", "person": "Ploy", "title": "26-SP9 Create/report/planning design team", "points": 0, "state": "In Progress", "project": "Internal/Ops", "sprint": 9},
     {"id": "32945", "person": "Karn", "title": "Pawrent: Investor Progress Update", "points": 13, "state": "To Do", "project": "TailMed", "sprint": 9},
     {"id": "32948", "person": "Ploy", "title": "Revision: [Sub menu] 1 screens, R1", "points": 2.5, "state": "Done", "project": "2026-1", "sprint": 9},
     {"id": "32937", "person": "Karn", "title": "Pawrent: Target Segment & Positioning", "points": 3, "state": "Done", "project": "TailMed", "sprint": 9},
     {"id": "32912", "person": "Waew", "title": "Pawrent: University Follow-up & Meeting Coordination", "points": 0, "state": "To Do", "project": "TailMed", "sprint": 9},
     {"id": "32919", "person": "Waew", "title": "Create AEO Report Monitoring", "points": 1, "state": "To Do", "project": "P2CR2", "sprint": 9},
-    {"id": "32903", "person": "Ploy", "title": "1st Draft Web: [MVP feature] (mobile size)", "points": 7, "state": "To Do", "project": "TailMed", "sprint": 9},
     {"id": "32907", "person": "Waew", "title": "Pawrent: University Outreach Email Template", "points": 1, "state": "Done", "project": "TailMed", "sprint": 9},
     {"id": "32909", "person": "Waew", "title": "Pawrent: Send University Outreach Emails", "points": 0, "state": "To Do", "project": "TailMed", "sprint": 9},
+    {"id": "32894", "person": "Ploy", "title": "Audit: MVP Wireframe", "points": 2.5, "state": "Done", "project": "TailMed", "sprint": 9},
+    {"id": "32895", "person": "Ploy", "title": "Component: [MVP Phase] (Design system)", "points": 5, "state": "In Progress", "project": "TailMed", "sprint": 9},
     {"id": "32897", "person": "Ploy", "title": "INT Meeting: Design draft", "points": 1, "state": "To Do", "project": "TailMed", "sprint": 9},
-    {"id": "32899", "person": "Ploy", "title": "Revision: [MVP Phase] (6 screens, R1)\"", "points": 4, "state": "To Do", "project": "TailMed", "sprint": 9},
     {"id": "32900", "person": "Gib", "title": "Handoff: Tailmed Social Media Templates", "points": 2.4, "state": "To Do", "project": "TailMed", "sprint": 9},
-    {"id": "32901", "person": "Ploy", "title": "Final Draft: [MVP Phase]", "points": 2.5, "state": "To Do", "project": "TailMed", "sprint": 9},
-    {"id": "32902", "person": "Ploy", "title": "Handoff: [MVP Phase]", "points": 2.5, "state": "To Do", "project": "TailMed", "sprint": 9},
-    {"id": "32894", "person": "Ploy", "title": "Audit: MVP Wireframe", "points": 2.5, "state": "To Do", "project": "TailMed", "sprint": 9},
-    {"id": "32895", "person": "Ploy", "title": "Component: [MVP Phase] (Design system)", "points": 5, "state": "To Do", "project": "TailMed", "sprint": 9},
+    {"id": "32903", "person": "Ploy", "title": "1st Draft Web: [MVP feature] (mobile size)", "points": 7, "state": "In Progress", "project": "TailMed", "sprint": 9},
+    {"id": "32869", "person": "Gib", "title": "Recruitment Process - Jakkrit sapsiridet", "points": 1, "state": "Done", "project": "Internal/Ops", "sprint": 9},
+    {"id": "32874", "person": "Ploy", "title": "Recruitment Process - Jakkrit sapsiridet", "points": 1, "state": "Done", "project": "Internal/Ops", "sprint": 9},
     {"id": "32876", "person": "P", "title": "Set up code and infro for seree POS", "points": 5, "state": "In Progress", "project": "Internal/Ops", "sprint": 9},
     {"id": "32877", "person": "Tae", "title": "Communicate POS solution with K Airk and Make Appointment to go in and set up POS", "points": 3, "state": "Done", "project": "Internal/Ops", "sprint": 9},
     {"id": "32859", "person": "Ploy", "title": "Recruitment Process - Chalisa Jarernsawat", "points": 0.75, "state": "Done", "project": "Internal/Ops", "sprint": 9},
-    {"id": "32869", "person": "Gib", "title": "Recruitment Process - Jakkrit sapsiridet", "points": 1, "state": "Done", "project": "Internal/Ops", "sprint": 9},
-    {"id": "32874", "person": "Ploy", "title": "Recruitment Process - Jakkrit sapsiridet", "points": 1, "state": "Done", "project": "Internal/Ops", "sprint": 9},
-    {"id": "32810", "person": "Ping", "title": "NCSWT: INT Test - รายได้", "points": 5, "state": "To Do", "project": "NCSWT", "sprint": 9},
-    {"id": "32811", "person": "Ping", "title": "NCSWT: INT Test - ทุนการศึกษา", "points": 5, "state": "Blocked", "project": "NCSWT", "sprint": 9},
-    {"id": "32800", "person": "Unn", "title": "UI และ API Integration Card Event Registration", "points": 5, "state": "To Do", "project": "Event-Registration-2026", "sprint": 9},
-    {"id": "32801", "person": "Unn", "title": "Card Event Registration : Card State", "points": 5, "state": "To Do", "project": "Event-Registration-2026", "sprint": 9},
-    {"id": "32804", "person": "Ping", "title": "NCSWT: INT Test - ผู้บริจาค", "points": 3, "state": "Bugged", "project": "NCSWT", "sprint": 9},
-    {"id": "32805", "person": "Ping", "title": "NCSWT: INT Test - จัดการเจ้าหน้าที่", "points": 5, "state": "To Do", "project": "NCSWT", "sprint": 9},
-    {"id": "32806", "person": "Ping", "title": "NCSWT: INT Test - องค์กรสมาชิก", "points": 8, "state": "In Progress", "project": "NCSWT", "sprint": 9},
-    {"id": "32808", "person": "Ping", "title": "NCSWT: INT Test - กองสลาก", "points": 5, "state": "Blocked", "project": "NCSWT", "sprint": 9},
-    {"id": "32792", "person": "Unn", "title": "Pull to refresh หน้า Event ทั้งหมด", "points": 3, "state": "To Do", "project": "Event-Registration-2026", "sprint": 9},
-    {"id": "32793", "person": "Ping", "title": "HCA: INT Test - Gift Card Topup", "points": 5, "state": "Done", "project": "Gift-Card-2026", "sprint": 9},
-    {"id": "32796", "person": "Nust", "title": "HCA (Event) : API Fetch Workshop List Level 1 - 3", "points": 8, "state": "To Do", "project": "Event-Registration-2026", "sprint": 9},
+    {"id": "32805", "person": "Ping", "title": "NCSWT: INT Test - จัดการเจ้าหน้าที่", "points": 8, "state": "Bugged", "project": "NCSWT", "sprint": 9},
+    {"id": "32806", "person": "Ping", "title": "NCSWT: INT Test - องค์กรสมาชิก", "points": 8, "state": "Bugged", "project": "NCSWT", "sprint": 9},
+    {"id": "32808", "person": "Ping", "title": "NCSWT: INT Test - กองสลาก", "points": 5, "state": "Bugged", "project": "NCSWT", "sprint": 9},
+    {"id": "32810", "person": "Ping", "title": "NCSWT: INT Test - รายได้", "points": 3, "state": "Bugged", "project": "NCSWT", "sprint": 9},
+    {"id": "32811", "person": "Ping", "title": "NCSWT: INT Test - ทุนการศึกษา", "points": 5, "state": "Bugged", "project": "NCSWT", "sprint": 9},
     {"id": "32797", "person": "Unn", "title": "UI และ API Integration ของ Card Category Level 2", "points": 5, "state": "To Do", "project": "Event-Registration-2026", "sprint": 9},
     {"id": "32798", "person": "Unn", "title": "Sub Tab สำหรับ Filter, สาขาใกล้ฉัน และ Search", "points": 5, "state": "To Do", "project": "Event-Registration-2026", "sprint": 9},
     {"id": "32799", "person": "Unn", "title": "UI และ API Integration ของสาขาใกล้ฉัน", "points": 5, "state": "To Do", "project": "Event-Registration-2026", "sprint": 9},
-    {"id": "32776", "person": "Ohm", "title": "Content for test : ดอกไม้ต่าง", "points": 3, "state": "To Do", "project": "NCSWT", "sprint": 9},
-    {"id": "32777", "person": "Ohm", "title": "Content for test : ทุนการศึกษา", "points": 3, "state": "To Do", "project": "NCSWT", "sprint": 9},
-    {"id": "32785", "person": "Unn", "title": "ปรับ setting ให้มี HCA Event ใน Utility Tab bar", "points": 1, "state": "Blocked", "project": "Event-Registration-2026", "sprint": 9},
+    {"id": "32800", "person": "Unn", "title": "UI และ API Integration Card Event Registration", "points": 5, "state": "To Do", "project": "Event-Registration-2026", "sprint": 9},
+    {"id": "32801", "person": "Unn", "title": "Card Event Registration : Card State", "points": 5, "state": "To Do", "project": "Event-Registration-2026", "sprint": 9},
+    {"id": "32804", "person": "Ping", "title": "NCSWT: INT Test - ผู้บริจาค", "points": 5, "state": "Bugged", "project": "NCSWT", "sprint": 9},
     {"id": "32786", "person": "Unn", "title": "UI และ Integrate API ของ Card Event Category Level 1", "points": 5, "state": "In Progress", "project": "Event-Registration-2026", "sprint": 9},
     {"id": "32788", "person": "Unn", "title": "เพิ่ม Event เข้าไปใน Main Tap ด้านบน และทำ Sub Tap ที่เป็น Filter และ Search", "points": 3, "state": "Blocked", "project": "Event-Registration-2026", "sprint": 9},
     {"id": "32791", "person": "Unn", "title": "ปุ่ม Event ของฉัน และแสดงหน้า Event ของฉัน", "points": 3, "state": "To Do", "project": "Event-Registration-2026", "sprint": 9},
+    {"id": "32792", "person": "Unn", "title": "Pull to refresh หน้า Event ทั้งหมด", "points": 3, "state": "To Do", "project": "Event-Registration-2026", "sprint": 9},
+    {"id": "32793", "person": "Ping", "title": "HCA: INT Test - Gift Card Topup", "points": 5, "state": "Done", "project": "Gift-Card-2026", "sprint": 9},
+    {"id": "32796", "person": "Nust", "title": "HCA (Event) : API Fetch Workshop List Level 1 - 3", "points": 8, "state": "To Do", "project": "Event-Registration-2026", "sprint": 9},
+    {"id": "32769", "person": "Ploy", "title": "Recruitment Process - korawan prasertsri", "points": 1, "state": "Done", "project": "Internal/Ops", "sprint": 9},
+    {"id": "32773", "person": "Ohm", "title": "Content for test : ผู้บริจาค", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "32775", "person": "Ohm", "title": "Content for test : สลาก", "points": 5, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "32776", "person": "Ohm", "title": "Content for test : ดอกไม้ต่าง", "points": 3, "state": "In Progress", "project": "NCSWT", "sprint": 9},
+    {"id": "32777", "person": "Ohm", "title": "Content for test : ทุนการศึกษา", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 9},
+    {"id": "32785", "person": "Unn", "title": "ปรับ setting ให้มี HCA Event ใน Utility Tab bar", "points": 1, "state": "Blocked", "project": "Event-Registration-2026", "sprint": 9},
+    {"id": "32751", "person": "Ploy", "title": "Workcheck: Logo R3 → Delivery", "points": 1, "state": "In Progress", "project": "khaojai it", "sprint": 9},
+    {"id": "32759", "person": "Ploy", "title": "Recruitment Process - Urasaya Katianurak", "points": 0.25, "state": "Done", "project": "Internal/Ops", "sprint": 9},
     {"id": "32762", "person": "Ploy", "title": "Recruitment Process - Sutapat Ueapattanapong", "points": 0.75, "state": "Done", "project": "Internal/Ops", "sprint": 9},
-    {"id": "32763", "person": "Gib", "title": "Recruitment Process - Sutapat Ueapattanapong", "points": 0.5, "state": "To Do", "project": "Internal/Ops", "sprint": 9},
+    {"id": "32763", "person": "Gib", "title": "Recruitment Process - Sutapat Ueapattanapong", "points": 0.75, "state": "Done", "project": "Internal/Ops", "sprint": 9},
     {"id": "32764", "person": "Gib", "title": "Recruitment Process - Thanapoom Puchat", "points": 1, "state": "Done", "project": "Internal/Ops", "sprint": 9},
     {"id": "32765", "person": "Ploy", "title": "Recruitment Process - Thanapoom Puchat", "points": 1, "state": "Done", "project": "Internal/Ops", "sprint": 9},
-    {"id": "32773", "person": "Ohm", "title": "Content for test : ผู้บริจาค", "points": 3, "state": "To Do", "project": "NCSWT", "sprint": 9},
-    {"id": "32775", "person": "Ohm", "title": "Content for test : สลาก", "points": 5, "state": "To Do", "project": "NCSWT", "sprint": 9},
     {"id": "32729", "person": "Ploy", "title": "26-SP8 Create/report/review design team", "points": 0, "state": "Done", "project": "Internal/Ops", "sprint": 9},
     {"id": "32731", "person": "Ploy", "title": "EXT: Design session#1", "points": 1, "state": "Done", "project": "2026-1", "sprint": 9},
     {"id": "32746", "person": "Ploy", "title": "INT: Design session1", "points": 1, "state": "Done", "project": "2026-1", "sprint": 9},
     {"id": "32749", "person": "Ploy", "title": "Revision: [Product listing and details] 2 screens, R1", "points": 4.5, "state": "Done", "project": "2026-1", "sprint": 9},
     {"id": "32750", "person": "Ploy", "title": "Slide: [Product listing and details] R1", "points": 2, "state": "Done", "project": "2026-1", "sprint": 9},
-    {"id": "32751", "person": "Ploy", "title": "Workcheck: Logo R3 → Delivery", "points": 1, "state": "To Do", "project": "khaojai it", "sprint": 9},
-    {"id": "32699", "person": "Waew", "title": "Feedback and Improvement 1st check up", "points": 0, "state": "To Do", "project": "P2CR2", "sprint": 9},
+    {"id": "32569", "person": "Nust", "title": "HCA (Chat) : Update script ChatNX AI", "points": 3, "state": "Done", "project": "Internal/Ops", "sprint": 9},
+    {"id": "32699", "person": "Waew", "title": "Feedback and Improvement 1st check up", "points": 1, "state": "Done", "project": "P2CR2", "sprint": 9},
     {"id": "32700", "person": "Karn", "title": "More studio Website Content for each Services", "points": 0, "state": "To Do", "project": "Internal/Ops", "sprint": 9},
     {"id": "32703", "person": "Karn", "title": "More studio website About us page content", "points": 0, "state": "To Do", "project": "Internal/Ops", "sprint": 9},
+    {"id": "32546", "person": "Gib", "title": "EXT Meeting: Design kick-off for logo & identity manual", "points": 1, "state": "To Do", "project": "Ship360EXP", "sprint": 9},
     {"id": "32552", "person": "Gib", "title": "Ship360 - 1st Logo draft", "points": 3, "state": "Done", "project": "Ship360EXP", "sprint": 9},
     {"id": "32554", "person": "Ploy", "title": "Workcheck: logo R1 (Senior)", "points": 1, "state": "Done", "project": "Ship360EXP", "sprint": 9},
     {"id": "32555", "person": "Gib", "title": "1st - Ship360 Slide Presentation", "points": 2, "state": "Done", "project": "Ship360EXP", "sprint": 9},
     {"id": "32564", "person": "Gib", "title": "EXT for 2nd > final for feedback", "points": 1, "state": "To Do", "project": "khaojai it", "sprint": 9},
-    {"id": "32566", "person": "Gib", "title": "Final - khaojai Slide Presentation", "points": 1, "state": "To Do", "project": "khaojai it", "sprint": 9},
-    {"id": "32569", "person": "Nust", "title": "HCA (Chat) : Update script ChatNX AI", "points": 3, "state": "Done", "project": "Internal/Ops", "sprint": 9},
+    {"id": "32566", "person": "Gib", "title": "Final - khaojai Slide Presentation", "points": 1, "state": "In Progress", "project": "khaojai it", "sprint": 9},
+    {"id": "32477", "person": "Ploy", "title": "EXT Meeting: Design kick-off for logo & identity manual", "points": 1, "state": "To Do", "project": "Ship360EXP", "sprint": 9},
     {"id": "32483", "person": "Ohm", "title": "GENCO: [Feedback] Export Vendor List", "points": 3, "state": "In Progress", "project": "GENCO", "sprint": 9},
     {"id": "32492", "person": "Nust", "title": "NCSWT : Check https://claude.ai/public/artifacts/b29ea08b-32b3-4103-8c30-38b29e9bfc78", "points": 2, "state": "Blocked", "project": "NCSWT", "sprint": 9},
     {"id": "32498", "person": "Nust", "title": "IST - SCB : (Internal) create system for loan transaction to air table", "points": 5, "state": "In Progress", "project": "InsureTech", "sprint": 9},
-    {"id": "32546", "person": "Gib", "title": "EXT Meeting: Design kick-off for logo & identity manual", "points": 1, "state": "To Do", "project": "Ship360EXP", "sprint": 9},
-    {"id": "32063", "person": "Gib", "title": "3rd logo draft", "points": 1, "state": "To Do", "project": "khaojai it", "sprint": 9},
-    {"id": "32064", "person": "Gib", "title": "Delivery logo", "points": 1, "state": "To Do", "project": "khaojai it", "sprint": 9},
-    {"id": "32193", "person": "Ping", "title": "NCSWT: INT Test - Create Admin organization automated test", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 9},
-    {"id": "32204", "person": "Ploy", "title": "Initiation business logic for 1 draft design session- 2", "points": 2, "state": "To Do", "project": "P2CR2", "sprint": 9},
-    {"id": "32477", "person": "Ploy", "title": "EXT Meeting: Design kick-off for logo & identity manual", "points": 1, "state": "To Do", "project": "Ship360EXP", "sprint": 9},
-    {"id": "31696", "person": "Ploy", "title": "design session2- Initiation business logic", "points": 1, "state": "To Do", "project": "P2CR2", "sprint": 9},
-    {"id": "32027", "person": "Nust", "title": "NCSWT : [hr] feature นำเข้าข้อมูลลงเวลา", "points": 0, "state": "To Do", "project": "NCSWT", "sprint": 9},
     {"id": "32054", "person": "Gib", "title": "INT Meeting : Review CMS Requirement", "points": 1, "state": "To Do", "project": "P2CR2", "sprint": 9},
-    {"id": "32061", "person": "Ploy", "title": "EXT for 2nd > final for feedback", "points": 1, "state": "To Do", "project": "khaojai it", "sprint": 9}
+    {"id": "32061", "person": "Ploy", "title": "EXT for 2nd > final for feedback", "points": 1, "state": "To Do", "project": "khaojai it", "sprint": 9},
+    {"id": "32063", "person": "Gib", "title": "3rd logo draft", "points": 1, "state": "Done", "project": "khaojai it", "sprint": 9},
+    {"id": "32064", "person": "Gib", "title": "Delivery logo", "points": 1, "state": "To Do", "project": "khaojai it", "sprint": 9},
+    {"id": "32193", "person": "Ping", "title": "NCSWT: INT Test - Create Admin organization automated test", "points": 3, "state": "Done", "project": "NCSWT", "sprint": 9}
   ],
 
   statusLabels: ["Done", "In Progress", "Ready for review", "Ready for test", "Waiting to INT deploy", "Waiting to PRD deploy", "To Do", "Blocked", "Bugged", "Removed"],
@@ -2504,7 +2618,7 @@ const SPRINT_DATES = [
   { s: "2026-05-11", e: "2026-05-24" }   // Sprint 10
 ];
 // Reference date = data snapshot date (so results don't drift with real-world clock)
-const SNAPSHOT_DATE = "2026-05-02";
+const SNAPSHOT_DATE = "2026-05-08";
 function currentSprintIdxByDate(dateStr){
   const d = dateStr || SNAPSHOT_DATE;
   for (let i = 0; i < SPRINT_DATES.length; i++) {
@@ -2628,7 +2742,7 @@ let S = {
   person: "Ohm",
   personMetric: "points",
   projRange: "all",
-  projTopN: "15",
+  projTopN: "25",
   projRole: "all",
   statusMetric: "points",
   statusView: "person",
@@ -3275,12 +3389,13 @@ function buildPersonDrill(){
   const grandPts = sum(statusPts);
   const pillsHtml = DATA.statusLabels.map((lbl, i) => {
     const c = statusCount[i], p = statusPts[i];
-    const pct = grandCount ? (c/grandCount*100).toFixed(0) : 0;
-    const dim = c === 0 ? 'opacity:0.35;' : '';
-    return `<div style="flex:1; min-width:130px; background:var(--panel-2); border:1px solid ${DATA.statusColors[i]}55; border-left:4px solid ${DATA.statusColors[i]}; border-radius:10px; padding:10px 12px; ${dim}">
-      <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.3px;">${lbl}</div>
-      <div style="font-size:20px; font-weight:700; color:${DATA.statusColors[i]}; margin-top:2px; white-space:nowrap;">${c}<span style="font-size:11px; color:var(--muted); font-weight:400; margin-left:4px;">งาน</span></div>
-      <div style="font-size:11px; color:var(--text);">${p.toLocaleString(undefined,{maximumFractionDigits:1})} pts · ${pct}%</div>
+    const pct = grandCount ? Math.round(c/grandCount*100) : 0;
+    const empty = c === 0 ? ' is-empty' : '';
+    return `<div class="status-pill${empty}" style="--c:${DATA.statusColors[i]};">
+      <div class="sp-head"><span class="sp-dot"></span><span class="sp-label">${lbl}</span></div>
+      <div class="sp-num"><span class="sp-count">${c.toLocaleString()}</span><span class="sp-unit">งาน</span></div>
+      <div class="sp-bar"><i style="width:${Math.min(100,pct)}%"></i></div>
+      <div class="sp-foot"><span>${p.toLocaleString(undefined,{maximumFractionDigits:1})} pts</span><span class="sp-pct">${pct}%</span></div>
     </div>`;
   }).join("");
   document.getElementById("drillStatusPills").innerHTML = pillsHtml;
@@ -3920,28 +4035,31 @@ function buildLogicTab(){
   const totalAllTasks = sum(Object.values(DATA.statusPersonCount).map(sum));
 
   // ---- Card 1: Filtering ----
+  const iterRange = activeSprints.length
+    ? `M\\2026\\${activeSprints[0]} → M\\2026\\${activeSprints[activeSprints.length - 1]}`
+    : "—";
   const filterCard = `<div class="card">
     <h3>1 · Filtering Rules <span class="tag">what gets included</span></h3>
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; margin-top:8px;">
-      <div style="background:var(--panel-2); border-radius:10px; padding:14px; border-left:3px solid #6366f1;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:6px;">Work Item Type</div>
-        <div style="font-size:15px; font-weight:600; color:var(--text);">Task</div>
-        <div style="font-size:12px; color:var(--muted); margin-top:4px;">ตัด Bug · Feature · PBI · Epic ออก</div>
+    <div class="insights-grid" style="margin-top:8px;">
+      <div class="insight">
+        <div class="ins-title">Work Item Type</div>
+        <div class="ins-value">Task · Bug</div>
+        <div class="ins-hint">ตัด Feature · PBI · Epic ออก</div>
       </div>
-      <div style="background:var(--panel-2); border-radius:10px; padding:14px; border-left:3px solid #22d3ee;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:6px;">Iteration</div>
-        <div style="font-size:15px; font-weight:600; color:var(--text);">M\\2026\\1 → M\\2026\\9</div>
-        <div style="font-size:12px; color:var(--muted); margin-top:4px;">${sprintRangeLabel} · auto-refresh ทุก sprint ที่อัปไฟล์</div>
+      <div class="insight info">
+        <div class="ins-title">Iteration</div>
+        <div class="ins-value">${iterRange}</div>
+        <div class="ins-hint">${sprintRangeLabel} · auto-refresh ทุก sprint ที่อัปไฟล์</div>
       </div>
-      <div style="background:var(--panel-2); border-radius:10px; padding:14px; border-left:3px solid #f59e0b;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:6px;">Assignee</div>
-        <div style="font-size:15px; font-weight:600; color:var(--text);">required</div>
-        <div style="font-size:12px; color:var(--muted); margin-top:4px;">Task ไม่มีคน assign → ข้าม</div>
+      <div class="insight warn">
+        <div class="ins-title">Assignee</div>
+        <div class="ins-value">required</div>
+        <div class="ins-hint">Task ไม่มีคน assign → ข้าม</div>
       </div>
-      <div style="background:var(--panel-2); border-radius:10px; padding:14px; border-left:3px solid #10b981;">
-        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:6px;">Backlog / Out-of-scope</div>
-        <div style="font-size:15px; font-weight:600; color:var(--text);">excluded</div>
-        <div style="font-size:12px; color:var(--muted); margin-top:4px;">M\\Backlog · M\\2025\\* · iteration ที่ไม่มี sprint number</div>
+      <div class="insight good">
+        <div class="ins-title">Backlog / Out-of-scope</div>
+        <div class="ins-value">excluded</div>
+        <div class="ins-hint">M\\Backlog · M\\2025\\* · iteration ที่ไม่มี sprint number</div>
       </div>
     </div>
   </div>`;
@@ -4179,7 +4297,7 @@ function wireUp(){
   document.getElementById("statusView").addEventListener("change", e => { S.statusView = e.target.value; refresh(); });
 }
 
-document.getElementById("updated").textContent = "Data updated: 2 May 2026";
+document.getElementById("updated").textContent = "Data updated: 8 May 2026";
 
 // ---- Stale contributor warning (no updates in last 2 sprints) ----
 (function renderStaleBanner(){
