@@ -560,13 +560,10 @@
   </div>
 </header>
 
-<div id="staleBanner" class="stale-banner" style="display:none;"></div>
-
 <div class="container">
 
   <div class="topnav" id="topnav">
     <div class="navtab active" data-section="overview">Overview</div>
-    <div class="navtab" data-section="people">People</div>
     <div class="navtab" data-section="projects">Projects</div>
     <div class="navtab" data-section="status">Status</div>
     <div class="navtab" data-section="logic">Logic</div>
@@ -663,56 +660,6 @@
     </div>
   </section>
 
-  <!-- =========================== PEOPLE =========================== -->
-  <section class="section" id="section-people">
-    <div class="controls">
-      <div class="control">
-        <label for="personDrill">Drill into Person</label>
-        <select id="personDrill"></select>
-      </div>
-      <div class="control">
-        <label for="personMetric">Metric</label>
-        <select id="personMetric">
-          <option value="points">Story Points</option>
-          <option value="tasks">Tasks Count</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="card" style="margin-bottom:16px;">
-      <h3><span id="drillName">Select a person</span> <span class="tag" id="drillStat">—</span></h3>
-      <div id="drillStatusPills" style="gap:10px; margin-top:12px;"></div>
-    </div>
-
-    <div class="card" style="margin-bottom:16px;">
-      <h3>🔍 Insights <span class="tag">Auto-generated</span></h3>
-      <div id="personInsights" class="insights-grid"></div>
-    </div>
-
-    <div class="grid-eq">
-      <div class="card">
-        <h3>Sprint-by-Sprint Contribution Chart <span class="tag" id="drillChartTag">Story Points</span></h3>
-        <div class="chart-wrap tall"><canvas id="personProjChart"></canvas></div>
-      </div>
-      <div class="card">
-        <h3>Project Summary Table <span class="tag" id="drillTableTag">Points</span></h3>
-        <div class="scroll" id="personTable"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Person × Project Matrix <span class="tag" id="matrixTag">Story Points</span></h3>
-      <div class="scroll" id="matrixTable"></div>
-      <div class="sub" style="margin-top:10px; font-size:12px;">
-        <span class="legend-sq" style="background:var(--panel); border:1px solid var(--border)"></span> low
-        <span class="legend-sq" style="background:#312e81"></span>
-        <span class="legend-sq" style="background:#4338ca"></span>
-        <span class="legend-sq" style="background:#6366f1"></span>
-        <span class="legend-sq" style="background:var(--accent-text)"></span> high
-      </div>
-    </div>
-  </section>
-
   <!-- =========================== PROJECTS =========================== -->
   <section class="section" id="section-projects">
     <div class="controls">
@@ -724,16 +671,6 @@
           <option value="4-6">Mid (4-6)</option>
           <option value="7-9">Recent (7-9)</option>
           <option value="8-10">Current (8-10)</option>
-        </select>
-      </div>
-      <div class="control">
-        <label for="projTopN">Show Top</label>
-        <select id="projTopN">
-          <option value="10">Top 10</option>
-          <option value="15">Top 15</option>
-          <option value="20">Top 20</option>
-          <option value="25" selected>Top 25</option>
-          <option value="all">All Projects</option>
         </select>
       </div>
       <div class="control">
@@ -752,25 +689,37 @@
 
     <div class="kpis" id="projKpis"></div>
 
-    <div class="card" style="margin-bottom:16px;">
-      <h3>🔍 Project Insights <span class="tag">Auto-generated</span></h3>
-      <div id="projectInsights" class="insights-grid"></div>
+    <div class="card" style="margin-top:8px; margin-bottom:16px;">
+      <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; justify-content:space-between;">
+        <div style="display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end;">
+          <div class="control" style="min-width:200px; max-width:300px;">
+            <label for="projDrill">🔎 Drill into Project</label>
+            <select id="projDrill"></select>
+          </div>
+          <div class="control" style="min-width:140px; max-width:180px;">
+            <label for="projDrillMetric">Metric</label>
+            <select id="projDrillMetric">
+              <option value="points">Story Points</option>
+              <option value="tasks">Tasks Count</option>
+            </select>
+          </div>
+        </div>
+        <div style="text-align:right; min-width:0; padding-bottom:2px;">
+          <div id="projDrillName" style="font-size:17px; font-weight:700; color:var(--text); margin-bottom:3px; letter-spacing:-0.01em;">Select a project</div>
+          <div id="projDrillStat" style="font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums;">—</div>
+        </div>
+      </div>
     </div>
 
-    <div class="grid-2">
+    <div class="grid-eq">
       <div class="card">
-        <h3>Project Points by Sprint <span class="tag" id="projTrendTag">Stacked</span></h3>
-        <div class="chart-wrap tall"><canvas id="projTrendChart"></canvas></div>
+        <h3>Contributors × Sprint <span class="tag" id="projDrillChartTag">Story Points</span></h3>
+        <div class="chart-wrap tall"><canvas id="projDrillChart"></canvas></div>
       </div>
       <div class="card">
-        <h3>Top Projects <span class="tag" id="projTopTag">By points</span></h3>
-        <div class="chart-wrap tall"><canvas id="projTopChart"></canvas></div>
+        <h3>Contributor Breakdown <span class="tag" id="projDrillTableTag">Done / WIP / Backlog</span></h3>
+        <div class="scroll" id="projDrillContribTable"></div>
       </div>
-    </div>
-
-    <div class="card">
-      <h3>Project × Sprint Heatmap <span class="tag">Points</span></h3>
-      <div class="scroll" id="projTable"></div>
     </div>
   </section>
 
@@ -879,6 +828,8 @@
       </div>
     </div>
   </section>
+
+  <div id="staleBanner" class="stale-banner" style="display:none; margin-top:24px; margin-bottom:0;"></div>
 
   <div class="footer">More Studio.Co.,Ltd</div>
 </div>
@@ -2863,8 +2814,54 @@ window.addEventListener("resize", () => {
   }
 });
 
+// Chart.js plugin — render stacked totals above each bar (respects legend hide).
+// Opt-in per chart via options.plugins.stackTotals = { enabled: true }
+const stackTotalsPlugin = {
+  id: "stackTotals",
+  afterDatasetsDraw(chart, _args, opts) {
+    if (!opts || !opts.enabled) return;
+    const xScale = chart.scales.x, yScale = chart.scales.y;
+    if (!xScale || !yScale) return;
+    const isHorizontal = chart.options.indexAxis === "y";
+    const labelCount = chart.data.labels.length;
+    const totals = new Array(labelCount).fill(0);
+    chart.data.datasets.forEach((ds, i) => {
+      const meta = chart.getDatasetMeta(i);
+      if (meta.hidden) return;
+      const dsType = ds.type || meta.type || chart.config.type;
+      if (dsType !== "bar") return;
+      ds.data.forEach((v, idx) => { totals[idx] += (+v || 0); });
+    });
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.fillStyle = opts.color || THEME.tick || "#e2e8f0";
+    const fontSize = opts.fontSize || Math.max(10, (Chart.defaults.font.size || 11) - 1);
+    ctx.font = `600 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    const decimals = opts.decimals ?? 1;
+    if (isHorizontal) {
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      totals.forEach((total, idx) => {
+        if (!total) return;
+        const y = yScale.getPixelForValue(idx);
+        const x = xScale.getPixelForValue(total);
+        ctx.fillText(total.toLocaleString(undefined, { maximumFractionDigits: decimals }), x + 6, y);
+      });
+    } else {
+      ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+      totals.forEach((total, idx) => {
+        if (!total) return;
+        const x = xScale.getPixelForValue(idx);
+        const y = yScale.getPixelForValue(total);
+        ctx.fillText(total.toLocaleString(undefined, { maximumFractionDigits: decimals }), x, y - 4);
+      });
+    }
+    ctx.restore();
+  }
+};
+Chart.register(stackTotalsPlugin);
+
 let trendChart, topChart, capacityChart, avgTrendChart,
-    personProjChart, projTrendChart, projTopChart, statusChart;
+    personProjChart, projTrendChart, projTopChart, projDrillChart, statusChart;
 
 let S = {
   section: "overview",
@@ -2872,11 +2869,11 @@ let S = {
   highlight: "All",
   range: "all",
   chartType: "bar",
-  person: "Ohm",
-  personMetric: "points",
   projRange: "all",
   projTopN: "25",
   projRole: "all",
+  projDrill: "__all__",
+  projDrillMetric: "points",
   statusMetric: "points",
   statusView: "person",
   doneOnly: false,
@@ -3135,6 +3132,7 @@ function buildTrendChart(){
       },
       plugins: {
         legend: { position:"bottom", labels:{color:THEME.tick, boxWidth:10, font:{size:11}} },
+        stackTotals: { enabled: S.chartType === "bar" },
         tooltip: S.chartType === "bar" ? {
           callbacks: {
             title: its => its.length ? `${its[0].dataset.label} · ${its[0].label}` : '',
@@ -3194,15 +3192,7 @@ function buildTopChart(){
     data:{ labels, datasets:[{data:vals, backgroundColor:colors, borderRadius:6}] },
     options:{
       indexAxis:"y", responsive:true, maintainAspectRatio:false,
-      onClick: (evt, els) => {
-        if (!els.length || isFilter) return;
-        const clickedLabel = labels[els[0].index];
-        const name = clickedLabel.split(' · ')[0];
-        S.person = name;
-        document.getElementById("personDrill").value = name;
-        switchSection("people");
-      },
-      onHover: (e, els) => { e.native.target.style.cursor = els.length && !isFilter ? 'pointer' : 'default'; },
+      onHover: (e, els) => { e.native.target.style.cursor = 'default'; },
       scales:{
         x:{beginAtZero:true, grid:{color:THEME.grid}, ticks:{color:THEME.tick}},
         y:{grid:{display:false}, ticks:{color:THEME.tick}}
@@ -3952,6 +3942,185 @@ function buildProjTable(){
 }
 
 // ============================================================================
+//  PROJECTS — DRILL DOWN
+// ============================================================================
+const WIP_STATES = ["In Progress","Ready for review","Ready for test","Waiting to INT deploy","Waiting to PRD deploy"];
+
+function getProjectContributors(proj){
+  const isAll = proj === "__all__";
+  const roleFilter = S.projRole && S.projRole !== "all" ? S.projRole : null;
+  const passRole = (name) => !roleFilter || roleOf(name) === roleFilter;
+  // Done-only sprint contributions, from DATA.contribution (matches Done-rule)
+  const sprintsArr = {};
+  Object.keys(DATA.contribution).forEach(person => {
+    if (!passRole(person)) return;
+    if (isAll) {
+      const sumArr = new Array(DATA.sprints.length).fill(0);
+      Object.values(DATA.contribution[person] || {}).forEach(arr => {
+        arr.forEach((v, i) => { sumArr[i] += (+v||0); });
+      });
+      if (sumArr.some(v => v > 0)) sprintsArr[person] = sumArr;
+    } else {
+      const arr = DATA.contribution[person][proj];
+      if (arr && arr.some(v => (+v||0) > 0)) sprintsArr[person] = arr.slice();
+    }
+  });
+  // Task counts per state per person, from DATA.movement
+  const stats = {};
+  const ensure = (p) => stats[p] = stats[p] || { donePts:0, doneT:0, wip:0, wipPts:0, blocked:0, blockedPts:0, bugged:0, buggedPts:0, todo:0, todoPts:0, removed:0, total:0, totalPts:0, doneTasksSprint:new Array(DATA.sprints.length).fill(0) };
+  const source = isAll ? (DATA.movement||[]) : (DATA.movement||[]).filter(m => m.project === proj);
+  source.forEach(m => {
+    if (!passRole(m.person)) return;
+    const r = ensure(m.person);
+    r.total++; r.totalPts += (+m.points||0);
+    if (m.state === "Done") { r.donePts += (+m.points||0); r.doneT++; r.doneTasksSprint[m.sprint-1] += 1; }
+    else if (WIP_STATES.indexOf(m.state) >= 0) { r.wip++; r.wipPts += (+m.points||0); }
+    else if (m.state === "Blocked") { r.blocked++; r.blockedPts += (+m.points||0); }
+    else if (m.state === "Bugged")  { r.bugged++;  r.buggedPts  += (+m.points||0); }
+    else if (m.state === "To Do")   { r.todo++;    r.todoPts    += (+m.points||0); }
+    else if (m.state === "Removed") { r.removed++; }
+  });
+  return { sprintsArr, stats };
+}
+
+function buildProjectDrill(){
+  const proj = S.projDrill;
+  const metric = S.projDrillMetric || "points";
+  const nameEl = document.getElementById("projDrillName");
+  const statEl = document.getElementById("projDrillStat");
+  const tableEl = document.getElementById("projDrillContribTable");
+
+  const isAll = proj === "__all__";
+  if (!proj || (!isAll && !DATA.projectSprint[proj])) {
+    nameEl.textContent = "Select a project";
+    statEl.textContent = "—";
+    tableEl.innerHTML = "";
+    if (projDrillChart) { projDrillChart.destroy(); projDrillChart = null; }
+    return;
+  }
+
+  const { sprintsArr, stats } = getProjectContributors(proj);
+  const contributors = Object.keys(stats).filter(p => stats[p].total > 0)
+    .sort((a,b) => stats[b].donePts - stats[a].donePts || stats[b].total - stats[a].total);
+
+  // Header stats — done-only + all-status totals
+  const donePts = contributors.reduce((s,p) => s + stats[p].donePts, 0);
+  const doneT = contributors.reduce((s,p) => s + stats[p].doneT, 0);
+  const totalT = contributors.reduce((s,p) => s + stats[p].total, 0);
+  const totalPts = contributors.reduce((s,p) => s + stats[p].totalPts, 0);
+  const doneRate = totalT ? (doneT/totalT*100) : 0;
+  const roleFilter = S.projRole && S.projRole !== "all" ? S.projRole : null;
+  const rolePill = roleFilter ? ` <span class="pill neutral" style="margin-left:6px; font-size:11px;">${roleFilter}</span>` : "";
+  nameEl.innerHTML = (isAll ? `🗂️ All Projects` : `🗂️ ${proj}`) + rolePill;
+  const projCountSuffix = isAll ? ` · ${Object.keys(DATA.projectSprint).filter(n => DATA.projectSprint[n].some(v => v>0)).length} projects` : "";
+  statEl.textContent = `${donePts.toLocaleString(undefined,{maximumFractionDigits:1})} / ${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts · ${doneT}/${totalT} tasks · ${contributors.length} contributors · ${doneRate.toFixed(0)}% done${projCountSuffix}`;
+
+  // ---- Contributors × Sprint stacked chart ----
+  const labels = DATA.sprints;
+  const datasets = contributors.map((person, i) => ({
+    label: person,
+    data: metric === "tasks" ? stats[person].doneTasksSprint : (sprintsArr[person] || new Array(10).fill(0)),
+    backgroundColor: colorFor(person, i, PALETTE),
+    borderRadius: 4,
+    stack: "a"
+  }));
+  document.getElementById("projDrillChartTag").textContent = metric === "tasks" ? "Done Tasks" : "Done Story Points";
+
+  if (projDrillChart) projDrillChart.destroy();
+  projDrillChart = new Chart(document.getElementById("projDrillChart"), {
+    type: "bar",
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: "nearest", intersect: true, axis: "xy" },
+      scales: {
+        x: { stacked: true, grid: { color: THEME.grid }, ticks: { color: THEME.tick } },
+        y: { stacked: true, beginAtZero: true, grid: { color: THEME.grid }, ticks: { color: THEME.tick } }
+      },
+      plugins: {
+        legend: { position: "bottom", labels: { color: THEME.tick, boxWidth: 10, font: { size: 11 } } },
+        stackTotals: { enabled: true, decimals: metric === "tasks" ? 0 : 1 },
+        tooltip: {
+          callbacks: {
+            title: its => its.length ? `${its[0].dataset.label} · ${its[0].label}` : "",
+            label: it => `${(it.parsed.y||0).toLocaleString(undefined,{maximumFractionDigits:2})}`
+          }
+        }
+      }
+    }
+  });
+
+  // ---- Contributor breakdown table (metric-aware: Done / WIP / Bugged / Blocked / To Do / Total) ----
+  const useTasks = metric === "tasks";
+  const unitLabel = useTasks ? "Tasks Count" : "Story Points";
+  document.getElementById("projDrillTableTag").textContent = `${contributors.length} contributors · ${unitLabel}`;
+  if (!contributors.length) {
+    tableEl.innerHTML = `<div style="color:var(--muted); padding:14px;">ยังไม่มีคน contribute project นี้</div>`;
+    return;
+  }
+  const fmtN = v => !v ? "" : (useTasks ? v.toString() : v.toLocaleString(undefined,{maximumFractionDigits:1}));
+  const cell = (v, color) => `<td style="text-align:right; ${color && v ? `color:${color}; font-weight:600;` : ""}">${fmtN(v)}</td>`;
+  const get = (r, key) => useTasks ? r[key + "T"] : r[key + "Pts"];
+  // Map keys to the stat fields:
+  //   done → doneT / donePts
+  //   wip  → wip / wipPts
+  //   bugged → bugged / buggedPts
+  //   blocked → blocked / blockedPts
+  //   todo → todo / todoPts
+  //   total → total / totalPts
+  // Normalize so get(r, k) works:
+  const norm = (r) => ({
+    doneT: r.doneT, donePts: r.donePts,
+    wipT: r.wip, wipPts: r.wipPts,
+    buggedT: r.bugged, buggedPts: r.buggedPts,
+    blockedT: r.blocked, blockedPts: r.blockedPts,
+    todoT: r.todo, todoPts: r.todoPts,
+    totalT: r.total, totalPts: r.totalPts
+  });
+
+  let html = `<table><thead><tr>
+    <th>Person</th>
+    <th style="text-align:right">Done</th>
+    <th style="text-align:right">WIP</th>
+    <th style="text-align:right">Bugged</th>
+    <th style="text-align:right">Blocked</th>
+    <th style="text-align:right">To Do</th>
+    <th style="text-align:right">Total</th>
+  </tr></thead><tbody>`;
+  contributors.forEach(p => {
+    const r = norm(stats[p]);
+    const rate = stats[p].total ? (stats[p].doneT/stats[p].total*100) : 0;
+    html += `<tr>
+      <td style="font-weight:500;">${p}${roleBadge(p)}<span style="margin-left:8px; font-size:10px; color:var(--muted);">${rate.toFixed(0)}%</span></td>
+      ${cell(get(r,"done"), "var(--good-text)")}
+      ${cell(get(r,"wip"), "var(--accent-text)")}
+      ${cell(get(r,"bugged"), "var(--bad-text)")}
+      ${cell(get(r,"blocked"), "var(--bad-text)")}
+      ${cell(get(r,"todo"), "var(--warn-text)")}
+      <td style="text-align:right; font-weight:600;">${fmtN(get(r,"total"))}</td>
+    </tr>`;
+  });
+  // Totals row
+  const totals = contributors.reduce((acc,p) => {
+    const r = norm(stats[p]);
+    acc.done += get(r,"done"); acc.wip += get(r,"wip"); acc.bugged += get(r,"bugged");
+    acc.blocked += get(r,"blocked"); acc.todo += get(r,"todo"); acc.total += get(r,"total");
+    return acc;
+  }, { done:0, wip:0, bugged:0, blocked:0, todo:0, total:0 });
+  html += `<tr class="total-row">
+    <td>TOTAL</td>
+    <td style="text-align:right;">${fmtN(totals.done)}</td>
+    <td style="text-align:right;">${fmtN(totals.wip)}</td>
+    <td style="text-align:right;">${fmtN(totals.bugged)}</td>
+    <td style="text-align:right;">${fmtN(totals.blocked)}</td>
+    <td style="text-align:right;">${fmtN(totals.todo)}</td>
+    <td style="text-align:right;">${fmtN(totals.total)}</td>
+  </tr>`;
+  html += "</tbody></table>";
+  tableEl.innerHTML = html;
+}
+
+// ============================================================================
 //  STATUS
 // ============================================================================
 function updateStatusKPIs(){
@@ -4108,7 +4277,20 @@ function populateSelects(){
   ).join("");
   document.getElementById("memberSelect").innerHTML =
     `<option value="All">All (no highlight)</option>` + optgroups;
-  document.getElementById("personDrill").innerHTML = optgroups;
+
+  // Project drill dropdown — list projects with any Done points, sorted by total desc
+  const projectsRanked = Object.entries(DATA.projectSprint)
+    .map(([n, arr]) => [n, arr.reduce((a,b)=>a+(+b||0),0)])
+    .filter(([,v]) => v > 0)
+    .sort((a,b) => b[1] - a[1]);
+  const allTotal = projectsRanked.reduce((s,[,v]) => s + v, 0);
+  const projOpts = `<option value="__all__">🗂️ All Projects · ${allTotal.toLocaleString(undefined,{maximumFractionDigits:1})} pts</option>` +
+    projectsRanked.map(([n,v]) =>
+      `<option value="${n}">${n} · ${v.toLocaleString(undefined,{maximumFractionDigits:1})} pts</option>`
+    ).join("");
+  document.getElementById("projDrill").innerHTML = projOpts;
+  if (!S.projDrill) S.projDrill = "__all__";
+  document.getElementById("projDrill").value = S.projDrill;
 }
 
 function switchSection(name){
@@ -4131,15 +4313,9 @@ function refresh(){
     buildTopChart();
     buildCapacityChart();
     buildAvgTrendChart();
-  } else if (S.section === "people") {
-    buildPersonDrill();
-    buildPersonProjectMatrix();
   } else if (S.section === "projects") {
     updateProjKPIs();
-    renderProjectInsights();
-    buildProjTrendChart();
-    buildProjTopChart();
-    buildProjTable();
+    buildProjectDrill();
   } else if (S.section === "status") {
     updateStatusKPIs();
     buildStatusChart();
@@ -4419,12 +4595,10 @@ function wireUp(){
   document.getElementById("chartType").addEventListener("change", e => { S.chartType = e.target.value; buildTrendChart(); });
   document.getElementById("topSprint").addEventListener("change", e => { S.topSprint = e.target.value; buildTopChart(); });
 
-  document.getElementById("personDrill").addEventListener("change", e => { S.person = e.target.value; refresh(); });
-  document.getElementById("personMetric").addEventListener("change", e => { S.personMetric = e.target.value; refresh(); });
-
   document.getElementById("projSprintRange").addEventListener("change", e => { S.projRange = e.target.value; refresh(); });
-  document.getElementById("projTopN").addEventListener("change", e => { S.projTopN = e.target.value; refresh(); });
   document.getElementById("projRole").addEventListener("change", e => { S.projRole = e.target.value; refresh(); });
+  document.getElementById("projDrill").addEventListener("change", e => { S.projDrill = e.target.value; buildProjectDrill(); });
+  document.getElementById("projDrillMetric").addEventListener("change", e => { S.projDrillMetric = e.target.value; buildProjectDrill(); });
 
   document.getElementById("statusMetric").addEventListener("change", e => { S.statusMetric = e.target.value; refresh(); });
   document.getElementById("statusView").addEventListener("change", e => { S.statusView = e.target.value; refresh(); });
@@ -4441,23 +4615,21 @@ document.getElementById("updated").textContent = "Data updated: 15 May 2026";
     if (names.some(n => hasAnyTask(n, i))) { latest = i; break; }
   }
   const banner = document.getElementById("staleBanner");
-  const onlyInPeople = S.section !== "people";
   if (latest < 1) { banner.style.display = "none"; banner.dataset.hasContent = "0"; return; }
   banner.dataset.hasContent = "1";
   const windowIdx = [latest - 1, latest]; // last 2 sprints
-  // Stale = no task assigned at all (any state) in last 2 sprints
   const stale = names.filter(n => windowIdx.every(i => !hasAnyTask(n, i)));
   const windowLabel = `Sprint ${windowIdx[0]+1}–${windowIdx[1]+1}`;
   if (stale.length === 0) {
-    banner.className = "stale-banner ok" + (onlyInPeople ? " section-only" : "");
+    banner.className = "stale-banner ok";
     banner.innerHTML = `<span class="stale-icon">✅</span>ทุกคนมี task งานในช่วง <strong>${windowLabel}</strong> ที่ผ่านมา`;
-    banner.style.display = onlyInPeople ? "none" : "block";
+    banner.style.display = "block";
     return;
   }
   const chips = stale.map(n => `<span class="stale-chip">${n}${roleOf(n)!=="—"?` · ${roleOf(n)}`:""}</span>`).join("");
-  banner.className = "stale-banner" + (onlyInPeople ? " section-only" : "");
+  banner.className = "stale-banner";
   banner.innerHTML = `<span class="stale-icon">⚠️</span><strong>ไม่พบ task งานเกิน 2 Sprints:</strong> ${chips}`;
-  banner.style.display = onlyInPeople ? "none" : "block";
+  banner.style.display = "block";
 })();
 populateSelects();
 wireUp();
