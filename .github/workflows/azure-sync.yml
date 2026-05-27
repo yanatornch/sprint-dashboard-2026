@@ -27,4 +27,5 @@ jobs:
           AZURE_PROJECT: ${{ secrets.AZURE_PROJECT }}
           AZURE_PAT: ${{ secrets.AZURE_PAT || secrets.ADO_PAT }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
         run: node azure_sync.js

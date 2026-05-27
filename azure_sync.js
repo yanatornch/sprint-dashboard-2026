@@ -269,8 +269,7 @@ async function runSync() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // If you need auth headers, you can map them from env vars here:
-          // 'Authorization': `Bearer ${process.env.WEBHOOK_SECRET}`
+          'Authorization': `Bearer ${process.env.WEBHOOK_SECRET}`
         },
         body: JSON.stringify(payload)
       });
