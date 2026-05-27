@@ -1,5 +1,20 @@
 {
-  "name": "morestudio-point-tracking",
-  "version": "1.0.0",
-  "private": true
+  "name": "morestudio-sprint-db",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "firebase": "^11.0.1",
+    "firebase-admin": "^13.10.0",
+    "puppeteer": "^25.0.4"
+  }
 }
