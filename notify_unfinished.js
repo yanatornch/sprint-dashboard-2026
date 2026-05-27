@@ -27,19 +27,31 @@ async function run() {
   console.log("Fetching tasks from Firestore...");
   const snap = await getDocs(collection(db, "tasks"));
 
-  // Find current sprint (highest sprint number with tasks)
-  let maxSprint = 0;
-  snap.forEach(d => {
-    const s = d.data().sprint || 0;
-    if (s > maxSprint) maxSprint = s;
-  });
-  console.log(`Current sprint: ${maxSprint}`);
+  // Find current sprint by date
+  const SPRINT_DATES = [
+    { sprint: 1,  s: "2026-01-05", e: "2026-01-18" },
+    { sprint: 2,  s: "2026-01-19", e: "2026-02-01" },
+    { sprint: 3,  s: "2026-02-02", e: "2026-02-15" },
+    { sprint: 4,  s: "2026-02-16", e: "2026-03-01" },
+    { sprint: 5,  s: "2026-03-02", e: "2026-03-15" },
+    { sprint: 6,  s: "2026-03-16", e: "2026-03-29" },
+    { sprint: 7,  s: "2026-03-30", e: "2026-04-12" },
+    { sprint: 8,  s: "2026-04-13", e: "2026-04-26" },
+    { sprint: 9,  s: "2026-04-27", e: "2026-05-10" },
+    { sprint: 10, s: "2026-05-11", e: "2026-05-24" },
+    { sprint: 11, s: "2026-05-25", e: "2026-06-07" },
+    { sprint: 12, s: "2026-06-08", e: "2026-06-21" },
+  ];
+  const today = new Date().toISOString().slice(0, 10);
+  const found = SPRINT_DATES.find(d => today >= d.s && today <= d.e);
+  const currentSprint = found ? found.sprint : SPRINT_DATES[SPRINT_DATES.length - 1].sprint;
+  console.log(`Current sprint: ${currentSprint} (today: ${today})`);
 
   // Collect unfinished tasks for dev team in current sprint
   const byPerson = {};
   snap.forEach(d => {
     const t = d.data();
-    if (t.sprint !== maxSprint) return;
+    if (t.sprint !== currentSprint) return;
     if (ROLES[t.person] !== "Dev") return;
 
     const stateLower = (t.state || "").toLowerCase();
@@ -60,7 +72,7 @@ async function run() {
   const totalPts = Object.values(byPerson).reduce((a, tasks) =>
     a + tasks.reduce((b, t) => b + (parseFloat(t.points) || 0), 0), 0);
 
-  let message = `🔔 Sprint ${maxSprint} — Dev Team Unfinished Tasks\n`;
+  let message = `🔔 Sprint ${currentSprint} — Dev Team Unfinished Tasks\n`;
   message += `📊 Total: ${totalTasks} tasks · ${totalPts.toFixed(1)} pts remaining\n\n`;
 
   if (Object.keys(byPerson).length === 0) {
@@ -95,7 +107,7 @@ async function run() {
     body: JSON.stringify({
       status: "weekly_report",
       message,
-      sprint: maxSprint,
+      sprint: currentSprint,
       totalTasks,
       totalPoints: totalPts,
       byPerson,
