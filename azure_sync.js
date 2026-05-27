@@ -1,6 +1,16 @@
 import 'dotenv/config';
-import { db } from './firebase.js';
-import { doc, setDoc, writeBatch, collection, getDocs } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, setDoc, writeBatch, collection, getDocs } from 'firebase/firestore';
+
+const firebaseConfig = {
+  projectId: "morestudio-sprint-2026",
+  appId: "1:97508017044:web:0707e3f2138ed43f8a0581",
+  storageBucket: "morestudio-sprint-2026.firebasestorage.app",
+  apiKey: "AIzaSyDGmV4wQlF1WEJFkihZDULU9kT7BTvsm8Y",
+  authDomain: "morestudio-sprint-2026.firebaseapp.com",
+  messagingSenderId: "97508017044"
+};
+const db = getFirestore(initializeApp(firebaseConfig));
 
 // Environment variables
 const AZURE_ORG = process.env.AZURE_ORG || process.env.ADO_ORG || 'morestudio';
