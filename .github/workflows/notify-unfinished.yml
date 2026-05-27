@@ -21,6 +21,6 @@ jobs:
 
       - name: Send unfinished tasks notification
         env:
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          SPRINT_NOTIFY_URL: ${{ secrets.SPRINT_NOTIFY_URL }}
           WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
         run: node notify_unfinished.js

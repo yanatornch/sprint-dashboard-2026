@@ -91,7 +91,7 @@ async function run() {
   console.log(message);
 
   // Send to notify endpoint
-  const webhookUrl = process.env.WEBHOOK_URL;
+  const webhookUrl = process.env.SPRINT_NOTIFY_URL || process.env.WEBHOOK_URL;
   const webhookSecret = process.env.WEBHOOK_SECRET;
   if (!webhookUrl || !webhookSecret) {
     console.error("Missing WEBHOOK_URL or WEBHOOK_SECRET");
