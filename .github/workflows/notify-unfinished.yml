@@ -1,0 +1,26 @@
+name: Weekly Dev Team Unfinished Tasks
+
+on:
+  schedule:
+    # Every Friday at 18:00 ICT (11:00 UTC)
+    - cron: '0 11 * * 5'
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Send unfinished tasks notification
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+        run: node notify_unfinished.js
