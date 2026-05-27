@@ -3,7 +3,7 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
   return false;
 };
 import { db } from "./firebase.js";
-import { collection, doc, getDocs, getDoc } from "firebase/firestore";
+import { collection, doc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 let DATA = {};
 try {
