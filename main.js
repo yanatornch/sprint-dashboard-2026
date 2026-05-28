@@ -662,8 +662,8 @@ function buildTrendChart(){
   });
 
   // Plugin: draw rounded pill below every sprint bar
-  const PILL_H = 14;
-  const PILL_OFFSET = 8;
+  const PILL_H = 20;
+  const PILL_OFFSET = 38;
   const LEAVE_TOOLTIP_EL = (() => {
     let el = document.getElementById("leaveTooltip");
     if (!el) {
@@ -795,7 +795,7 @@ function buildTrendChart(){
     plugins: [leaveIndicatorPlugin],
     options: {
       responsive:true, maintainAspectRatio:false,
-      layout: { padding: { bottom: S.chartType === "bar" ? 32 : 0 } },
+      layout: { padding: { bottom: S.chartType === "bar" ? 68 : 0 } },
       interaction: S.chartType === "bar"
         ? { mode:"index", intersect:false }
         : { mode:"index", intersect:false },
