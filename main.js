@@ -661,32 +661,45 @@ function buildTrendChart(){
     leaveLookup[label] = { holidays, personal };
   });
 
-  // Plugin: draw leave dot indicators below each bar group
+  // Plugin: draw leave bars below each sprint group
+  const BAR_H = 6;   // height of each leave bar
+  const BAR_GAP = 2; // gap between holiday bar and personal bar
+  const BAR_OFFSET = 6; // gap below x-axis ticks
+
   const leaveIndicatorPlugin = {
     id: "leaveIndicator",
     afterDraw(chart) {
       if (S.chartType !== "bar") return;
       const { ctx: c, scales: { x, y } } = chart;
-      const bottom = y.bottom + 4;
+      const step = x.getPixelForValue(1) - x.getPixelForValue(0);
+      const barW = Math.max(step * 0.6, 8);
+      const top = y.bottom + BAR_OFFSET;
+
       labels.forEach((label, li) => {
         const info = leaveLookup[label];
         if (!info) return;
         const hasHoliday = info.holidays.length > 0;
         const hasPersonal = Object.keys(info.personal).length > 0;
         if (!hasHoliday && !hasPersonal) return;
-        const xPos = x.getPixelForValue(li);
-        let dotX = xPos - (hasHoliday && hasPersonal ? 7 : 0);
+
+        const cx = x.getPixelForValue(li);
+        const x0 = cx - barW / 2;
+        let rowY = top;
+
+        // Orange bar = company holiday
         if (hasHoliday) {
+          c.fillStyle = "rgba(251,146,60,0.85)";
           c.beginPath();
-          c.arc(dotX, bottom + 6, 4, 0, Math.PI * 2);
-          c.fillStyle = "rgba(251,146,60,0.9)";
+          c.roundRect(x0, rowY, barW, BAR_H, 2);
           c.fill();
-          dotX += 14;
+          rowY += BAR_H + BAR_GAP;
         }
+
+        // Purple bar = personal leave
         if (hasPersonal) {
+          c.fillStyle = "rgba(99,102,241,0.85)";
           c.beginPath();
-          c.arc(dotX, bottom + 6, 4, 0, Math.PI * 2);
-          c.fillStyle = "rgba(99,102,241,0.9)";
+          c.roundRect(x0, rowY, barW, BAR_H, 2);
           c.fill();
         }
       });
@@ -700,7 +713,7 @@ function buildTrendChart(){
     plugins: [leaveIndicatorPlugin],
     options: {
       responsive:true, maintainAspectRatio:false,
-      layout: { padding: { bottom: S.chartType === "bar" ? 18 : 0 } },
+      layout: { padding: { bottom: S.chartType === "bar" ? 28 : 0 } },
       interaction: S.chartType === "bar"
         ? { mode:"index", intersect:false }
         : { mode:"index", intersect:false },
