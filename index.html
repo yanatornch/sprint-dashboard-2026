@@ -173,8 +173,121 @@
 
   .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 18px; }
   .grid-eq { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+  .grid-3-roles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 18px; }
+  @media (max-width: 1200px) {
+    .grid-3-roles { grid-template-columns: 1fr 1fr; }
+  }
   @media (max-width: 1000px) {
     .grid-2, .grid-eq { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .grid-3-roles { grid-template-columns: 1fr; }
+  }
+
+  .team-contribution-header {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    padding: 6px 0;
+    opacity: 0.75;
+  }
+
+  /* Role chart legend */
+  .role-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    justify-content: center;
+  }
+  .role-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text);
+    cursor: default;
+  }
+  .role-legend-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    letter-spacing: -0.02em;
+  }
+
+  /* Holiday banner */
+  #holidayBanner:not(:empty) {
+    margin-bottom: 18px;
+  }
+  .holiday-banner {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.7;
+  }
+  .holiday-banner-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .holiday-banner-body {
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.8;
+  }
+  .holiday-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(251,146,60,0.12);
+    border: 1px solid rgba(251,146,60,0.3);
+    color: #fb923c;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    margin: 2px 4px;
+  }
+
+  /* Bar hover tooltip */
+  #barHoverTooltip {
+    position: fixed;
+    z-index: 9998;
+    pointer-events: none;
+    display: none;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 12px 16px;
+    max-width: 280px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    font-size: 13px;
+    color: #e2e8f0;
+    line-height: 1.6;
+  }
+  :root[data-theme="light"] #barHoverTooltip {
+    background: #fff;
+    border-color: #e2e8f0;
+    color: #0f172a;
+    box-shadow: 0 8px 24px rgba(15,23,42,0.12);
   }
 
   .card {
@@ -637,20 +750,38 @@
 
     <div id="leaveStrip"></div>
 
-    <div class="grid-2">
+    <div class="team-contribution-header">Team Contribution Breakdown Overview</div>
+    <div class="grid-3-roles">
       <div class="card">
-        <h3>
-          <span id="trendTitleText">Sprint Trend by Person</span>
-          <span class="head-right">
-            <select id="chartType" class="card-inline-select" title="Chart Style">
-              <option value="bar">Stacked Bar</option>
-              <option value="line">Lines</option>
-            </select>
-            <span class="tag" id="trendTag">Story Points</span>
-          </span>
-        </h3>
-        <div class="chart-wrap tall"><canvas id="trendChart"></canvas></div>
+        <h3>Developer Team x Sprint <span class="head-right"><span class="tag">Dev</span></span></h3>
+        <div class="chart-wrap tall"><canvas id="devTrendChart"></canvas></div>
+        <div class="role-legend" id="devLegend"></div>
       </div>
+      <div class="card">
+        <h3>Designer / BA / Tester x Sprint <span class="head-right"><span class="tag">Design+</span></span></h3>
+        <div class="chart-wrap tall"><canvas id="designTrendChart"></canvas></div>
+        <div class="role-legend" id="designLegend"></div>
+      </div>
+      <div class="card">
+        <h3>Other Teams x Sprint <span class="head-right"><span class="tag">Ops</span></span></h3>
+        <div class="chart-wrap tall"><canvas id="otherTrendChart"></canvas></div>
+        <div class="role-legend" id="otherLegend"></div>
+      </div>
+    </div>
+    <div id="holidayBanner"></div>
+
+    <!-- Original trendChart card hidden but preserved for JS compatibility -->
+    <div style="display:none;">
+      <span id="trendTitleText">Sprint Trend by Person</span>
+      <select id="chartType" class="card-inline-select">
+        <option value="bar">Stacked Bar</option>
+        <option value="line">Lines</option>
+      </select>
+      <span class="tag" id="trendTag">Story Points</span>
+      <canvas id="trendChart"></canvas>
+    </div>
+
+    <div style="margin-bottom:18px;">
       <div class="card">
         <h3>
           <span id="topTitleText">Top Contributors</span>
@@ -899,6 +1030,7 @@
   <div class="footer">More Studio.Co.,Ltd</div>
 </div>
 
+<div id="barHoverTooltip"></div>
 <script type="module" src="./main.js"></script>
 </body>
 </html>

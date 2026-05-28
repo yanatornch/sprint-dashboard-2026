@@ -322,7 +322,8 @@ Chart.register(stackTotalsPlugin);
 
 let trendChart, topChart, capacityChart, avgTrendChart,
     personProjChart, projTrendChart, projTopChart, projDrillChart, statusChart,
-    bugTrendChart;
+    bugTrendChart,
+    devTrendChart, designTrendChart, otherTrendChart;
 
 let S = {
   section: "overview",
@@ -817,6 +818,331 @@ function buildTrendChart(){
       }
     }
   });
+}
+
+// ============================================================================
+//  ROLE CHARTS — helper functions
+// ============================================================================
+
+// Returns up-to-2-letter initials from a name (e.g. "Ohm" → "OH", "No" → "NO")
+function getInitials(name) {
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) return name.slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+
+// Build the leave indicator plugin object (reusable factory)
+function buildLeavePlugin(labels, idx, leaveLookup, chartTypeRef) {
+  const PILL_H = 20;
+  const PILL_OFFSET = 38;
+  const LEAVE_TOOLTIP_EL = (() => {
+    let el = document.getElementById("leaveTooltip");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "leaveTooltip";
+      el.style.cssText = `
+        position:fixed; z-index:9999; pointer-events:none; display:none;
+        background:#1e293b; border:1px solid #334155; border-radius:12px;
+        padding:12px 16px; max-width:320px; box-shadow:0 8px 32px rgba(0,0,0,0.5);
+        font-size:13px; color:#e2e8f0; line-height:1.6;
+      `;
+      document.body.appendChild(el);
+    }
+    return el;
+  })();
+
+  return {
+    id: "leaveIndicator_" + Math.random().toString(36).slice(2),
+    afterDraw(chart) {
+      if (chartTypeRef() !== "bar") return;
+      const { ctx: c, scales: { x, y } } = chart;
+      const step = x.getPixelForValue(1) - x.getPixelForValue(0);
+      const pillW = Math.max(step * 0.72, 20);
+      const pillY = y.bottom + PILL_OFFSET;
+
+      labels.forEach((label, li) => {
+        const info = leaveLookup[label] || {};
+        const hasHoliday = (info.holidays || []).length > 0;
+        const hasPersonal = Object.keys(info.personal || {}).length > 0;
+        const cx = x.getPixelForValue(li);
+        const x0 = cx - pillW / 2;
+
+        c.beginPath();
+        c.roundRect(x0, pillY, pillW, PILL_H, PILL_H / 2);
+
+        if (hasHoliday && hasPersonal) {
+          const grad = c.createLinearGradient(x0, 0, x0 + pillW, 0);
+          grad.addColorStop(0, "rgba(251,146,60,0.9)");
+          grad.addColorStop(0.5, "rgba(251,146,60,0.9)");
+          grad.addColorStop(0.5, "rgba(99,102,241,0.9)");
+          grad.addColorStop(1, "rgba(99,102,241,0.9)");
+          c.fillStyle = grad;
+        } else if (hasHoliday) {
+          c.fillStyle = "rgba(251,146,60,0.85)";
+        } else if (hasPersonal) {
+          c.fillStyle = "rgba(99,102,241,0.75)";
+        } else {
+          c.fillStyle = "rgba(255,255,255,0.06)";
+        }
+        c.fill();
+      });
+    },
+
+    afterEvent(chart, args) {
+      if (chartTypeRef() !== "bar") return;
+      const e = args.event;
+      const { scales: { x, y }, canvas } = chart;
+      const step = x.getPixelForValue(1) - x.getPixelForValue(0);
+      const pillW = Math.max(step * 0.72, 20);
+      const pillY = y.bottom + PILL_OFFSET;
+      const rect = canvas.getBoundingClientRect();
+
+      if (e.type === "mousemove") {
+        const mx = e.native.clientX - rect.left;
+        const my = e.native.clientY - rect.top;
+        let found = false;
+
+        labels.forEach((label, li) => {
+          const cx = x.getPixelForValue(li);
+          const x0 = cx - pillW / 2;
+          if (mx >= x0 && mx <= x0 + pillW && my >= pillY && my <= pillY + PILL_H) {
+            const info = leaveLookup[label] || {};
+            const holidays = info.holidays || [];
+            const personal = info.personal || {};
+            const totalDays = holidays.reduce((a, h) => a + h.dates.length, 0)
+              + Object.values(personal).flat().reduce((a, l) => a + (l.days || 1), 0);
+            const capacity = totalDays > 0 ? Math.round((totalDays / 10) * 100) : 0;
+
+            let html = `<div style="font-weight:700;font-size:14px;margin-bottom:8px">🗓 ${label}</div>`;
+            if (holidays.length) {
+              html += `<div style="color:#fb923c;font-weight:600;margin-bottom:4px">🏢 Company Holidays</div>`;
+              holidays.forEach(h => {
+                html += h.dates.map(d => `<div style="color:#94a3b8">📅 ${d} — ${h.name}</div>`).join("");
+              });
+            }
+            const personalEntries = Object.entries(personal);
+            if (personalEntries.length) {
+              html += `<div style="color:#818cf8;font-weight:600;margin-top:8px;margin-bottom:4px">👤 Personal Leave</div>`;
+              personalEntries.forEach(([person, leaves]) => {
+                leaves.forEach(l => {
+                  const dateStr = l.startDate === l.endDate ? l.startDate : `${l.startDate} – ${l.endDate}`;
+                  html += `<div style="color:#94a3b8">${l.type === "vacation" ? "🏖" : l.type === "sick" ? "🤒" : "📅"} ${person} · ${l.type} ${l.days}d <span style="color:#64748b">(${dateStr})</span></div>`;
+                });
+              });
+            }
+            if (totalDays > 0) {
+              html += `<div style="margin-top:8px;padding-top:8px;border-top:1px solid #334155;color:#94a3b8">Capacity impacted: ~${capacity}%</div>`;
+            }
+            if (!holidays.length && !personalEntries.length) {
+              html += `<div style="color:#64748b">No leave or holidays this sprint</div>`;
+            }
+
+            LEAVE_TOOLTIP_EL.innerHTML = html;
+            LEAVE_TOOLTIP_EL.style.display = "block";
+            const tx = e.native.clientX + 16;
+            const ty = e.native.clientY - 10;
+            LEAVE_TOOLTIP_EL.style.left = Math.min(tx, window.innerWidth - 340) + "px";
+            LEAVE_TOOLTIP_EL.style.top = ty + "px";
+            found = true;
+          }
+        });
+
+        if (!found) LEAVE_TOOLTIP_EL.style.display = "none";
+      } else if (e.type === "mouseout") {
+        LEAVE_TOOLTIP_EL.style.display = "none";
+      }
+    }
+  };
+}
+
+// Build a rich HTML bar-hover tooltip for role charts
+function buildBarHoverPlugin(labels, idx, roleNames, leaveLookup) {
+  const el = (() => {
+    let t = document.getElementById("barHoverTooltip");
+    if (!t) {
+      t = document.createElement("div");
+      t.id = "barHoverTooltip";
+      t.style.cssText = `position:fixed; z-index:9998; pointer-events:none; display:none;
+        background:#1e293b; border:1px solid #334155; border-radius:12px;
+        padding:12px 16px; max-width:280px; box-shadow:0 8px 32px rgba(0,0,0,0.5);
+        font-size:13px; color:#e2e8f0; line-height:1.6;`;
+      document.body.appendChild(t);
+    }
+    return t;
+  })();
+
+  return {
+    id: "barHover_" + Math.random().toString(36).slice(2),
+    afterEvent(chart, args) {
+      const e = args.event;
+      if (e.type === "mouseout") { el.style.display = "none"; return; }
+      if (e.type !== "mousemove") return;
+
+      const points = chart.getElementsAtEventForMode(e.native, "nearest", { intersect: true }, false);
+      if (!points.length) { el.style.display = "none"; return; }
+
+      const { datasetIndex, index: sprintLocalIdx } = points[0];
+      const ds = chart.data.datasets[datasetIndex];
+      const person = ds.label;
+      const sprintLabel = labels[sprintLocalIdx];
+      const sprintGlobalIdx = idx[sprintLocalIdx];
+
+      const pts = (DATA.points[person] || [])[sprintGlobalIdx] || 0;
+      const tasks = (DATA.tasks[person] || [])[sprintGlobalIdx] || 0;
+      const ytdPts = sum((DATA.points[person] || []).slice(0, sprintGlobalIdx + 1));
+      const role = roleOf(person);
+      const color = ds.backgroundColor;
+
+      let html = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="width:10px;height:10px;border-radius:2px;background:${color};flex-shrink:0;"></span>
+        <span style="font-weight:700;font-size:14px;">${person}</span>
+        <span style="font-size:11px;background:${ROLE_COLORS[role]||'#94a3b8'}22;color:${ROLE_COLORS[role]||'#94a3b8'};border:1px solid ${ROLE_COLORS[role]||'#94a3b8'}55;padding:1px 7px;border-radius:999px;font-weight:600;">${role}</span>
+      </div>`;
+      html += `<div style="font-size:12px;color:#94a3b8;margin-bottom:6px;">${sprintLabel}</div>`;
+      html += `<div style="display:flex;flex-direction:column;gap:4px;">`;
+      html += `<div>Sprint contribution: <strong style="color:#e2e8f0;">${pts.toLocaleString(undefined,{maximumFractionDigits:1})} pts</strong></div>`;
+      html += `<div>YTD total: <strong style="color:#22d3ee;">${ytdPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts</strong></div>`;
+      html += `<div>Sprint tasks: <strong style="color:#a5b4fc;">${tasks}</strong></div>`;
+      html += `</div>`;
+
+      el.innerHTML = html;
+      el.style.display = "block";
+      const tx = e.native.clientX + 16;
+      const ty = e.native.clientY - 10;
+      el.style.left = Math.min(tx, window.innerWidth - 300) + "px";
+      el.style.top = Math.max(0, ty) + "px";
+    }
+  };
+}
+
+// Build one role-based stacked bar trend chart
+function buildRoleChart(canvasId, legendId, rolePeople, idx, labels, leaveLookup, chartRef) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return null;
+
+  const getter = S.view === "points" ? getPersonPoints : getPersonTasks;
+  // Sort by total desc
+  const names = rolePeople.slice().sort((a, b) =>
+    sum(idx.map(i => getter(b)[i] || 0)) - sum(idx.map(i => getter(a)[i] || 0))
+  );
+
+  const datasets = names.map((name, i) => {
+    const arr = getter(name);
+    const sliced = idx.map(j => arr[j] ?? 0);
+    const color = colorFor(name, i);
+    return {
+      label: name,
+      data: sliced,
+      backgroundColor: color,
+      borderColor: color,
+      borderWidth: 1.5,
+      pointRadius: 0,
+      fill: false,
+      stack: "a"
+    };
+  });
+
+  const leavePlugin = buildLeavePlugin(labels, idx, leaveLookup, () => "bar");
+  const hoverPlugin = buildBarHoverPlugin(labels, idx, names, leaveLookup);
+
+  if (chartRef.current) chartRef.current.destroy();
+  chartRef.current = new Chart(ctx, {
+    type: "bar",
+    data: { labels, datasets },
+    plugins: [leavePlugin, hoverPlugin],
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      layout: { padding: { bottom: 68 } },
+      interaction: { mode: "nearest", intersect: true },
+      scales: {
+        x: { stacked: true, grid: { color: THEME.grid }, ticks: { color: THEME.tick } },
+        y: { stacked: true, beginAtZero: true, grid: { color: THEME.grid }, ticks: { color: THEME.tick } }
+      },
+      plugins: {
+        legend: { display: false }, // custom HTML legend below
+        stackTotals: { enabled: true },
+        tooltip: { enabled: false } // using our custom HTML tooltip
+      }
+    }
+  });
+
+  // Render custom HTML legend with avatar initials
+  const legendEl = document.getElementById(legendId);
+  if (legendEl) {
+    legendEl.innerHTML = names.map((name, i) => {
+      const color = colorFor(name, i);
+      const initials = getInitials(name);
+      return `<span class="role-legend-item">
+        <span class="role-legend-avatar" style="background:${color};">${initials}</span>
+        ${name}
+      </span>`;
+    }).join("");
+  }
+
+  return chartRef.current;
+}
+
+// Render the holiday context banner below the 3 role charts
+function renderHolidayBanner() {
+  const el = document.getElementById("holidayBanner");
+  if (!el) return;
+
+  const idx = rangeIdx(S.range);
+  const sprintNums = idx.map(i => i + 1);
+
+  const grouped = {};
+  COMPANY_HOLIDAYS.forEach(h => {
+    if (!h.sprint || !sprintNums.includes(h.sprint)) return;
+    if (!grouped[h.sprint]) grouped[h.sprint] = [];
+    grouped[h.sprint].push(h);
+  });
+
+  const sprintKeys = Object.keys(grouped).map(Number).sort((a, b) => a - b);
+  if (!sprintKeys.length) { el.innerHTML = ""; return; }
+
+  const chips = sprintKeys.map(sp => {
+    return grouped[sp].map(h => {
+      const days = h.dates.length;
+      return `<span class="holiday-chip">Sprint ${sp}: ${h.name} ${days}d</span>`;
+    }).join("");
+  }).join(" · ");
+
+  el.innerHTML = `<div class="holiday-banner">
+    <div class="holiday-banner-title">🏢 Holiday Context</div>
+    <div class="holiday-banner-body">${chips}</div>
+  </div>`;
+}
+
+// Build all 3 role trend charts + holiday banner
+const _roleChartRefs = {
+  dev: { current: null },
+  design: { current: null },
+  other: { current: null }
+};
+
+function buildRoleCharts() {
+  const idx = rangeIdx(S.range);
+  const labels = idx.map(i => DATA.sprints[i]);
+
+  // Build leave lookup
+  const leaveLookup = {};
+  labels.forEach((label, li) => {
+    const sprint = idx[li] + 1;
+    const holidays = COMPANY_HOLIDAYS.filter(h => h.sprint === sprint);
+    const personal = DATA.leaves[sprint] || {};
+    leaveLookup[label] = { holidays, personal };
+  });
+
+  const allPeople = Object.keys(DATA.points);
+  const devPeople = allPeople.filter(n => roleOf(n) === "Dev");
+  const designPeople = allPeople.filter(n => ["Designer", "BA", "Tester"].includes(roleOf(n)));
+  const otherPeople = allPeople.filter(n => ["PC", "CEO"].includes(roleOf(n)));
+
+  buildRoleChart("devTrendChart", "devLegend", devPeople, idx, labels, leaveLookup, _roleChartRefs.dev);
+  buildRoleChart("designTrendChart", "designLegend", designPeople, idx, labels, leaveLookup, _roleChartRefs.design);
+  buildRoleChart("otherTrendChart", "otherLegend", otherPeople, idx, labels, leaveLookup, _roleChartRefs.other);
+
+  renderHolidayBanner();
 }
 
 function buildTopChart(){
@@ -2237,6 +2563,7 @@ function refresh(){
     updateKPIs();
     renderLeaveStrip();
     buildTrendChart();
+    buildRoleCharts();
     buildTopChart();
     buildCapacityChart();
     buildAvgTrendChart();
