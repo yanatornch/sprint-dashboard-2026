@@ -173,10 +173,7 @@
 
   .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 18px; }
   .grid-eq { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
-  .grid-3-roles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 18px; }
-  @media (max-width: 1200px) {
-    .grid-3-roles { grid-template-columns: 1fr 1fr; }
-  }
+  .grid-3-roles { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 18px; }
   @media (max-width: 1000px) {
     .grid-2, .grid-eq { grid-template-columns: 1fr; }
   }
