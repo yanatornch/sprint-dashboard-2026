@@ -131,6 +131,21 @@ try {
 
 const VIEW_LABEL = { points: "Story Points", tasks: "Tasks" };
 
+// ---- Company holidays (hardcoded for 2026) ----
+const COMPANY_HOLIDAYS = [
+  { name: "New Year",         dates: ["2026-01-01","2026-01-02"], sprint: 1  },
+  { name: "Makha Bucha",      dates: ["2026-03-03"],              sprint: 4  },
+  { name: "Songkran",         dates: ["2026-04-13","2026-04-14","2026-04-15"], sprint: 8 },
+  { name: "Labour Day",       dates: ["2026-05-01"],              sprint: 9  },
+  { name: "Coronation Day",   dates: ["2026-05-04"],              sprint: 9  },
+  { name: "Visakha Bucha",    dates: ["2026-06-01"],              sprint: 11 },
+  { name: "Asanha Bucha",     dates: ["2026-06-03"],              sprint: 11 },
+  { name: "Asanha Bucha+1",   dates: ["2026-07-28","2026-07-29"], sprint: 12 },
+  { name: "Queen's Birthday", dates: ["2026-08-12"],              sprint: 12 },
+  { name: "King Memorial",    dates: ["2026-10-13"],              sprint: null },
+  { name: "New Year's Eve",   dates: ["2026-12-31"],              sprint: null },
+];
+
 // ---- Sprint calendar (2-week sprints) — used to pick "current sprint" by date ----
 const SPRINT_DATES = [
   { s: "2026-01-05", e: "2026-01-18" },  // Sprint 1
@@ -537,32 +552,55 @@ function renderLeaveStrip() {
 
   const LEAVE_ICON = { "vacation": "🏖", "sick": "🤒", "personal": "🏠", "other": "📅" };
   const idx = rangeIdx(S.range);
-  const sprintsWithLeave = idx.filter(i => {
-    const sprint = i + 1;
-    const sprintLeaves = DATA.leaves[sprint] || {};
-    return Object.keys(sprintLeaves).length > 0;
+  const sprintNums = idx.map(i => i + 1);
+
+  // Collect personal leave per sprint
+  const personalBySprint = {};
+  sprintNums.forEach(s => {
+    const entries = DATA.leaves[s] || {};
+    if (Object.keys(entries).length > 0) personalBySprint[s] = entries;
   });
 
-  if (sprintsWithLeave.length === 0) {
+  // Collect company holidays per sprint
+  const holidayBySprint = {};
+  COMPANY_HOLIDAYS.forEach(h => {
+    if (h.sprint && sprintNums.includes(h.sprint)) {
+      if (!holidayBySprint[h.sprint]) holidayBySprint[h.sprint] = [];
+      holidayBySprint[h.sprint].push(h);
+    }
+  });
+
+  const allSprints = [...new Set([...Object.keys(holidayBySprint), ...Object.keys(personalBySprint)])].map(Number).sort((a,b)=>a-b);
+
+  if (allSprints.length === 0) {
     el.innerHTML = "";
     return;
   }
 
   let rows = "";
-  sprintsWithLeave.forEach(i => {
-    const sprint = i + 1;
-    const sprintLeaves = DATA.leaves[sprint] || {};
-    const tags = Object.entries(sprintLeaves).map(([person, leaves]) => {
-      return leaves.map(l => {
+  allSprints.forEach(sprint => {
+    let tags = "";
+
+    // Company holidays — shown first with distinct style
+    (holidayBySprint[sprint] || []).forEach(h => {
+      const tip = h.dates.join(", ") + ` · ${h.dates.length}d`;
+      tags += `<span class="leave-tag leave-company" title="${tip}">🏢 ${h.name} <span class="leave-type">${h.dates.length}d</span></span>`;
+    });
+
+    // Personal leave
+    const sprintLeaves = personalBySprint[sprint] || {};
+    Object.entries(sprintLeaves).forEach(([person, leaves]) => {
+      leaves.forEach(l => {
         const icon = LEAVE_ICON[l.type?.toLowerCase()] || "📅";
         const tip = `${l.startDate}${l.endDate !== l.startDate ? " – " + l.endDate : ""} · ${l.days}d`;
-        return `<span class="leave-tag" title="${tip}">${icon} ${person} <span class="leave-type">${l.type} ${l.days}d</span></span>`;
-      }).join("");
-    }).join("");
+        tags += `<span class="leave-tag" title="${tip}">${icon} ${person} <span class="leave-type">${l.type} ${l.days}d</span></span>`;
+      });
+    });
+
     rows += `<div class="leave-row"><span class="leave-sprint">Sprint ${sprint}</span>${tags}</div>`;
   });
 
-  el.innerHTML = `<div class="leave-strip"><span class="leave-title">🗓 Leave this range</span>${rows}</div>`;
+  el.innerHTML = `<div class="leave-strip"><span class="leave-title">🗓 Leave & Holidays</span>${rows}</div>`;
 }
 
 function buildTrendChart(){
