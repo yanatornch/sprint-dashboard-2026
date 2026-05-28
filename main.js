@@ -661,10 +661,24 @@ function buildTrendChart(){
     leaveLookup[label] = { holidays, personal };
   });
 
-  // Plugin: draw leave bars below each sprint group
-  const BAR_H = 6;   // height of each leave bar
-  const BAR_GAP = 2; // gap between holiday bar and personal bar
-  const BAR_OFFSET = 6; // gap below x-axis ticks
+  // Plugin: draw rounded pill below every sprint bar
+  const PILL_H = 14;
+  const PILL_OFFSET = 8;
+  const LEAVE_TOOLTIP_EL = (() => {
+    let el = document.getElementById("leaveTooltip");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "leaveTooltip";
+      el.style.cssText = `
+        position:fixed; z-index:9999; pointer-events:none; display:none;
+        background:#1e293b; border:1px solid #334155; border-radius:12px;
+        padding:12px 16px; max-width:320px; box-shadow:0 8px 32px rgba(0,0,0,0.5);
+        font-size:13px; color:#e2e8f0; line-height:1.6;
+      `;
+      document.body.appendChild(el);
+    }
+    return el;
+  })();
 
   const leaveIndicatorPlugin = {
     id: "leaveIndicator",
@@ -672,37 +686,105 @@ function buildTrendChart(){
       if (S.chartType !== "bar") return;
       const { ctx: c, scales: { x, y } } = chart;
       const step = x.getPixelForValue(1) - x.getPixelForValue(0);
-      const barW = Math.max(step * 0.6, 8);
-      const top = y.bottom + BAR_OFFSET;
+      const pillW = Math.max(step * 0.72, 20);
+      const pillY = y.bottom + PILL_OFFSET;
 
       labels.forEach((label, li) => {
-        const info = leaveLookup[label];
-        if (!info) return;
-        const hasHoliday = info.holidays.length > 0;
-        const hasPersonal = Object.keys(info.personal).length > 0;
-        if (!hasHoliday && !hasPersonal) return;
-
+        const info = leaveLookup[label] || {};
+        const hasHoliday = (info.holidays||[]).length > 0;
+        const hasPersonal = Object.keys(info.personal||{}).length > 0;
         const cx = x.getPixelForValue(li);
-        const x0 = cx - barW / 2;
-        let rowY = top;
+        const x0 = cx - pillW / 2;
 
-        // Orange bar = company holiday
-        if (hasHoliday) {
+        c.beginPath();
+        c.roundRect(x0, pillY, pillW, PILL_H, PILL_H / 2);
+
+        if (hasHoliday && hasPersonal) {
+          // Split pill: left orange, right purple
+          const grad = c.createLinearGradient(x0, 0, x0 + pillW, 0);
+          grad.addColorStop(0, "rgba(251,146,60,0.9)");
+          grad.addColorStop(0.5, "rgba(251,146,60,0.9)");
+          grad.addColorStop(0.5, "rgba(99,102,241,0.9)");
+          grad.addColorStop(1, "rgba(99,102,241,0.9)");
+          c.fillStyle = grad;
+        } else if (hasHoliday) {
           c.fillStyle = "rgba(251,146,60,0.85)";
-          c.beginPath();
-          c.roundRect(x0, rowY, barW, BAR_H, 2);
-          c.fill();
-          rowY += BAR_H + BAR_GAP;
+        } else if (hasPersonal) {
+          c.fillStyle = "rgba(99,102,241,0.75)";
+        } else {
+          c.fillStyle = "rgba(255,255,255,0.06)";
         }
-
-        // Purple bar = personal leave
-        if (hasPersonal) {
-          c.fillStyle = "rgba(99,102,241,0.85)";
-          c.beginPath();
-          c.roundRect(x0, rowY, barW, BAR_H, 2);
-          c.fill();
-        }
+        c.fill();
       });
+    },
+
+    afterEvent(chart, args) {
+      if (S.chartType !== "bar") return;
+      const e = args.event;
+      const { scales: { x, y }, canvas } = chart;
+      const step = x.getPixelForValue(1) - x.getPixelForValue(0);
+      const pillW = Math.max(step * 0.72, 20);
+      const pillY = y.bottom + PILL_OFFSET;
+      const rect = canvas.getBoundingClientRect();
+
+      if (e.type === "mousemove") {
+        const mx = e.native.clientX - rect.left;
+        const my = e.native.clientY - rect.top;
+        let found = false;
+
+        labels.forEach((label, li) => {
+          const cx = x.getPixelForValue(li);
+          const x0 = cx - pillW / 2;
+          if (mx >= x0 && mx <= x0 + pillW && my >= pillY && my <= pillY + PILL_H) {
+            const info = leaveLookup[label] || {};
+            const holidays = info.holidays || [];
+            const personal = info.personal || {};
+            const totalDays = holidays.reduce((a,h)=>a+h.dates.length,0)
+              + Object.values(personal).flat().reduce((a,l)=>a+(l.days||1),0);
+            const capacity = totalDays > 0 ? Math.round((totalDays / 10) * 100) : 0;
+
+            let html = `<div style="font-weight:700;font-size:14px;margin-bottom:8px">🗓 ${label}</div>`;
+
+            if (holidays.length) {
+              html += `<div style="color:#fb923c;font-weight:600;margin-bottom:4px">🏢 Company Holidays</div>`;
+              holidays.forEach(h => {
+                html += h.dates.map(d => `<div style="color:#94a3b8">📅 ${d} — ${h.name}</div>`).join("");
+              });
+            }
+
+            const personalEntries = Object.entries(personal);
+            if (personalEntries.length) {
+              html += `<div style="color:#818cf8;font-weight:600;margin-top:8px;margin-bottom:4px">👤 Personal Leave</div>`;
+              personalEntries.forEach(([person, leaves]) => {
+                leaves.forEach(l => {
+                  const dateStr = l.startDate === l.endDate ? l.startDate : `${l.startDate} – ${l.endDate}`;
+                  html += `<div style="color:#94a3b8">${l.type === "vacation" ? "🏖" : l.type === "sick" ? "🤒" : "📅"} ${person} · ${l.type} ${l.days}d <span style="color:#64748b">(${dateStr})</span></div>`;
+                });
+              });
+            }
+
+            if (totalDays > 0) {
+              html += `<div style="margin-top:8px;padding-top:8px;border-top:1px solid #334155;color:#94a3b8">Capacity impacted: ~${capacity}%</div>`;
+            }
+
+            if (!holidays.length && !personalEntries.length) {
+              html += `<div style="color:#64748b">No leave or holidays this sprint</div>`;
+            }
+
+            LEAVE_TOOLTIP_EL.innerHTML = html;
+            LEAVE_TOOLTIP_EL.style.display = "block";
+            const tx = e.native.clientX + 16;
+            const ty = e.native.clientY - 10;
+            LEAVE_TOOLTIP_EL.style.left = Math.min(tx, window.innerWidth - 340) + "px";
+            LEAVE_TOOLTIP_EL.style.top = ty + "px";
+            found = true;
+          }
+        });
+
+        if (!found) LEAVE_TOOLTIP_EL.style.display = "none";
+      } else if (e.type === "mouseout") {
+        LEAVE_TOOLTIP_EL.style.display = "none";
+      }
     }
   };
 
@@ -713,7 +795,7 @@ function buildTrendChart(){
     plugins: [leaveIndicatorPlugin],
     options: {
       responsive:true, maintainAspectRatio:false,
-      layout: { padding: { bottom: S.chartType === "bar" ? 28 : 0 } },
+      layout: { padding: { bottom: S.chartType === "bar" ? 32 : 0 } },
       interaction: S.chartType === "bar"
         ? { mode:"index", intersect:false }
         : { mode:"index", intersect:false },
@@ -728,25 +810,6 @@ function buildTrendChart(){
           callbacks: {
             title: its => its.length ? its[0].label : '',
             label: it => `${it.dataset.label}: ${(it.parsed.y||0).toLocaleString(undefined,{maximumFractionDigits:2})} ${VIEW_LABEL[S.view]}`,
-            footer: its => {
-              if (!its.length) return [];
-              const info = leaveLookup[its[0].label] || {};
-              const lines = [];
-              if (info.holidays?.length) {
-                lines.push("─────────────────");
-                lines.push("🏢 Company Holidays:");
-                info.holidays.forEach(h => lines.push(`  ${h.name} (${h.dates.length}d · ${h.dates.join(", ")})`));
-              }
-              const personal = info.personal || {};
-              if (Object.keys(personal).length) {
-                lines.push("─────────────────");
-                lines.push("👤 Personal Leave:");
-                Object.entries(personal).forEach(([person, leaves]) => {
-                  leaves.forEach(l => lines.push(`  ${person} · ${l.type} ${l.days}d (${l.startDate}${l.endDate !== l.startDate ? "–"+l.endDate:""})`));
-                });
-              }
-              return lines;
-            }
           }
         } : {
           callbacks: { footer: its => "Total: " + its.reduce((a,b)=>a+(b.parsed.y||0),0).toLocaleString(undefined,{maximumFractionDigits:2}) }
