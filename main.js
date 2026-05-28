@@ -10,7 +10,7 @@ try {
   console.log("Fetching from normalized collections...");
   const [
     usersSnap, sprintsSnap, projectsSnap, tasksSnap,
-    userStatsSnap, projStatsSnap, dashboardStatsSnap
+    userStatsSnap, projStatsSnap, dashboardStatsSnap, leavesSnap
   ] = await Promise.all([
     getDocs(collection(db, "users")),
     getDocs(collection(db, "sprints")),
@@ -18,7 +18,8 @@ try {
     getDocs(collection(db, "tasks")),
     getDocs(collection(db, "sprintUserStats")),
     getDocs(collection(db, "sprintProjectStats")),
-    getDoc(doc(db, "dashboardStats", "v1"))
+    getDoc(doc(db, "dashboardStats", "v1")),
+    getDocs(collection(db, "leaves"))
   ]);
 
   const sprintDocs = [];
@@ -62,7 +63,18 @@ try {
 
   // const rawDash = dashboardStatsSnap.data() || {};
   // Object.assign(DATA, rawDash);
-  
+
+  // Leaves: indexed by sprint, then by person
+  DATA.leaves = {}; // { [sprint]: { [person]: [{type, startDate, endDate, days}] } }
+  leavesSnap.forEach(d => {
+    const l = d.data();
+    const s = l.sprint;
+    if (!s) return;
+    if (!DATA.leaves[s]) DATA.leaves[s] = {};
+    if (!DATA.leaves[s][l.person]) DATA.leaves[s][l.person] = [];
+    DATA.leaves[s][l.person].push({ type: l.type, startDate: l.startDate, endDate: l.endDate, days: l.days || 1 });
+  });
+
   // Dynamically compute legacy aggregates from movement
   DATA.contribution = {};
   DATA.personProject = {};
@@ -519,6 +531,40 @@ function updateKPIs(){
   `;
 }
 
+function renderLeaveStrip() {
+  const el = document.getElementById("leaveStrip");
+  if (!el) return;
+
+  const LEAVE_ICON = { "vacation": "🏖", "sick": "🤒", "personal": "🏠", "other": "📅" };
+  const idx = rangeIdx(S.range);
+  const sprintsWithLeave = idx.filter(i => {
+    const sprint = i + 1;
+    const sprintLeaves = DATA.leaves[sprint] || {};
+    return Object.keys(sprintLeaves).length > 0;
+  });
+
+  if (sprintsWithLeave.length === 0) {
+    el.innerHTML = "";
+    return;
+  }
+
+  let rows = "";
+  sprintsWithLeave.forEach(i => {
+    const sprint = i + 1;
+    const sprintLeaves = DATA.leaves[sprint] || {};
+    const tags = Object.entries(sprintLeaves).map(([person, leaves]) => {
+      return leaves.map(l => {
+        const icon = LEAVE_ICON[l.type?.toLowerCase()] || "📅";
+        const tip = `${l.startDate}${l.endDate !== l.startDate ? " – " + l.endDate : ""} · ${l.days}d`;
+        return `<span class="leave-tag" title="${tip}">${icon} ${person} <span class="leave-type">${l.type} ${l.days}d</span></span>`;
+      }).join("");
+    }).join("");
+    rows += `<div class="leave-row"><span class="leave-sprint">Sprint ${sprint}</span>${tags}</div>`;
+  });
+
+  el.innerHTML = `<div class="leave-strip"><span class="leave-title">🗓 Leave this range</span>${rows}</div>`;
+}
+
 function buildTrendChart(){
   const ctx = document.getElementById("trendChart");
   const idx = rangeIdx(S.range);
@@ -910,6 +956,28 @@ function renderPersonInsights(person){
       title: "⏰ Stale",
       value: `ไม่พบ task งาน 2 sprints ล่าสุด`,
       hint: `Sprint ${latest}-${latest+1} ไม่มี activity`
+    });
+  }
+
+  // Leave history
+  const LEAVE_ICON = { "vacation": "🏖", "sick": "🤒", "personal": "🏠", "other": "📅" };
+  const personLeaves = [];
+  Object.entries(DATA.leaves || {}).forEach(([sprint, byPerson]) => {
+    if (byPerson[person]) {
+      byPerson[person].forEach(l => personLeaves.push({ sprint: parseInt(sprint), ...l }));
+    }
+  });
+  if (personLeaves.length > 0) {
+    personLeaves.sort((a,b) => b.sprint - a.sprint);
+    const leaveList = personLeaves.map(l => {
+      const icon = LEAVE_ICON[l.type?.toLowerCase()] || "📅";
+      return `${icon} Sprint ${l.sprint} · ${l.type} ${l.days}d (${l.startDate}${l.endDate !== l.startDate ? "–"+l.endDate : ""})`;
+    }).join("<br>");
+    cards.push({
+      cls: "info",
+      title: "🗓 Leave History",
+      value: `${personLeaves.length} leave record${personLeaves.length > 1 ? "s" : ""}`,
+      hint: leaveList
     });
   }
 
@@ -1991,6 +2059,7 @@ function switchSection(name){
 function refresh(){
   if (S.section === "overview") {
     updateKPIs();
+    renderLeaveStrip();
     buildTrendChart();
     buildTopChart();
     buildCapacityChart();
