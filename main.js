@@ -1117,7 +1117,8 @@ function renderHolidayBanner() {
 const _roleChartRefs = {
   dev: { current: null },
   design: { current: null },
-  other: { current: null }
+  other: { current: null },
+  ceo: { current: null }
 };
 
 function buildRoleCharts() {
@@ -1137,10 +1138,12 @@ function buildRoleCharts() {
   const devPeople = allPeople.filter(n => ["Dev", "Tester"].includes(roleOf(n)));
   const designPeople = allPeople.filter(n => roleOf(n) === "BA");
   const otherPeople = allPeople.filter(n => roleOf(n) === "Designer");
+  const ceoPeople = allPeople.filter(n => ["CEO", "PC"].includes(roleOf(n)));
 
   buildRoleChart("devTrendChart", "devLegend", devPeople, idx, labels, leaveLookup, _roleChartRefs.dev);
   buildRoleChart("designTrendChart", "designLegend", designPeople, idx, labels, leaveLookup, _roleChartRefs.design);
   buildRoleChart("otherTrendChart", "otherLegend", otherPeople, idx, labels, leaveLookup, _roleChartRefs.other);
+  buildRoleChart("ceoTrendChart", "ceoLegend", ceoPeople, idx, labels, leaveLookup, _roleChartRefs.ceo);
 
   renderHolidayBanner();
 }
