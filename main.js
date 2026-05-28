@@ -652,14 +652,57 @@ function buildTrendChart(){
     document.getElementById("trendTag").textContent = `${VIEW_LABEL[S.view]}${roleSuffix}`;
   }
 
+  // Build leave lookup: sprintLabel -> { holidays: [], personal: {} }
+  const leaveLookup = {};
+  labels.forEach((label, li) => {
+    const sprint = idx[li] + 1;
+    const holidays = COMPANY_HOLIDAYS.filter(h => h.sprint === sprint);
+    const personal = DATA.leaves[sprint] || {};
+    leaveLookup[label] = { holidays, personal };
+  });
+
+  // Plugin: draw leave dot indicators below each bar group
+  const leaveIndicatorPlugin = {
+    id: "leaveIndicator",
+    afterDraw(chart) {
+      if (S.chartType !== "bar") return;
+      const { ctx: c, scales: { x, y } } = chart;
+      const bottom = y.bottom + 4;
+      labels.forEach((label, li) => {
+        const info = leaveLookup[label];
+        if (!info) return;
+        const hasHoliday = info.holidays.length > 0;
+        const hasPersonal = Object.keys(info.personal).length > 0;
+        if (!hasHoliday && !hasPersonal) return;
+        const xPos = x.getPixelForValue(li);
+        let dotX = xPos - (hasHoliday && hasPersonal ? 7 : 0);
+        if (hasHoliday) {
+          c.beginPath();
+          c.arc(dotX, bottom + 6, 4, 0, Math.PI * 2);
+          c.fillStyle = "rgba(251,146,60,0.9)";
+          c.fill();
+          dotX += 14;
+        }
+        if (hasPersonal) {
+          c.beginPath();
+          c.arc(dotX, bottom + 6, 4, 0, Math.PI * 2);
+          c.fillStyle = "rgba(99,102,241,0.9)";
+          c.fill();
+        }
+      });
+    }
+  };
+
   if (trendChart) trendChart.destroy();
   trendChart = new Chart(ctx, {
     type: S.chartType,
     data: { labels, datasets },
+    plugins: [leaveIndicatorPlugin],
     options: {
       responsive:true, maintainAspectRatio:false,
+      layout: { padding: { bottom: S.chartType === "bar" ? 18 : 0 } },
       interaction: S.chartType === "bar"
-        ? { mode:"nearest", intersect:true, axis:"xy" }
+        ? { mode:"index", intersect:false }
         : { mode:"index", intersect:false },
       scales: {
         x: { stacked: S.chartType==="bar", grid:{color:THEME.grid}, ticks:{color:THEME.tick} },
@@ -670,8 +713,27 @@ function buildTrendChart(){
         stackTotals: { enabled: S.chartType === "bar" },
         tooltip: S.chartType === "bar" ? {
           callbacks: {
-            title: its => its.length ? `${its[0].dataset.label} · ${its[0].label}` : '',
-            label: it => `${(it.parsed.y||0).toLocaleString(undefined,{maximumFractionDigits:2})} ${VIEW_LABEL[S.view]}`
+            title: its => its.length ? its[0].label : '',
+            label: it => `${it.dataset.label}: ${(it.parsed.y||0).toLocaleString(undefined,{maximumFractionDigits:2})} ${VIEW_LABEL[S.view]}`,
+            footer: its => {
+              if (!its.length) return [];
+              const info = leaveLookup[its[0].label] || {};
+              const lines = [];
+              if (info.holidays?.length) {
+                lines.push("─────────────────");
+                lines.push("🏢 Company Holidays:");
+                info.holidays.forEach(h => lines.push(`  ${h.name} (${h.dates.length}d · ${h.dates.join(", ")})`));
+              }
+              const personal = info.personal || {};
+              if (Object.keys(personal).length) {
+                lines.push("─────────────────");
+                lines.push("👤 Personal Leave:");
+                Object.entries(personal).forEach(([person, leaves]) => {
+                  leaves.forEach(l => lines.push(`  ${person} · ${l.type} ${l.days}d (${l.startDate}${l.endDate !== l.startDate ? "–"+l.endDate:""})`));
+                });
+              }
+              return lines;
+            }
           }
         } : {
           callbacks: { footer: its => "Total: " + its.reduce((a,b)=>a+(b.parsed.y||0),0).toLocaleString(undefined,{maximumFractionDigits:2}) }
