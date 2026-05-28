@@ -1134,9 +1134,9 @@ function buildRoleCharts() {
   });
 
   const allPeople = Object.keys(DATA.points);
-  const devPeople = allPeople.filter(n => roleOf(n) === "Dev");
-  const designPeople = allPeople.filter(n => ["Designer", "BA", "Tester"].includes(roleOf(n)));
-  const otherPeople = allPeople.filter(n => ["PC", "CEO"].includes(roleOf(n)));
+  const devPeople = allPeople.filter(n => ["Dev", "Tester"].includes(roleOf(n)));
+  const designPeople = allPeople.filter(n => roleOf(n) === "BA");
+  const otherPeople = allPeople.filter(n => roleOf(n) === "Designer");
 
   buildRoleChart("devTrendChart", "devLegend", devPeople, idx, labels, leaveLookup, _roleChartRefs.dev);
   buildRoleChart("designTrendChart", "designLegend", designPeople, idx, labels, leaveLookup, _roleChartRefs.design);

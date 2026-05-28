@@ -223,6 +223,14 @@
     letter-spacing: -0.02em;
   }
 
+  .chart-with-legend { display: flex; gap: 12px; align-items: flex-start; }
+  .chart-with-legend .chart-wrap { flex: 1; min-width: 0; }
+  .role-legend-right {
+    display: flex; flex-direction: column; gap: 6px;
+    min-width: 110px; max-width: 130px; padding-top: 4px; flex-shrink: 0;
+  }
+  .role-legend-right .role-legend-item { flex-direction: row; align-items: center; gap: 8px; white-space: nowrap; }
+
   /* Holiday banner */
   #holidayBanner:not(:empty) {
     margin-bottom: 18px;
@@ -750,19 +758,25 @@
     <div class="team-contribution-header">Team Contribution Breakdown Overview</div>
     <div class="grid-3-roles">
       <div class="card">
-        <h3>Developer Team x Sprint <span class="head-right"><span class="tag">Dev</span></span></h3>
-        <div class="chart-wrap tall"><canvas id="devTrendChart"></canvas></div>
-        <div class="role-legend" id="devLegend"></div>
+        <h3>Dev + Tester x Sprint <span class="head-right"><span class="tag">Dev</span></span></h3>
+        <div class="chart-with-legend">
+          <div class="chart-wrap tall"><canvas id="devTrendChart"></canvas></div>
+          <div class="role-legend role-legend-right" id="devLegend"></div>
+        </div>
       </div>
       <div class="card">
-        <h3>Designer / BA / Tester x Sprint <span class="head-right"><span class="tag">Design+</span></span></h3>
-        <div class="chart-wrap tall"><canvas id="designTrendChart"></canvas></div>
-        <div class="role-legend" id="designLegend"></div>
+        <h3>BA x Sprint <span class="head-right"><span class="tag">BA</span></span></h3>
+        <div class="chart-with-legend">
+          <div class="chart-wrap tall"><canvas id="designTrendChart"></canvas></div>
+          <div class="role-legend role-legend-right" id="designLegend"></div>
+        </div>
       </div>
       <div class="card">
-        <h3>Other Teams x Sprint <span class="head-right"><span class="tag">Ops</span></span></h3>
-        <div class="chart-wrap tall"><canvas id="otherTrendChart"></canvas></div>
-        <div class="role-legend" id="otherLegend"></div>
+        <h3>Designer x Sprint <span class="head-right"><span class="tag">Designer</span></span></h3>
+        <div class="chart-with-legend">
+          <div class="chart-wrap tall"><canvas id="otherTrendChart"></canvas></div>
+          <div class="role-legend role-legend-right" id="otherLegend"></div>
+        </div>
       </div>
     </div>
     <div id="holidayBanner"></div>
