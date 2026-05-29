@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sprint Contribution Dashboard 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-2: #273449;
+    --border: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #6366f1;
+    --accent-2: #22d3ee;
+    --good: #10b981;
+    --warn: #f59e0b;
+    --bad: #ef4444;
+    --grid: #334155;
+    --tick: #cbd5e1;
+    --bg-gradient: radial-gradient(1200px 600px at 10% -10%, #1e293b 0%, #0f172a 60%);
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    --accent-text: #a5b4fc;
+    --good-text: #6ee7b7;
+    --warn-text: #fcd34d;
+    --warn-text-strong: #fde68a;
+    --bad-text: #fecaca;
+  }
+  :root[data-theme="light"] {
+    --bg: #f8fafc;
+    --panel: #ffffff;
+    --panel-2: #f1f5f9;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #4f46e5;
+    --accent-2: #0891b2;
+    --good: #059669;
+    --warn: #d97706;
+    --bad: #dc2626;
+    --grid: #e2e8f0;
+    --tick: #475569;
+    --bg-gradient: radial-gradient(1200px 600px at 10% -10%, #eef2ff 0%, #f8fafc 60%);
+    --shadow: 0 1px 3px rgba(15,23,42,0.08);
+    --accent-text: #4338ca;
+    --good-text: #047857;
+    --warn-text: #b45309;
+    --warn-text-strong: #92400e;
+    --bad-text: #b91c1c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg-gradient) fixed;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .theme-toggle {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  header {
+    padding: 28px 32px 8px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 26px;
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, var(--text), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+  .container { padding: 16px 32px 48px; }
+
+  .topnav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .topnav .navtab {
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .topnav .navtab:hover { color: var(--text); border-color: var(--accent); }
+  .topnav .navtab.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 18px;
+  }
+  .control {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 180px;
+  }
+  .control label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  select, input[type="text"] {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 14px;
+    outline: none;
+  }
+  select:focus, input:focus { border-color: var(--accent); }
+
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .kpi {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(99,102,241,0.12), transparent 60%);
+    pointer-events: none;
+  }
+  .kpi .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .kpi .value { font-size: 26px; font-weight: 700; margin-top: 6px; letter-spacing: -0.02em; }
+  .kpi .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 18px; }
+  .grid-eq { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+  @media (max-width: 1000px) {
+    .grid-2, .grid-eq { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  .card h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .card h3 .tag {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+  .card h3 .head-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-inline-select {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 12px;
+    outline: none;
+    font-weight: 500;
+  }
+  .card-inline-select:focus { border-color: var(--accent); }
+  .chart-wrap { position: relative; height: 340px; }
+  .chart-wrap.tall { height: 420px; }
+  .chart-wrap.xtall { height: 520px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th, td {
+    padding: 8px 10px;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--panel); z-index: 1; }
+  thead th {
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    background: var(--panel);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  tbody tr:hover { background: rgba(99,102,241,0.08); }
+  tr.total-row td { font-weight: 700; color: var(--text); background: var(--panel-2); }
+  tr.highlight td:first-child::before {
+    content: "●";
+    color: var(--accent-2);
+    margin-right: 6px;
+  }
+  .scroll { overflow: auto; max-height: 560px; border-radius: 10px; -webkit-overflow-scrolling: touch; max-width: 100%; }
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-right: 4px;
+  }
+  .pill.good { background: rgba(16,185,129,0.15); color: var(--good-text); }
+  .pill.warn { background: rgba(245,158,11,0.15); color: var(--warn-text); }
+  .pill.bad { background: rgba(239,68,68,0.15); color: #fca5a5; }
+  .pill.neutral { background: rgba(148,163,184,0.15); color: var(--text); }
+
+  .tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .tab {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 24px; }
+
+  .legend-sq {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .progress {
+    height: 8px; background: var(--panel-2); border-radius: 4px; overflow: hidden;
+    display: inline-block; width: 100px; vertical-align: middle; margin-right: 8px;
+  }
+  .progress > div {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #22d3ee);
+  }
+  .person-drill {
+    background: var(--panel-2);
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 8px;
+    border: 1px solid var(--border);
+  }
+  .person-drill h4 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    color: var(--accent-text);
+  }
+
+  .stale-banner {
+    margin: 0 32px 12px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(245,158,11,0.18), rgba(239,68,68,0.12));
+    border: 1px solid rgba(245,158,11,0.45);
+    border-radius: 12px;
+    color: var(--warn-text);
+    font-size: 13px;
+    line-height: 1.8;
+  }
+  .stale-banner .stale-icon {
+    font-size: 16px;
+    margin-right: 8px;
+    vertical-align: -2px;
+  }
+  .stale-banner strong { color: var(--warn-text-strong); margin-right: 4px; }
+  .stale-banner .stale-chip {
+    display: inline-block;
+    padding: 2px 10px;
+    margin: 2px 4px 2px 0;
+    border-radius: 999px;
+    background: rgba(239,68,68,0.22);
+    color: var(--bad-text);
+    border: 1px solid rgba(239,68,68,0.4);
+    font-weight: 600;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .stale-banner.section-only { display: none !important; }
+  .stale-banner.ok {
+    background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(34,211,238,0.08));
+    border-color: rgba(16,185,129,0.35);
+    color: var(--good-text);
+  }
+
+  .insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+  .insight {
+    --c: var(--accent);
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .insight::before {
+    content: "";
+    position: absolute;
+    top: 0; right: 0;
+    width: 56px; height: 56px;
+    background: radial-gradient(circle at top right, color-mix(in srgb, var(--c) 16%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+  .insight:hover {
+    border-color: color-mix(in srgb, var(--c) 38%, var(--border));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px -8px color-mix(in srgb, var(--c) 50%, transparent);
+  }
+  .insight.good { --c: var(--good); }
+  .insight.warn { --c: var(--warn); }
+  .insight.bad { --c: var(--bad); }
+  .insight.info { --c: var(--accent-2); }
+  .insight .ins-title {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    position: relative;
+  }
+  .insight .ins-title::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 999px;
+    background: var(--c);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent);
+    flex-shrink: 0;
+  }
+  .insight .ins-value { font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.4; position: relative; }
+  .insight .ins-hint { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; position: relative; }
+  @media (max-width: 600px) {
+    .insights-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .insight { padding: 10px 12px; border-radius: 10px; }
+    .insight .ins-title { font-size: 10px; margin-bottom: 4px; }
+    .insight .ins-value { font-size: 12.5px; }
+    .insight .ins-hint { font-size: 10.5px; }
+  }
+
+  .link-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .link-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.15s;
+  }
+  .link-card:hover {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, rgba(99,102,241,0.12), var(--panel-2));
+    transform: translateY(-1px);
+  }
+  .link-icon {
+    font-size: 26px;
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(99,102,241,0.12);
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+  .link-body { flex: 1; min-width: 0; }
+  .link-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .link-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .link-url { font-size: 11px; color: var(--accent-text); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .link-arrow { font-size: 18px; color: var(--muted); }
+  .link-card:hover .link-arrow { color: var(--accent-2); }
+
+  /* Ensure canvas never overflows its container */
+  .chart-wrap { width: 100%; overflow: hidden; }
+  .chart-wrap canvas { max-width: 100% !important; }
+
+  /* Status pills grid inside drill card */
+  #drillStatusPills { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .status-pill {
+    --c: var(--accent);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .status-pill::before {
+    content: "";
+    position: absolute;
+    top: 0; right: 0;
+    width: 60px; height: 60px;
+    background: radial-gradient(circle at top right, color-mix(in srgb, var(--c) 18%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+  .status-pill:hover { border-color: color-mix(in srgb, var(--c) 45%, var(--border)); transform: translateY(-1px); box-shadow: 0 4px 14px -8px color-mix(in srgb, var(--c) 50%, transparent); }
+  .status-pill .sp-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .status-pill .sp-dot { width: 7px; height: 7px; border-radius: 999px; background: var(--c); flex-shrink: 0; box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent); }
+  .status-pill .sp-label { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .status-pill .sp-num { display: flex; align-items: baseline; gap: 5px; line-height: 1; }
+  .status-pill .sp-count { font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .status-pill .sp-unit { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .status-pill .sp-bar { height: 2px; background: var(--panel-2); border-radius: 999px; overflow: hidden; }
+  .status-pill .sp-bar > i { display: block; height: 100%; width: 0; background: var(--c); border-radius: 999px; transition: width 0.4s ease; }
+  .status-pill .sp-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .status-pill .sp-pct { color: var(--c); font-weight: 600; }
+  .status-pill.is-empty { opacity: 0.42; }
+  .status-pill.is-empty:hover { transform: none; box-shadow: none; }
+
+  /* ================= Mobile Responsive ================= */
+  @media (max-width: 900px) {
+    header { padding: 16px 14px 4px; flex-direction: column; align-items: flex-start; }
+    header h1 { font-size: 20px; }
+    header .sub { font-size: 12px; }
+    .container { padding: 10px 14px 32px; }
+    .stale-banner { margin: 0 14px 10px; font-size: 12px; padding: 10px 12px; }
+    .topnav { gap: 6px; }
+    .topnav .navtab { padding: 8px 12px; font-size: 13px; flex: 1 1 auto; text-align: center; }
+    .controls { padding: 10px; gap: 8px; }
+    .control { min-width: 130px; flex: 1 1 140px; }
+    .control label { font-size: 10px; }
+    select, input[type="text"] { font-size: 13px; padding: 7px 8px; }
+    .kpis { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .kpi { padding: 12px 14px; }
+    .kpi .value { font-size: 20px; }
+    .kpi .label { font-size: 11px; }
+    .card { padding: 12px; }
+    .card h3 { font-size: 13px; flex-wrap: wrap; }
+    .chart-wrap { height: 280px; }
+    .chart-wrap.tall { height: 320px; }
+    .chart-wrap.xtall { height: 380px; }
+    .scroll { max-height: 420px; }
+    th, td { padding: 6px 8px; font-size: 12px; }
+    thead th { font-size: 10px; }
+    .tab { padding: 6px 10px; font-size: 12px; }
+    .card-inline-select { font-size: 11px; padding: 3px 6px; }
+  }
+  @media (max-width: 600px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .kpi { padding: 10px 12px; }
+    .kpi .value { font-size: 18px; }
+    .kpi .label { font-size: 10px; letter-spacing: 0.05em; }
+    .kpi .hint { font-size: 11px; }
+    .chart-wrap { height: 240px; }
+    .chart-wrap.tall { height: 280px; }
+    .chart-wrap.xtall { height: 320px; }
+    .control { min-width: 0; flex: 1 1 calc(50% - 8px); }
+    #drillStatusPills { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .status-pill { padding: 11px 12px 10px; gap: 8px; border-radius: 10px; }
+    .status-pill .sp-count { font-size: 19px; }
+    .status-pill .sp-label { font-size: 10px; }
+    .status-pill .sp-unit, .status-pill .sp-foot { font-size: 10px; }
+    .card h3 { font-size: 13px; }
+    .card h3 .tag { font-size: 10px; }
+  }
+  @media (max-width: 420px) {
+    header h1 { font-size: 17px; }
+    header .sub { font-size: 11px; }
+    .container { padding: 8px 10px 24px; }
+    .stale-banner { margin: 0 10px 8px; font-size: 11px; padding: 8px 10px; }
+    .kpis { grid-template-columns: 1fr; }
+    .control { flex: 1 1 100%; }
+    .chart-wrap { height: 220px; }
+    .chart-wrap.tall { height: 250px; }
+    .chart-wrap.xtall { height: 290px; }
+    .card { padding: 10px; }
+    .topnav .navtab { padding: 6px 8px; font-size: 11px; }
+    .status-pill .sp-count { font-size: 17px; }
+  }
+</style>
+  <script type="module" crossorigin src="/assets/index-BajtBjWB.js"></script>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Sprint Contribution Dashboard 2026</h1>
+    <div class="sub">Story points, tasks, projects, and status across Sprints 1–12 · 16 teammates · 35 projects · Task-level only</div>
+  </div>
+  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+    <div class="sub" id="updated"></div>
+    <button type="button" class="theme-toggle" id="themeToggle" title="Toggle theme"><span id="themeIcon">🌙</span><span id="themeLabel">Dark</span></button>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="topnav" id="topnav">
+    <div class="navtab active" data-section="overview">Overview</div>
+    <div class="navtab" data-section="projects">Projects</div>
+    <div class="navtab" data-section="bugs">Bugs</div>
+    <div class="navtab" data-section="status">Status</div>
+    <div class="navtab" data-section="logic">Logic</div>
+    <div class="navtab" data-section="links">Links</div>
+  </div>
+
+  <!-- =========================== OVERVIEW =========================== -->
+  <section class="section active" id="section-overview">
+    <div class="controls">
+      <div class="control">
+        <label for="viewSelect">Data View</label>
+        <select id="viewSelect">
+          <option value="points">Story Points</option>
+          <option value="tasks">Tasks Count</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="memberSelect">View Person</label>
+        <select id="memberSelect"></select>
+      </div>
+      <div class="control">
+        <label for="roleSelect">View Role</label>
+        <select id="roleSelect">
+          <option value="all">All Roles</option>
+          <option value="Dev">Dev</option>
+          <option value="Designer">Designer</option>
+          <option value="BA">BA</option>
+          <option value="Tester">Tester</option>
+          <option value="PC">PC</option>
+          <option value="CEO">CEO</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="sprintRange">Sprint Range</label>
+        <select id="sprintRange">
+          <option value="all">All Sprints (1-12)</option>
+          <option value="1-3">Q1 Burst (1-3)</option>
+          <option value="4-6">Mid (4-6)</option>
+          <option value="7-9">Late Q1 (7-9)</option>
+          <option value="10-12">Current (10-12)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>
+          <span id="trendTitleText">Sprint Trend by Person</span>
+          <span class="head-right">
+            <select id="chartType" class="card-inline-select" title="Chart Style">
+              <option value="bar">Stacked Bar</option>
+              <option value="line">Lines</option>
+            </select>
+            <span class="tag" id="trendTag">Story Points</span>
+          </span>
+        </h3>
+        <div class="chart-wrap tall"><canvas id="trendChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>
+          <span id="topTitleText">Top Contributors</span>
+          <span class="head-right">
+            <select id="topSprint" class="card-inline-select" title="Filter by sprint">
+              <option value="all">Use Sprint Range</option>
+              <option value="1">Sprint 1</option>
+              <option value="2">Sprint 2</option>
+              <option value="3">Sprint 3</option>
+              <option value="4">Sprint 4</option>
+              <option value="5">Sprint 5</option>
+              <option value="6">Sprint 6</option>
+              <option value="7">Sprint 7</option>
+              <option value="8">Sprint 8</option>
+              <option value="9">Sprint 9</option>
+              <option value="10">Sprint 10</option>
+              <option value="11">Sprint 11</option>
+              <option value="12">Sprint 12</option>
+            </select>
+            <span class="tag" id="topTag">Total</span>
+          </span>
+        </h3>
+        <div class="chart-wrap tall"><canvas id="topChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid-eq">
+      <div class="card">
+        <h3 id="capTitle">Team Capacity by Sprint <span class="tag" id="capTag">Points + Items</span></h3>
+        <div class="chart-wrap"><canvas id="capacityChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3 id="avgTitle">Avg Points / Task Trend <span class="tag" id="avgTag">Team-wide</span></h3>
+        <div class="chart-wrap"><canvas id="avgTrendChart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== PROJECTS =========================== -->
+  <section class="section" id="section-projects">
+    <div class="controls">
+      <div class="control">
+        <label for="projSprintRange">Sprint Range</label>
+        <select id="projSprintRange">
+          <option value="all">All Sprints (1-12)</option>
+          <option value="1-3">Q1 Burst (1-3)</option>
+          <option value="4-6">Mid (4-6)</option>
+          <option value="7-9">Late Q1 (7-9)</option>
+          <option value="10-12">Current (10-12)</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="projRole">Team (Role)</label>
+        <select id="projRole">
+          <option value="all">All Teams</option>
+          <option value="Dev">Dev</option>
+          <option value="Designer">Designer</option>
+          <option value="BA">BA</option>
+          <option value="Tester">Tester</option>
+          <option value="PC">PC</option>
+          <option value="CEO">CEO</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="kpis" id="projKpis"></div>
+
+    <div class="card" style="margin-top:8px; margin-bottom:16px;">
+      <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; justify-content:space-between;">
+        <div style="display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end;">
+          <div class="control" style="min-width:200px; max-width:300px;">
+            <label for="projDrill">🔎 Drill into Project</label>
+            <select id="projDrill"></select>
+          </div>
+          <div class="control" style="min-width:140px; max-width:180px;">
+            <label for="projDrillMetric">Metric</label>
+            <select id="projDrillMetric">
+              <option value="points">Story Points</option>
+              <option value="tasks">Tasks Count</option>
+            </select>
+          </div>
+          <div class="control" style="min-width:170px; max-width:210px;">
+            <label for="projDrillStatus">Status</label>
+            <select id="projDrillStatus">
+              <option value="all">All Statuses</option>
+              <option value="Done">Done</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Ready for review">Ready for Review</option>
+              <option value="Ready for test">Ready for Test</option>
+              <option value="Waiting to INT deploy">Waiting to INT deploy</option>
+              <option value="Waiting to PRD deploy">Waiting to PRD deploy</option>
+              <option value="To Do">To Do</option>
+              <option value="Blocked">Blocked</option>
+              <option value="Bugged">Bugged</option>
+            </select>
+          </div>
+        </div>
+        <div style="text-align:right; min-width:0; padding-bottom:2px;">
+          <div id="projDrillName" style="font-size:17px; font-weight:700; color:var(--text); margin-bottom:3px; letter-spacing:-0.01em;">Select a project</div>
+          <div id="projDrillStat" style="font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums;">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-eq">
+      <div class="card">
+        <h3>Contributors × Sprint <span class="tag" id="projDrillChartTag">Story Points</span></h3>
+        <div class="chart-wrap tall"><canvas id="projDrillChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Contributor Breakdown <span class="tag" id="projDrillTableTag">Done / WIP / Backlog</span></h3>
+        <div class="scroll" id="projDrillContribTable"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== BUGS =========================== -->
+  <section class="section" id="section-bugs">
+    <div class="kpis" id="bugKpis"></div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <h3>🐛 Bug Trend by Sprint <span class="tag" id="bugTrendTag">Stacked by State</span></h3>
+      <div class="chart-wrap tall"><canvas id="bugTrendChart"></canvas></div>
+    </div>
+
+    <div class="grid-eq">
+      <div class="card">
+        <h3>Bugs by Person <span class="tag" id="bugPersonTag">— bugs</span></h3>
+        <div class="scroll" id="bugPersonTable"></div>
+      </div>
+      <div class="card">
+        <h3>Bugs by Project <span class="tag" id="bugProjectTag">— bugs</span></h3>
+        <div class="scroll" id="bugProjectTable"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== STATUS =========================== -->
+  <section class="section" id="section-status">
+    <div class="controls">
+      <div class="control">
+        <label for="statusMetric">Metric</label>
+        <select id="statusMetric">
+          <option value="points">Story Points</option>
+          <option value="count">Task Count</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="statusView">View</label>
+        <select id="statusView">
+          <option value="person">By Person</option>
+          <option value="project">By Project</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="kpis" id="statusKpis"></div>
+
+    <div class="card">
+      <h3>Status Breakdown <span class="tag" id="statusTag">By Person · Story Points</span></h3>
+      <div class="chart-wrap xtall"><canvas id="statusChart"></canvas></div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h3>Completion Rate Ranking <span class="tag">% Done of total</span></h3>
+      <div class="scroll" id="doneTable"></div>
+    </div>
+  </section>
+
+  <!-- =========================== LOGIC =========================== -->
+  <section class="section" id="section-logic">
+    <div id="logicContent"></div>
+  </section>
+
+  <!-- =========================== LINKS =========================== -->
+  <section class="section" id="section-links">
+    <div class="card" style="margin-bottom:16px;">
+      <h3>🛠️ Tools &amp; Resources</h3>
+      <div class="link-list">
+        <a class="link-card" href="https://morestudio-knowledge.vercel.app/" target="_blank" rel="noopener">
+          <div class="link-icon">📚</div>
+          <div class="link-body">
+            <div class="link-title">Knowledge Hub</div>
+            <div class="link-desc">Internal knowledge base &amp; documentation</div>
+            <div class="link-url">morestudio-knowledge.vercel.app</div>
+          </div>
+          <div class="link-arrow">↗</div>
+        </a>
+        <a class="link-card" href="https://dev.azure.com/morestudio/M/_queries/query/4a395789-1a46-4df8-9f08-5b79493765a2/?System.WorkItemType=Bug%2CTask" target="_blank" rel="noopener">
+          <div class="link-icon">🗂️</div>
+          <div class="link-body">
+            <div class="link-title">Azure Query</div>
+            <div class="link-desc">Sprint Tasks &amp; Bugs query on Azure DevOps</div>
+            <div class="link-url">dev.azure.com/morestudio</div>
+          </div>
+          <div class="link-arrow">↗</div>
+        </a>
+        <a class="link-card" href="https://dev.azure.com/morestudio/M/_wiki/wikis/More%20Studio.wiki/23/Morestudio-Operations-Handbook" target="_blank" rel="noopener">
+          <div class="link-icon">📘</div>
+          <div class="link-body">
+            <div class="link-title">Morestudio Operations Handbook</div>
+            <div class="link-desc">Ops handbook &amp; policies on Azure Wiki</div>
+            <div class="link-url">dev.azure.com/morestudio/.../wiki</div>
+          </div>
+          <div class="link-arrow">↗</div>
+        </a>
+        <a class="link-card" href="https://morestudioco.sharepoint.com/sites/msteams_2bc180/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2Fmsteams%5F2bc180%2FShared%20Documents%2FGeneral%2FIdentity%20asset%2F2022&p=true&ga=1" target="_blank" rel="noopener">
+          <div class="link-icon">🎨</div>
+          <div class="link-body">
+            <div class="link-title">More Studio Identity &amp; Asset</div>
+            <div class="link-desc">Brand identity and asset library (SharePoint)</div>
+            <div class="link-url">morestudioco.sharepoint.com</div>
+          </div>
+          <div class="link-arrow">↗</div>
+        </a>
+        <a class="link-card" href="https://airtable.com/appgEfmVogREcWoeF/pagq3a9hDR3YOlUFI/form" target="_blank" rel="noopener">
+          <div class="link-icon">💸</div>
+          <div class="link-body">
+            <div class="link-title">แบบฟอร์มขอคืนเงิน (Cash Out Request)</div>
+            <div class="link-desc">Submit reimbursement requests via Airtable</div>
+            <div class="link-url">airtable.com/.../form</div>
+          </div>
+          <div class="link-arrow">↗</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>💻 Git Repo</h3>
+      <div class="link-list">
+        <a class="link-card" href="https://github.com/morestudio/morestudio-sprint-contribution" target="_blank" rel="noopener">
+          <div class="link-icon">📊</div>
+          <div class="link-body">
+            <div class="link-title">Sprint Contribution</div>
+            <div class="link-desc">Source code of this dashboard on GitHub</div>
+            <div class="link-url">github.com/morestudio/morestudio-sprint-contribution</div>
+          </div>
+          <div class="link-arrow">↗</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div id="staleBanner" class="stale-banner" style="display:none; margin-top:24px; margin-bottom:0;"></div>
+
+  <div class="footer">More Studio.Co.,Ltd</div>
+</div>
+
+</body>
+</html>
