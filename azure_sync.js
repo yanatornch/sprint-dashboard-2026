@@ -108,26 +108,33 @@ async function runSync() {
   }
   console.log(`Found ${workItemIds.length} work items.`);
 
-  // 2. Fetch full details for the Work Items
+  // 2. Fetch full details for the Work Items (Azure batch API limit = 200 per request)
   const batchUrl = `https://dev.azure.com/${AZURE_ORG}/${AZURE_PROJECT}/_apis/wit/workitemsbatch?api-version=7.1`;
-  const batchRes = await fetch(batchUrl, {
-    method: 'POST',
-    headers: azureHeaders,
-    body: JSON.stringify({
-      ids: workItemIds,
-      fields: [
-        "System.Id",
-        "System.Title",
-        "System.IterationPath",
-        "System.State",
-        "System.AssignedTo",
-        "Custom.Points",
-        "System.AreaPath"
-      ]
-    })
-  });
-  if (!batchRes.ok) throw new Error(`Azure Batch fetch failed: ${batchRes.statusText}`);
-  const batchData = await batchRes.json();
+  const BATCH_SIZE = 200;
+  const allItems = [];
+  for (let i = 0; i < workItemIds.length; i += BATCH_SIZE) {
+    const chunk = workItemIds.slice(i, i + BATCH_SIZE);
+    const batchRes = await fetch(batchUrl, {
+      method: 'POST',
+      headers: azureHeaders,
+      body: JSON.stringify({
+        ids: chunk,
+        fields: [
+          "System.Id",
+          "System.Title",
+          "System.IterationPath",
+          "System.State",
+          "System.AssignedTo",
+          "Custom.Points",
+          "System.AreaPath"
+        ]
+      })
+    });
+    if (!batchRes.ok) throw new Error(`Azure Batch fetch failed: ${batchRes.statusText}`);
+    const batchData = await batchRes.json();
+    allItems.push(...batchData.value);
+  }
+  const batchData = { value: allItems };
 
   // 3. Process into our Firebase schema
   let batchWrite = writeBatch(db);
