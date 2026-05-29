@@ -2596,6 +2596,17 @@ function refresh(){
 // ============================================================================
 const DEV_PEOPLE = ["Ohm", "Nust", "Unn", "P", "No", "Tum", "Ping"];
 const DONE_STATES_TEAM = ["done", "closed", "removed", "canceled", "cancelled"];
+const STATE_STYLE = {
+  "To Do":                  { bg: "#1c1917", color: "#a8a29e" },
+  "In Progress":            { bg: "#1e3a5f", color: "#60a5fa" },
+  "Blocked":                { bg: "#7f1d1d", color: "#fca5a5" },
+  "Bugged":                 { bg: "#7c2d12", color: "#fb923c" },
+  "Ready for review":       { bg: "#3b1f5e", color: "#c084fc" },
+  "Ready for test":         { bg: "#164e63", color: "#67e8f9" },
+  "Waiting to INT deploy":  { bg: "#1a2e1a", color: "#86efac" },
+  "Waiting to PRD deploy":  { bg: "#14532d", color: "#4ade80" },
+  "Done":                   { bg: "#166534", color: "#bbf7d0" },
+};
 
 function buildTeamSection() {
   const sprintIdx = CURRENT_SPRINT_IDX;
@@ -2646,14 +2657,12 @@ function buildTeamSection() {
     const taskRows = data.tasks.length === 0
       ? `<div class="person-no-tasks">✓ All tasks done</div>`
       : data.tasks.map(t => {
-          const stateLower = (t.state || "").toLowerCase();
-          const stateClass = stateLower.includes("active") ? "state-active"
-            : stateLower.includes("review") ? "state-review" : "state-new";
+          const style = STATE_STYLE[t.state] || { bg: "#1c1917", color: "#a8a29e" };
           const pts = parseFloat(t.points) || 0;
           return `<div class="person-task-item">
             <div class="person-task-title" title="${t.title}">${t.title}</div>
             <div class="person-task-meta">
-              <span class="person-task-state ${stateClass}">${t.state}</span>
+              <span class="person-task-state" style="background:${style.bg};color:${style.color}">${t.state}</span>
               <span>${pts}pt</span>
               <span style="color:var(--muted)">${t.project || "—"}</span>
             </div>
