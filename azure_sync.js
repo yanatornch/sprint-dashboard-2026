@@ -17,6 +17,30 @@ const AZURE_ORG = process.env.AZURE_ORG || process.env.ADO_ORG || 'morestudio';
 const AZURE_PROJECT = process.env.AZURE_PROJECT || process.env.ADO_PROJECT || 'M';
 const AZURE_PAT = process.env.AZURE_PAT || process.env.ADO_PAT;
 
+const SPRINT_DATES = [
+  { sprint: 1,  s: "2026-01-05", e: "2026-01-18" },
+  { sprint: 2,  s: "2026-01-19", e: "2026-02-01" },
+  { sprint: 3,  s: "2026-02-02", e: "2026-02-15" },
+  { sprint: 4,  s: "2026-02-16", e: "2026-03-01" },
+  { sprint: 5,  s: "2026-03-02", e: "2026-03-15" },
+  { sprint: 6,  s: "2026-03-16", e: "2026-03-29" },
+  { sprint: 7,  s: "2026-03-30", e: "2026-04-12" },
+  { sprint: 8,  s: "2026-04-13", e: "2026-04-26" },
+  { sprint: 9,  s: "2026-04-27", e: "2026-05-10" },
+  { sprint: 10, s: "2026-05-11", e: "2026-05-24" },
+  { sprint: 11, s: "2026-05-25", e: "2026-06-07" },
+  { sprint: 12, s: "2026-06-08", e: "2026-06-21" },
+];
+
+function getCurrentSprint() {
+  const today = new Date().toISOString().slice(0, 10);
+  const found = SPRINT_DATES.find(d => today >= d.s && today <= d.e);
+  if (found) return found.sprint;
+  // If past all sprints, return the last one
+  if (today > SPRINT_DATES[SPRINT_DATES.length - 1].e) return SPRINT_DATES[SPRINT_DATES.length - 1].sprint;
+  return SPRINT_DATES[0].sprint;
+}
+
 if (!AZURE_PAT) {
   console.error("Missing required environment variables (AZURE_PAT or ADO_PAT).");
   process.exit(1);
@@ -50,29 +74,17 @@ function mapAzureUserToShortName(azureUserObj) {
 }
 
 async function runSync() {
-  console.log(`Starting Azure Sync for Org: ${AZURE_ORG}, Project: ${AZURE_PROJECT}`);
-  
-  // 1. Execute WIQL Query to get current sprint tasks
-  // Using @currentIteration allows Azure to automatically find the current active sprint!
-  const wiqlQuery = {
-    query: `
-      SELECT [System.Id] 
-      FROM workitems 
-      WHERE [System.TeamProject] = '${AZURE_PROJECT}' 
-        AND [System.WorkItemType] IN ('Task', 'Bug')
-        AND [System.IterationPath] = @currentIteration('[${AZURE_PROJECT}]\\<id-of-team>')
-    `
-  };
-  
-  // Note: @currentIteration requires the team context. A safer fallback if you know the exact sprint path is:
-  // AND [System.IterationPath] UNDER '${AZURE_PROJECT}\\Sprint 11'
+  const currentSprint = getCurrentSprint();
+  console.log(`Starting Azure Sync for Org: ${AZURE_ORG}, Project: ${AZURE_PROJECT}, Sprint: ${currentSprint}`);
+
+  // 1. Execute WIQL Query to get current sprint tasks (dynamic sprint number)
   const fallbackWiql = {
     query: `
-      SELECT [System.Id] 
-      FROM workitems 
-      WHERE [System.TeamProject] = '${AZURE_PROJECT}' 
+      SELECT [System.Id]
+      FROM workitems
+      WHERE [System.TeamProject] = '${AZURE_PROJECT}'
         AND [System.WorkItemType] IN ('Task', 'Bug')
-        AND [System.IterationPath] UNDER '${AZURE_PROJECT}\\2026\\11'
+        AND [System.IterationPath] UNDER '${AZURE_PROJECT}\\2026\\${currentSprint}'
     `
   };
 
@@ -121,9 +133,7 @@ async function runSync() {
   let batchWrite = writeBatch(db);
   let syncCount = 0;
   
-  // We assume the query is returning tasks for a specific sprint.
-  // We extract the sprint index from the iteration path, or hardcode it for now.
-  let targetSprintIndex = 10; // Default to Sprint 11 (0-indexed)
+  let targetSprintIndex = currentSprint - 1;
 
   for (const item of batchData.value) {
     const fields = item.fields;
@@ -259,7 +269,7 @@ async function runSync() {
     try {
       const payload = {
         status: "success",
-        message: `Azure Sync complete for Sprint ${targetSprintIndex + 1}`,
+        message: `Azure Sync complete for Sprint ${currentSprint}`,
         tasksSynced: syncCount,
         newProjectsAdded: newProjectsAdded,
         timestamp: new Date().toISOString()
