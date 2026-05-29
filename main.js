@@ -2584,9 +2584,93 @@ function refresh(){
     updateStatusKPIs();
     buildStatusChart();
     buildDoneTable();
+  } else if (S.section === "team") {
+    buildTeamSection();
   } else if (S.section === "logic") {
     buildLogicTab();
   }
+}
+
+// ============================================================================
+//  TEAM TAB
+// ============================================================================
+const DEV_PEOPLE = ["Ohm", "Nust", "Unn", "P", "No", "Tum", "Ping"];
+const DONE_STATES_TEAM = ["done", "closed", "removed", "canceled", "cancelled"];
+
+function buildTeamSection() {
+  const sprintIdx = CURRENT_SPRINT_IDX;
+  const sprintNum = sprintIdx + 1;
+
+  // Collect unfinished tasks per dev person for current sprint
+  const byPerson = {};
+  DEV_PEOPLE.forEach(p => { byPerson[p] = { tasks: [], points: 0, done: 0, donePoints: 0 }; });
+
+  DATA.movement.forEach(t => {
+    if (t.sprint !== sprintNum) return;
+    if (!DEV_PEOPLE.includes(t.person)) return;
+    const stateLower = (t.state || "").toLowerCase();
+    const isDone = DONE_STATES_TEAM.some(s => stateLower.includes(s));
+    const pts = parseFloat(t.points) || 0;
+    if (!byPerson[t.person]) byPerson[t.person] = { tasks: [], points: 0, done: 0, donePoints: 0 };
+    if (isDone) {
+      byPerson[t.person].done++;
+      byPerson[t.person].donePoints += pts;
+    } else {
+      byPerson[t.person].tasks.push(t);
+      byPerson[t.person].points += pts;
+    }
+  });
+
+  const totalUnfinished = DEV_PEOPLE.reduce((a, p) => a + byPerson[p].tasks.length, 0);
+  const totalPtsLeft = DEV_PEOPLE.reduce((a, p) => a + byPerson[p].points, 0);
+  const totalDone = DEV_PEOPLE.reduce((a, p) => a + byPerson[p].done, 0);
+
+  // Summary KPIs
+  const summaryEl = document.getElementById("teamSummary");
+  summaryEl.innerHTML = `
+    <div class="team-summary-kpi"><div class="val">${sprintNum}</div><div class="lbl">Current Sprint</div></div>
+    <div class="team-summary-kpi"><div class="val" style="color:#4ade80">${totalDone}</div><div class="lbl">Tasks Done</div></div>
+    <div class="team-summary-kpi"><div class="val" style="color:#f87171">${totalUnfinished}</div><div class="lbl">Tasks Remaining</div></div>
+    <div class="team-summary-kpi"><div class="val" style="color:#f87171">${totalPtsLeft.toFixed(1)}</div><div class="lbl">Points Remaining</div></div>
+  `;
+
+  // Person cards
+  const grid = document.getElementById("teamGrid");
+  grid.innerHTML = DEV_PEOPLE.map(person => {
+    const data = byPerson[person];
+    const color = ROLE_COLORS["Dev"] || "#6366f1";
+    const initial = person[0].toUpperCase();
+    const totalPersonTasks = data.tasks.length + data.done;
+    const pct = totalPersonTasks > 0 ? Math.round((data.done / totalPersonTasks) * 100) : 100;
+
+    const taskRows = data.tasks.length === 0
+      ? `<div class="person-no-tasks">✓ All tasks done</div>`
+      : data.tasks.map(t => {
+          const stateLower = (t.state || "").toLowerCase();
+          const stateClass = stateLower.includes("active") ? "state-active"
+            : stateLower.includes("review") ? "state-review" : "state-new";
+          const pts = parseFloat(t.points) || 0;
+          return `<div class="person-task-item">
+            <div class="person-task-title" title="${t.title}">${t.title}</div>
+            <div class="person-task-meta">
+              <span class="person-task-state ${stateClass}">${t.state}</span>
+              <span>${pts}pt</span>
+              <span style="color:var(--muted)">${t.project || "—"}</span>
+            </div>
+          </div>`;
+        }).join("");
+
+    return `<div class="person-card">
+      <div class="person-card-header">
+        <div class="person-avatar" style="background:${color}">${initial}</div>
+        <div>
+          <div class="person-card-name">${person}</div>
+          <div class="person-card-meta">${data.done}/${totalPersonTasks} done · ${data.points.toFixed(1)} pts left · ${pct}%</div>
+        </div>
+      </div>
+      <div class="person-tasks">${taskRows}</div>
+    </div>`;
+  }).join("");
 }
 
 // ============================================================================
