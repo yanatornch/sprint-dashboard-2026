@@ -13,14 +13,12 @@ const firebaseConfig = {
 const db = getFirestore(initializeApp(firebaseConfig));
 
 const DONE_STATES = ["done", "closed", "removed", "canceled", "cancelled"];
-const DEV_ROLES = ["Dev"];
 const ROLES = {
-  "Ohm": "Dev", "Nust": "Dev", "Ping": "Dev", "Tae": "Dev",
-  "Tum": "Dev", "Karn": "Dev", "Dream": "Dev", "Torfah": "Dev",
-  "Waew": "BA", "Unn": "BA",
-  "Ploy": "Designer", "Gib": "Designer",
-  "Nine": "Tester", "Praew": "Tester",
-  "No": "CEO", "P": "PC"
+  "Ohm": "Dev", "Nust": "Dev", "Unn": "Dev", "P": "Dev", "No": "Dev", "Tum": "Dev", "Ping": "Dev",
+  "Waew": "BA", "Torfah": "BA", "Tae": "BA",
+  "Ploy": "Designer", "Gib": "Designer", "Nine": "Designer",
+  "Praew": "Tester",
+  "Karn": "CEO"
 };
 
 async function run() {
