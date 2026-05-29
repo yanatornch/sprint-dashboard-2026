@@ -2584,6 +2584,8 @@ function refresh(){
     updateStatusKPIs();
     buildStatusChart();
     buildDoneTable();
+  } else if (S.section === "backlog") {
+    buildBacklogTab();
   } else if (S.section === "team") {
     buildTeamSection();
   } else if (S.section === "logic") {
@@ -2940,6 +2942,117 @@ function buildLogicTab(){
   </div>`;
 
   document.getElementById("logicContent").innerHTML = header + filterCard + pointCard + statusCard + projectCard + roleCard + insightCard + projInsightCard;
+}
+
+// ============================================================================
+//  BACKLOG TAB
+// ============================================================================
+const PRIORITY_META = {
+  p1:        { label: "P1 Critical",  color: "#ef4444" },
+  p2:        { label: "P2 High",      color: "#f59e0b" },
+  p3:        { label: "P3 Medium",    color: "#3b82f6" },
+  p4:        { label: "P4 Admin",     color: "#22c55e" },
+  carryover: { label: "Carry Over",   color: "#8b5cf6" },
+  waiting:   { label: "Waiting",      color: "#eab308" }
+};
+const PRIORITY_ORDER = ["p1", "p2", "p3", "p4", "carryover", "waiting"];
+
+const STATUS_PILL_STYLE = {
+  "New":         { bg: "rgba(99,102,241,0.15)",  color: "#a5b4fc" },
+  "In Progress": { bg: "rgba(59,130,246,0.15)",  color: "#93c5fd" },
+  "Blocked":     { bg: "rgba(239,68,68,0.15)",   color: "#fca5a5" },
+  "Waiting":     { bg: "rgba(234,179,8,0.15)",   color: "#fde047" },
+  "Pending":     { bg: "rgba(148,163,184,0.12)", color: "#cbd5e1" }
+};
+
+let _backlogData = null;
+
+async function fetchBacklogData() {
+  if (_backlogData) return _backlogData;
+  const snap = await getDocs(collection(db, "backlog"));
+  const items = [];
+  snap.forEach(d => items.push(d.data()));
+  items.sort((a, b) => (a.order || 0) - (b.order || 0));
+  _backlogData = items;
+  return items;
+}
+
+async function buildBacklogTab() {
+  const el = document.getElementById("backlogContent");
+  if (!el) return;
+
+  el.innerHTML = `<div style="color:var(--muted); padding:24px; text-align:center; font-size:13px;">Loading backlog…</div>`;
+
+  let items;
+  try {
+    items = await fetchBacklogData();
+  } catch (e) {
+    el.innerHTML = `<div style="color:var(--bad); padding:20px;">Failed to load backlog: ${e.message}</div>`;
+    return;
+  }
+
+  if (!items.length) {
+    el.innerHTML = `<div style="color:var(--muted); padding:24px; text-align:center; font-size:13px;">No backlog items found. Run <code>node seed_backlog.js</code> to seed data.</div>`;
+    return;
+  }
+
+  // Group by priority
+  const grouped = {};
+  PRIORITY_ORDER.forEach(p => { grouped[p] = []; });
+  items.forEach(item => {
+    const key = item.priority || "p4";
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(item);
+  });
+
+  let html = "";
+  PRIORITY_ORDER.forEach(priority => {
+    const group = grouped[priority] || [];
+    if (!group.length) return;
+    const meta = PRIORITY_META[priority] || { label: priority, color: "#94a3b8" };
+    const { label, color } = meta;
+
+    html += `<div class="backlog-group">
+      <div class="backlog-group-header" style="color:${color}; border-left-color:${color};">
+        <span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0;box-shadow:0 0 0 3px ${color}28;"></span>
+        ${label}
+        <span class="group-count">${group.length} item${group.length !== 1 ? "s" : ""}</span>
+      </div>
+      <div class="backlog-items">`;
+
+    group.forEach(item => {
+      const pillStyle = STATUS_PILL_STYLE[item.status] || STATUS_PILL_STYLE["Pending"];
+      const statusPillHtml = `<span class="backlog-status-pill" style="background:${pillStyle.bg};color:${pillStyle.color};border:1px solid ${pillStyle.color}44;">${item.status || "—"}</span>`;
+      const newBadge = item.isNew ? `<span class="backlog-badge-new">New</span>` : "";
+
+      const notesHtml = (item.notes || []).map((note, i) => {
+        const t = (item.noteTypes || [])[i] || "default";
+        return `<span class="backlog-note backlog-note-${t}">${note}</span>`;
+      }).join("");
+
+      const tagsHtml = (item.tags || []).map(tag =>
+        `<span class="backlog-tag">${tag}</span>`
+      ).join("");
+
+      html += `<div class="backlog-item">
+        <div class="backlog-item-stripe" style="background:${color};"></div>
+        <div class="backlog-item-order">${item.order || "—"}</div>
+        <div class="backlog-item-body">
+          <div class="backlog-item-title-row">
+            ${statusPillHtml}
+            ${newBadge}
+            <span class="backlog-item-title">${item.title || "(untitled)"}</span>
+          </div>
+          ${notesHtml ? `<div class="backlog-notes">${notesHtml}</div>` : ""}
+          ${tagsHtml ? `<div class="backlog-tags">${tagsHtml}</div>` : ""}
+        </div>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  el.innerHTML = html;
 }
 
 function wireUp(){

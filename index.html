@@ -750,6 +750,135 @@
     .topnav .navtab { padding: 6px 8px; font-size: 11px; }
     .status-pill .sp-count { font-size: 17px; }
   }
+
+  /* ================= Backlog Tab ================= */
+  .backlog-group { margin-bottom: 20px; }
+  .backlog-group-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px 10px 0 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-left: 4px solid currentColor;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+  .backlog-group-header .group-count {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 999px;
+    color: var(--muted);
+  }
+  .backlog-items {
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .backlog-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.12s;
+  }
+  .backlog-item:last-child { border-bottom: none; }
+  .backlog-item:hover { background: rgba(99,102,241,0.06); }
+  .backlog-item-stripe {
+    width: 4px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    align-self: stretch;
+    min-height: 20px;
+  }
+  .backlog-item-order {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    min-width: 22px;
+    padding-top: 2px;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .backlog-item-body { flex: 1; min-width: 0; }
+  .backlog-item-title-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 5px;
+  }
+  .backlog-item-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .backlog-badge-new {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: rgba(99,102,241,0.18);
+    color: #818cf8;
+    border: 1px solid rgba(99,102,241,0.35);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .backlog-status-pill {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .backlog-notes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 5px;
+  }
+  .backlog-note {
+    font-size: 11.5px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    line-height: 1.4;
+  }
+  .backlog-note-default { background: var(--panel-2); color: var(--muted); border: 1px solid var(--border); }
+  .backlog-note-info    { background: rgba(99,102,241,0.12); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.25); }
+  .backlog-note-warn    { background: rgba(245,158,11,0.12); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+  .backlog-note-good    { background: rgba(16,185,129,0.12); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+  .backlog-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .backlog-tag {
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--panel-2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  @media (max-width: 600px) {
+    .backlog-item { gap: 8px; padding: 10px 10px; }
+    .backlog-item-title { font-size: 12.5px; }
+    .backlog-note { font-size: 11px; }
+  }
 </style>
 </head>
 <body>
@@ -773,6 +902,7 @@
     <div class="navtab" data-section="projects">Projects</div>
     <div class="navtab" data-section="bugs">Bugs</div>
     <div class="navtab" data-section="status">Status</div>
+    <div class="navtab" data-section="backlog">Backlog</div>
     <div class="navtab" data-section="team">Team</div>
     <div class="navtab" data-section="logic">Logic</div>
     <div class="navtab" data-section="links">Links</div>
@@ -1032,6 +1162,11 @@
       <h3>Completion Rate Ranking <span class="tag">% Done of total</span></h3>
       <div class="scroll" id="doneTable"></div>
     </div>
+  </section>
+
+  <!-- =========================== BACKLOG =========================== -->
+  <section class="section" id="section-backlog">
+    <div id="backlogContent"></div>
   </section>
 
   <!-- =========================== TEAM =========================== -->
