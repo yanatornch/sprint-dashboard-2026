@@ -2905,6 +2905,17 @@ wireUp();
     applyTheme(current === "light" ? "dark" : "light");
   });
 })();
+function showToast(message, type = "info", duration = 4000) {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+  toast.textContent = "";
+  const icon = type === "success" ? "✓" : type === "error" ? "✕" : "⟳";
+  toast.textContent = `${icon} ${message}`;
+  toast.className = `show ${type}`;
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.className = ""; }, duration);
+}
+
 // Sync button
 (function wireSyncBtn(){
   const btn = document.getElementById("syncBtn");
@@ -2913,26 +2924,21 @@ wireUp();
     btn.disabled = true;
     btn.classList.add("syncing");
     document.getElementById("syncLabel").textContent = "Syncing…";
+    showToast("Triggering Azure sync…", "info");
     try {
       const res = await fetch("/api/trigger-sync", { method: "POST" });
       const data = await res.json();
       if (res.ok) {
         document.getElementById("syncLabel").textContent = "Triggered!";
-        setTimeout(() => {
-          document.getElementById("syncLabel").textContent = "Sync Azure";
-          btn.disabled = false;
-          btn.classList.remove("syncing");
-        }, 3000);
+        showToast("Sync triggered! Data will update in ~1 minute.", "success", 6000);
       } else {
-        document.getElementById("syncLabel").textContent = data.error || "Failed";
-        setTimeout(() => {
-          document.getElementById("syncLabel").textContent = "Sync Azure";
-          btn.disabled = false;
-          btn.classList.remove("syncing");
-        }, 3000);
+        document.getElementById("syncLabel").textContent = "Failed";
+        showToast(data.error || "Sync failed", "error", 6000);
       }
     } catch (e) {
       document.getElementById("syncLabel").textContent = "Error";
+      showToast("Network error — could not reach server", "error", 6000);
+    } finally {
       setTimeout(() => {
         document.getElementById("syncLabel").textContent = "Sync Azure";
         btn.disabled = false;
