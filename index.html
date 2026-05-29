@@ -752,6 +752,28 @@
   }
 
   /* ================= Backlog Tab ================= */
+  .backlog-stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .backlog-stat {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .backlog-stat-n { font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+  .backlog-stat-l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .backlog-stat-danger .backlog-stat-n { color: var(--bad); }
+  .backlog-stat-info    .backlog-stat-n { color: #60a5fa; }
+  .backlog-stat-warn    .backlog-stat-n { color: var(--warn); }
+  .backlog-stat-purple  .backlog-stat-n { color: #a78bfa; }
+  .backlog-stat-green   .backlog-stat-n { color: var(--good); }
+  @media (max-width: 600px) { .backlog-stats { grid-template-columns: repeat(3, 1fr); } }
+
   .backlog-group { margin-bottom: 20px; }
   .backlog-group-header {
     display: flex;

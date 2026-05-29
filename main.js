@@ -3005,7 +3005,21 @@ async function buildBacklogTab() {
     grouped[key].push(item);
   });
 
-  let html = "";
+  // Summary stats bar
+  const blockers  = items.filter(i => i.status === "Blocked").length;
+  const inProgress = items.filter(i => i.status === "In Progress").length;
+  const waiting   = items.filter(i => ["Waiting", "Pending"].includes(i.status)).length;
+  const newItems  = items.filter(i => i.isNew).length;
+  const donePrev  = items.filter(i => i.status === "Done").length;
+
+  let html = `<div class="backlog-stats">
+    <div class="backlog-stat backlog-stat-danger"><div class="backlog-stat-n">${blockers}</div><div class="backlog-stat-l">Blockers</div></div>
+    <div class="backlog-stat backlog-stat-info"><div class="backlog-stat-n">${inProgress}</div><div class="backlog-stat-l">In Progress</div></div>
+    <div class="backlog-stat backlog-stat-warn"><div class="backlog-stat-n">${waiting}</div><div class="backlog-stat-l">Waiting</div></div>
+    <div class="backlog-stat backlog-stat-purple"><div class="backlog-stat-n">${newItems}</div><div class="backlog-stat-l">New Items</div></div>
+    <div class="backlog-stat backlog-stat-green"><div class="backlog-stat-n">${donePrev}</div><div class="backlog-stat-l">Done (prev)</div></div>
+  </div>`;
+
   PRIORITY_ORDER.forEach(priority => {
     const group = grouped[priority] || [];
     if (!group.length) return;
