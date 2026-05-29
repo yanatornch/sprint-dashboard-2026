@@ -2,8 +2,7 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
   document.body.innerHTML += "<div style='color:red; background:#fff; position:absolute; z-index:9999; top:0; left:0; width:100%; padding:20px; font-family:sans-serif;'><h1>Global Error</h1><pre>" + msg + "<br/>" + (error ? error.stack : '') + "</pre></div>";
   return false;
 };
-import { db } from "./firebase.js";
-import { collection, doc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { db, collection, doc, getDocs, getDoc } from "./firebase.js";
 
 let DATA = {};
 try {
