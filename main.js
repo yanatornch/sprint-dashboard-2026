@@ -61,8 +61,13 @@ try {
     DATA.projectSprint[origName][s.sprintIndex] = s.points;
   });
 
-  // const rawDash = dashboardStatsSnap.data() || {};
-  // Object.assign(DATA, rawDash);
+  const dashData = dashboardStatsSnap.data() || {};
+  if (dashData.lastSyncedAt) {
+    const d = new Date(dashData.lastSyncedAt);
+    const fmt = d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+    document.getElementById("updated").textContent = `Data updated: ${fmt} ${time}`;
+  }
 
   // Leaves: indexed by sprint, then by person
   DATA.leaves = {}; // { [sprint]: { [person]: [{type, startDate, endDate, days}] } }
@@ -2864,7 +2869,6 @@ function wireUp(){
   document.getElementById("statusView").addEventListener("change", e => { S.statusView = e.target.value; refresh(); });
 }
 
-document.getElementById("updated").textContent = "Data updated: 25 May 2026";
 
 // ---- Stale contributor warning (no updates in last 2 sprints) ----
 (function renderStaleBanner(){

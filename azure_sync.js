@@ -269,7 +269,15 @@ async function runSync() {
     console.log("No new projects found.");
   }
 
-  // 5. Notify external system via API (Webhook)
+  // 5. Save last sync timestamp to Firestore
+  await setDoc(doc(db, "dashboardStats", "v1"), {
+    lastSyncedAt: new Date().toISOString(),
+    lastSyncedSprint: currentSprint,
+    lastSyncedTasks: syncCount
+  }, { merge: true });
+  console.log("Last sync timestamp saved.");
+
+  // 6. Notify external system via API (Webhook)
   const webhookUrl = process.env.WEBHOOK_URL;
   if (webhookUrl) {
     console.log(`Sending webhook notification to ${webhookUrl}...`);
