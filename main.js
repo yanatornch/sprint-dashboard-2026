@@ -2905,4 +2905,40 @@ wireUp();
     applyTheme(current === "light" ? "dark" : "light");
   });
 })();
+// Sync button
+(function wireSyncBtn(){
+  const btn = document.getElementById("syncBtn");
+  if (!btn) return;
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    btn.classList.add("syncing");
+    document.getElementById("syncLabel").textContent = "Syncing…";
+    try {
+      const res = await fetch("/api/trigger-sync", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById("syncLabel").textContent = "Triggered!";
+        setTimeout(() => {
+          document.getElementById("syncLabel").textContent = "Sync Azure";
+          btn.disabled = false;
+          btn.classList.remove("syncing");
+        }, 3000);
+      } else {
+        document.getElementById("syncLabel").textContent = data.error || "Failed";
+        setTimeout(() => {
+          document.getElementById("syncLabel").textContent = "Sync Azure";
+          btn.disabled = false;
+          btn.classList.remove("syncing");
+        }, 3000);
+      }
+    } catch (e) {
+      document.getElementById("syncLabel").textContent = "Error";
+      setTimeout(() => {
+        document.getElementById("syncLabel").textContent = "Sync Azure";
+        btn.disabled = false;
+        btn.classList.remove("syncing");
+      }, 3000);
+    }
+  });
+})();
 refresh();
