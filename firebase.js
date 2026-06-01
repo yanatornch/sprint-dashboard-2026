@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { initializeFirestore } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 const firebaseConfig = {
   projectId: "morestudio-sprint-2026",
@@ -11,6 +11,4 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const db = initializeFirestore(app, {
-  experimentalAutoDetectLongPolling: true,
-});
+export const db = getFirestore(app);
