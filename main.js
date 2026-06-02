@@ -235,6 +235,13 @@ function roleBadge(name){
   const c = ROLE_COLORS[r] || "#94a3b8";
   return `<span style="display:inline-block; padding:1px 7px; border-radius:999px; font-size:10px; font-weight:600; background:${c}22; color:${c}; border:1px solid ${c}55; margin-left:6px; vertical-align:middle;">${r}</span>`;
 }
+// Wrap a person name as a clickable link to their profile page.
+// opts.style — extra inline CSS on the <a>
+// opts.plain  — if true, renders as a plain styled span (no underline, same color) useful inside tooltips
+function personLink(name, opts = {}) {
+  const style = `color:inherit; text-decoration:none; cursor:pointer; border-bottom:1px dotted currentColor; ${opts.style || ""}`;
+  return `<a href="/person.html?name=${encodeURIComponent(name)}" style="${style}" title="View ${name}'s profile">${name}</a>`;
+}
 const PALETTE = [
   "#6366f1","#22d3ee","#f97316","#10b981","#f43f5e",
   "#eab308","#a855f7","#14b8a6","#3b82f6","#ec4899",
@@ -528,7 +535,10 @@ function updateKPIs(){
     const share = teamPts ? totalPoints/teamPts : 0;
 
     document.getElementById("kpis").innerHTML = `
-      <div class="kpi"><div class="label">${person} · Points${tag}</div><div class="value">${totalPoints.toLocaleString(undefined,{maximumFractionDigits:1})}</div><div class="hint">in selected range</div></div>
+      <div class="kpi" style="cursor:pointer;" onclick="window.location.href='/person.html?name=${encodeURIComponent(person)}'">
+        <div class="label" style="display:flex;align-items:center;justify-content:space-between;">${person} · Points${tag}<span style="font-size:10px;color:var(--accent-text);">View →</span></div>
+        <div class="value">${totalPoints.toLocaleString(undefined,{maximumFractionDigits:1})}</div><div class="hint">in selected range</div>
+      </div>
       <div class="kpi"><div class="label">${person} · Tasks${tag}</div><div class="value">${totalTasks.toLocaleString(undefined,{maximumFractionDigits:1})}</div><div class="hint">all item types</div></div>
       <div class="kpi"><div class="label">Projects Touched</div><div class="value">${activeProjects}</div><div class="hint">in range</div></div>
       <div class="kpi"><div class="label">Team Share</div><div class="value">${percent(share)}</div><div class="hint">of team points</div></div>
@@ -617,7 +627,7 @@ function renderLeaveStrip() {
       leaves.forEach(l => {
         const icon = LEAVE_ICON[l.type?.toLowerCase()] || "📅";
         const tip = `${l.startDate}${l.endDate !== l.startDate ? " – " + l.endDate : ""} · ${l.days}d`;
-        tags += `<span class="leave-tag" title="${tip}">${icon} ${person} <span class="leave-type">${l.type} ${l.days}d</span></span>`;
+        tags += `<span class="leave-tag" title="${tip}">${icon} ${personLink(person)} <span class="leave-type">${l.type} ${l.days}d</span></span>`;
       });
     });
 
@@ -782,7 +792,7 @@ function buildTrendChart(){
               personalEntries.forEach(([person, leaves]) => {
                 leaves.forEach(l => {
                   const dateStr = l.startDate === l.endDate ? l.startDate : `${l.startDate} – ${l.endDate}`;
-                  html += `<div style="color:#94a3b8">${l.type === "vacation" ? "🏖" : l.type === "sick" ? "🤒" : "📅"} ${person} · ${l.type} ${l.days}d <span style="color:#64748b">(${dateStr})</span></div>`;
+                  html += `<div style="color:#94a3b8">${l.type === "vacation" ? "🏖" : l.type === "sick" ? "🤒" : "📅"} <a href="/person.html?name=${encodeURIComponent(person)}" style="color:#93c5fd;text-decoration:none;border-bottom:1px dotted #93c5fd60;" title="View ${person}'s profile">${person}</a> · ${l.type} ${l.days}d <span style="color:#64748b">(${dateStr})</span></div>`;
                 });
               });
             }
@@ -949,7 +959,7 @@ function buildLeavePlugin(labels, idx, leaveLookup, chartTypeRef) {
               personalEntries.forEach(([person, leaves]) => {
                 leaves.forEach(l => {
                   const dateStr = l.startDate === l.endDate ? l.startDate : `${l.startDate} – ${l.endDate}`;
-                  html += `<div style="color:#94a3b8">${l.type === "vacation" ? "🏖" : l.type === "sick" ? "🤒" : "📅"} ${person} · ${l.type} ${l.days}d <span style="color:#64748b">(${dateStr})</span></div>`;
+                  html += `<div style="color:#94a3b8">${l.type === "vacation" ? "🏖" : l.type === "sick" ? "🤒" : "📅"} <a href="/person.html?name=${encodeURIComponent(person)}" style="color:#93c5fd;text-decoration:none;border-bottom:1px dotted #93c5fd60;" title="View ${person}'s profile">${person}</a> · ${l.type} ${l.days}d <span style="color:#64748b">(${dateStr})</span></div>`;
                 });
               });
             }
@@ -1018,7 +1028,7 @@ function buildBarHoverPlugin(labels, idx, roleNames, leaveLookup) {
 
       let html = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
         <span style="width:10px;height:10px;border-radius:2px;background:${color};flex-shrink:0;"></span>
-        <span style="font-weight:700;font-size:14px;">${person}</span>
+        <a href="/person.html?name=${encodeURIComponent(person)}" style="font-weight:700;font-size:14px;color:inherit;text-decoration:none;border-bottom:1px dotted rgba(255,255,255,0.4);" title="View ${person}'s profile">${person}</a>
         <span style="font-size:11px;background:${ROLE_COLORS[role]||'#94a3b8'}22;color:${ROLE_COLORS[role]||'#94a3b8'};border:1px solid ${ROLE_COLORS[role]||'#94a3b8'}55;padding:1px 7px;border-radius:999px;font-weight:600;">${role}</span>
       </div>`;
       html += `<div style="font-size:12px;color:#94a3b8;margin-bottom:6px;">${sprintLabel}</div>`;
@@ -1095,10 +1105,10 @@ function buildRoleChart(canvasId, legendId, rolePeople, idx, labels, leaveLookup
     legendEl.innerHTML = names.map((name, i) => {
       const color = colorFor(name, i);
       const initials = getInitials(name);
-      return `<span class="role-legend-item">
+      return `<a class="role-legend-item" href="/person.html?name=${encodeURIComponent(name)}" title="View ${name}'s profile" style="text-decoration:none;color:inherit;cursor:pointer;">
         <span class="role-legend-avatar" style="background:${color};">${initials}</span>
         ${name}
-      </span>`;
+      </a>`;
     }).join("");
   }
 
@@ -1217,7 +1227,13 @@ function buildTopChart(){
     data:{ labels, datasets:[{data:vals, backgroundColor:colors, borderRadius:6}] },
     options:{
       indexAxis:"y", responsive:true, maintainAspectRatio:false,
-      onHover: (e, els) => { e.native.target.style.cursor = 'default'; },
+      onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+      onClick: (e, els) => {
+        if (!els.length) return;
+        const raw = labels[els[0].index]; // "Ohm · Dev" or just "Ohm" when filtered
+        const name = raw.split(" · ")[0];
+        if (name && DATA.points[name]) window.location.href = `/person.html?name=${encodeURIComponent(name)}`;
+      },
       scales:{
         x:{beginAtZero:true, grid:{color:THEME.grid}, ticks:{color:THEME.tick}},
         y:{grid:{display:false}, ticks:{color:THEME.tick}}
@@ -1549,7 +1565,7 @@ function buildPersonDrill(){
   const totalPts = sum(getPersonPoints(person));
   const totalTasks = sum(getPersonTasks(person));
   const projCount = Object.keys(proj).filter(p => sum(getContributionRow(person,p)) > 0).length;
-  document.getElementById("drillName").innerHTML = `👤 ${person}${roleBadge(person)}`;
+  document.getElementById("drillName").innerHTML = `👤 ${personLink(person, {style:"font-size:inherit;font-weight:inherit;"})}${roleBadge(person)}`;
   document.getElementById("drillStat").textContent = `${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts · ${totalTasks.toLocaleString(undefined,{maximumFractionDigits:1})} tasks · ${projCount} projects`;
 
   // ---- status breakdown pills (all statuses, from status sheet — exact numbers) ----
@@ -1641,7 +1657,7 @@ function buildPersonProjectMatrix(){
   const headerCells = people.map(p => {
     const r = roleOf(p);
     const c = ROLE_COLORS[r] || "#94a3b8";
-    return `<th><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span>${p}</span><span style="font-size:9px; color:${c}; font-weight:500;">${r}</span></div></th>`;
+    return `<th><div style="display:flex;flex-direction:column;align-items:center;gap:2px;">${personLink(p, {style:"font-size:inherit;"})}<span style="font-size:9px; color:${c}; font-weight:500;">${r}</span></div></th>`;
   }).join("");
   let html = `<table><thead><tr><th>Project</th>${headerCells}<th>Total</th></tr></thead><tbody>`;
   projects.forEach(proj => {
@@ -2236,7 +2252,7 @@ function buildProjectDrill(){
     const r = norm(stats[p]);
     const rate = stats[p].total ? (stats[p].doneT/stats[p].total*100) : 0;
     html += `<tr>
-      <td style="font-weight:500;">${p}${roleBadge(p)}<span style="margin-left:8px; font-size:10px; color:var(--muted);">${rate.toFixed(0)}%</span></td>
+      <td style="font-weight:500;">${personLink(p)}${roleBadge(p)}<span style="margin-left:8px; font-size:10px; color:var(--muted);">${rate.toFixed(0)}%</span></td>
       ${cell(get(r,"done"), "var(--good-text)")}
       ${cell(get(r,"wip"), "var(--accent-text)")}
       ${cell(get(r,"bugged"), "var(--bad-text)")}
@@ -2359,7 +2375,7 @@ function buildBugsTab(){
     const r = byPerson[p];
     const rate = r.total ? (r.done/r.total*100) : 0;
     phtml += `<tr>
-      <td style="font-weight:500;">${p}${roleBadge(p)}</td>
+      <td style="font-weight:500;">${personLink(p)}${roleBadge(p)}</td>
       <td style="text-align:right; color:var(--good-text); font-weight:600;">${r.done}</td>
       <td style="text-align:right; ${r.open?'color:var(--bad-text); font-weight:600;':''}">${r.open || ""}</td>
       <td style="text-align:right; color:var(--muted);">${r.removed || ""}</td>
@@ -2520,7 +2536,7 @@ function buildDoneTable(){
   let html = `<table><thead><tr><th>${isPerson?"Name":"Project"}</th>${DATA.statusLabels.map(l=>`<th>${l}</th>`).join("")}<th>Total</th><th>% Done</th><th>Progress</th></tr></thead><tbody>`;
   rows.forEach(r => {
     const pct = (r.rate*100).toFixed(1);
-    const nameCell = isPerson ? `<td>${r.n}${roleBadge(r.n)}</td>` : `<td>${r.n}</td>`;
+    const nameCell = isPerson ? `<td>${personLink(r.n)}${roleBadge(r.n)}</td>` : `<td>${r.n}</td>`;
     html += `<tr data-name="${r.n}">${nameCell}${r.a.map((v,i)=>`<td style="color:${v?DATA.statusColors[i]:'#64748b'}">${fmt(v)}</td>`).join("")}<td style="font-weight:600">${fmt(r.total)}</td><td>${pct}%</td><td><span class="progress"><div style="width:${pct}%"></div></span></td></tr>`;
   });
   html += "</tbody></table>";
@@ -2689,13 +2705,14 @@ function buildTeamSection() {
           </div>`;
         }).join("");
 
-    return `<div class="person-card">
+    return `<div class="person-card" style="cursor:pointer;" onclick="window.location.href='/person.html?name=${encodeURIComponent(person)}'">
       <div class="person-card-header">
         <div class="person-avatar" style="background:${color}">${initial}</div>
-        <div>
+        <div style="flex:1;min-width:0;">
           <div class="person-card-name">${person}</div>
           <div class="person-card-meta">${data.done}/${totalPersonTasks} done · ${data.points.toFixed(1)} pts left · ${pct}%</div>
         </div>
+        <span style="font-size:12px;color:var(--accent-text);font-weight:500;white-space:nowrap;padding-left:8px;">View →</span>
       </div>
       <div class="person-tasks">${taskRows}</div>
     </div>`;
@@ -2877,7 +2894,7 @@ function buildLogicTab(){
         <span style="font-size:11px; color:var(--muted);">${g.members.length} ${g.members.length === 1 ? 'person' : 'people'}</span>
       </div>
       <div style="display:flex; flex-wrap:wrap; gap:6px;">
-        ${g.members.map(n => `<span style="background:${c}22; color:${c}; border:1px solid ${c}55; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:500;">${n}</span>`).join("")}
+        ${g.members.map(n => `<a href="/person.html?name=${encodeURIComponent(n)}" style="background:${c}22; color:${c}; border:1px solid ${c}55; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:500; text-decoration:none; display:inline-block;">${n}</a>`).join("")}
       </div>
     </div>`;
   }).join("");
@@ -3128,7 +3145,7 @@ function wireUp(){
     banner.style.display = "block";
     return;
   }
-  const chips = stale.map(n => `<span class="stale-chip">${n}${roleOf(n)!=="—"?` · ${roleOf(n)}`:""}</span>`).join("");
+  const chips = stale.map(n => `<span class="stale-chip"><a href="/person.html?name=${encodeURIComponent(n)}" style="color:inherit;text-decoration:none;">${n}</a>${roleOf(n)!=="—"?` · ${roleOf(n)}`:""}</span>`).join("");
   banner.className = "stale-banner";
   banner.innerHTML = `<span class="stale-icon">⚠️</span><strong>ไม่พบ task งานเกิน 2 Sprints:</strong> ${chips}`;
   banner.style.display = "block";

@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Person Profile · Sprint Dashboard 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-2: #273449;
+    --border: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #6366f1;
+    --accent-2: #22d3ee;
+    --good: #10b981;
+    --warn: #f59e0b;
+    --bad: #ef4444;
+    --grid: #334155;
+    --tick: #cbd5e1;
+    --bg-gradient: radial-gradient(1200px 600px at 10% -10%, #1e293b 0%, #0f172a 60%);
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    --accent-text: #a5b4fc;
+    --good-text: #6ee7b7;
+    --warn-text: #fcd34d;
+    --warn-text-strong: #fde68a;
+    --bad-text: #fecaca;
+  }
+  :root[data-theme="light"] {
+    --bg: #f8fafc;
+    --panel: #ffffff;
+    --panel-2: #f1f5f9;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #4f46e5;
+    --accent-2: #0891b2;
+    --good: #059669;
+    --warn: #d97706;
+    --bad: #dc2626;
+    --grid: #e2e8f0;
+    --tick: #475569;
+    --bg-gradient: radial-gradient(1200px 600px at 10% -10%, #eef2ff 0%, #f8fafc 60%);
+    --shadow: 0 1px 3px rgba(15,23,42,0.08);
+    --accent-text: #4338ca;
+    --good-text: #047857;
+    --warn-text: #b45309;
+    --warn-text-strong: #92400e;
+    --bad-text: #b91c1c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg-gradient) fixed;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  .page-header {
+    padding: 20px 32px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .back-btn:hover { color: var(--text); border-color: var(--accent); }
+  .person-hero { display: flex; align-items: center; gap: 12px; }
+  .hero-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+  .hero-name { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .hero-meta { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .theme-toggle {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Layout ── */
+  .container { padding: 24px 32px 64px; max-width: 1400px; margin: 0 auto; }
+
+  /* ── KPIs ── */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .kpi {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(99,102,241,0.10), transparent 60%);
+    pointer-events: none;
+  }
+  .kpi .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .kpi .value { font-size: 26px; font-weight: 700; margin-top: 6px; letter-spacing: -0.02em; }
+  .kpi .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* ── Insights ── */
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .insight {
+    --c: var(--accent);
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .insight::before {
+    content: "";
+    position: absolute; top: 0; right: 0;
+    width: 56px; height: 56px;
+    background: radial-gradient(circle at top right, color-mix(in srgb, var(--c) 16%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+  .insight.good { --c: var(--good); }
+  .insight.warn { --c: var(--warn); }
+  .insight.bad  { --c: var(--bad); }
+  .insight.info { --c: var(--accent-2); }
+  .insight .ins-title {
+    font-size: 11px; color: var(--muted); font-weight: 600;
+    letter-spacing: 0.01em; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 7px; position: relative;
+  }
+  .insight .ins-title::before {
+    content: ""; width: 6px; height: 6px; border-radius: 999px;
+    background: var(--c);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent);
+    flex-shrink: 0;
+  }
+  .insight .ins-value { font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.4; position: relative; }
+  .insight .ins-hint  { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; position: relative; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    min-width: 0;
+  }
+  .card h3 {
+    margin: 0 0 14px;
+    font-size: 14px; font-weight: 600; color: var(--text);
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .card h3 .tag {
+    font-size: 11px; color: var(--muted);
+    background: var(--panel-2); border: 1px solid var(--border);
+    padding: 3px 8px; border-radius: 999px; font-weight: 500;
+  }
+  .chart-wrap { position: relative; height: 340px; width: 100%; overflow: hidden; }
+  .chart-wrap canvas { max-width: 100% !important; }
+  .chart-wrap.tall { height: 420px; }
+
+  /* ── Grid ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* ── Status pills ── */
+  .status-pills {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .status-pill {
+    --c: var(--accent);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px 10px;
+    display: flex; flex-direction: column; gap: 8px;
+    position: relative; overflow: hidden;
+  }
+  .status-pill::before {
+    content: ""; position: absolute; top: 0; right: 0;
+    width: 50px; height: 50px;
+    background: radial-gradient(circle at top right, color-mix(in srgb, var(--c) 18%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+  .sp-head { display: flex; align-items: center; gap: 7px; min-width: 0; }
+  .sp-dot { width: 7px; height: 7px; border-radius: 999px; background: var(--c); flex-shrink: 0;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent); }
+  .sp-label { font-size: 10.5px; color: var(--muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sp-num { display: flex; align-items: baseline; gap: 4px; line-height: 1; }
+  .sp-count { font-size: 22px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .sp-unit { font-size: 11px; color: var(--muted); }
+  .sp-bar { height: 2px; background: var(--panel-2); border-radius: 999px; overflow: hidden; }
+  .sp-bar > i { display: block; height: 100%; width: 0; background: var(--c); transition: width 0.4s ease; border-radius: 999px; }
+  .sp-foot { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .sp-pct { color: var(--c); font-weight: 600; }
+  .status-pill.is-empty { opacity: 0.38; }
+
+  /* ── Table ── */
+  .scroll { overflow: auto; max-height: 480px; border-radius: 10px; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--panel); z-index: 1; }
+  thead th {
+    font-weight: 600; color: var(--muted); text-transform: uppercase;
+    font-size: 11px; letter-spacing: 0.06em;
+    background: var(--panel); position: sticky; top: 0; z-index: 2;
+  }
+  tbody tr:hover { background: rgba(99,102,241,0.07); }
+  tr.total-row td { font-weight: 700; color: var(--text); background: var(--panel-2); }
+
+  /* ── Task list ── */
+  .task-filters {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .task-filter-select {
+    background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 7px 10px; font-size: 13px; outline: none;
+    cursor: pointer;
+  }
+  .task-filter-select:focus { border-color: var(--accent); }
+  .task-list { display: flex; flex-direction: column; gap: 6px; }
+  .task-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px;
+    transition: border-color 0.12s;
+  }
+  .task-item:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
+  .task-item-main { flex: 1; min-width: 0; }
+  .task-title { font-weight: 600; font-size: 13px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .task-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; align-items: center; }
+  .task-state { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .task-pts { font-size: 12px; color: var(--muted); }
+  .task-sprint { font-size: 11px; background: var(--panel); border: 1px solid var(--border); padding: 1px 7px; border-radius: 999px; color: var(--muted); }
+  .task-project { font-size: 11px; color: var(--muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .task-count-badge { font-size: 12px; color: var(--muted); background: var(--panel-2); border: 1px solid var(--border); padding: 2px 10px; border-radius: 999px; }
+
+  /* ── Leave strip ── */
+  .leave-strip {
+    display: flex; flex-wrap: wrap; align-items: flex-start;
+    gap: 8px; padding: 12px 14px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    font-size: 13px; margin-bottom: 20px;
+  }
+  .leave-title { color: var(--muted); font-weight: 600; margin-right: 4px; }
+  .leave-entry {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(99,102,241,0.10); border: 1px solid rgba(99,102,241,0.22);
+    color: var(--text); padding: 3px 10px; border-radius: 20px;
+    font-size: 12px;
+  }
+  .leave-entry .lt { color: var(--muted); font-size: 11px; }
+
+  /* ── Pill ── */
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+  .pill.good { background: rgba(16,185,129,0.15); color: var(--good-text); }
+  .pill.warn { background: rgba(245,158,11,0.15); color: var(--warn-text); }
+  .pill.bad  { background: rgba(239,68,68,0.15); color: #fca5a5; }
+  .pill.neutral { background: rgba(148,163,184,0.15); color: var(--text); }
+
+  .role-badge {
+    display: inline-block; padding: 2px 9px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; margin-left: 8px; vertical-align: middle;
+  }
+
+  /* ── Section divider ── */
+  .section-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted); font-weight: 700; margin-bottom: 10px;
+    margin-top: 4px;
+  }
+
+  /* ── Loading / error states ── */
+  .loading {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 60vh; font-size: 15px; color: var(--muted);
+  }
+
+  /* ── Footer ── */
+  .footer { color: var(--muted); font-size: 12px; text-align: center; padding: 16px 0 0; }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .page-header { padding: 14px 16px 10px; }
+    .container { padding: 14px 16px 48px; }
+    .hero-name { font-size: 18px; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .kpi .value { font-size: 20px; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .chart-wrap { height: 260px; }
+    .chart-wrap.tall { height: 320px; }
+  }
+  @media (max-width: 600px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .status-pills { grid-template-columns: repeat(2, 1fr); }
+    .insights-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero-avatar { width: 38px; height: 38px; font-size: 16px; }
+    .hero-name { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div id="appRoot">
+  <div class="loading">Loading…</div>
+</div>
+<script type="module">
+import { db } from "./firebase.js";
+import { collection, doc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+// ── Theme ──────────────────────────────────────────────────────────────────
+const THEME = { grid: "#334155", tick: "#cbd5e1" };
+function readThemeFromCSS(){
+  const cs = getComputedStyle(document.documentElement);
+  const g = cs.getPropertyValue("--grid").trim();
+  const t = cs.getPropertyValue("--tick").trim();
+  if (g) THEME.grid = g;
+  if (t) THEME.tick = t;
+}
+(function initTheme(){
+  let saved = "dark";
+  try { saved = localStorage.getItem("theme") || "dark"; } catch(e){}
+  if (saved === "light") document.documentElement.setAttribute("data-theme","light");
+  readThemeFromCSS();
+  Chart.defaults.color = THEME.tick;
+})();
+
+// ── URL param ──────────────────────────────────────────────────────────────
+const params = new URLSearchParams(location.search);
+const PERSON = params.get("name") || "";
+
+// ── Constants (mirrored from main.js) ──────────────────────────────────────
+const ROLES = {
+  "Waew":"BA","Torfah":"BA","Tae":"BA",
+  "Ploy":"Designer","Gib":"Designer","Nine":"Designer",
+  "Ping":"Tester",
+  "Dream":"PC",
+  "Karn":"CEO",
+  "Ohm":"Dev","Nust":"Dev","Unn":"Dev","Praew":"Dev","P":"Dev","No":"Dev","Tum":"Dev"
+};
+const ROLE_COLORS = {
+  "Dev":"#6366f1","Designer":"#ec4899","BA":"#a855f7",
+  "Tester":"#06b6d4","PC":"#f59e0b","CEO":"#10b981"
+};
+const PROJ_PALETTE = [
+  "#6366f1","#22d3ee","#f97316","#10b981","#f43f5e","#eab308","#a855f7","#14b8a6",
+  "#3b82f6","#ec4899","#84cc16","#06b6d4","#f59e0b","#8b5cf6","#ef4444","#64748b",
+  "#c084fc","#fb923c","#4ade80","#60a5fa","#f472b6","#fbbf24","#34d399","#93c5fd",
+  "#fda4af","#a3e635","#67e8f9","#d8b4fe","#fdba74","#86efac","#c4b5fd","#fca5a5","#fde047","#d1d5db"
+];
+const SPRINT_START = "2026-01-05";
+const SPRINT_WEEKS = 2;
+const MAX_SPRINTS = 26;
+const STATUS_LABELS = ["Done","In Progress","Ready for review","Ready for test",
+  "Waiting to INT deploy","Waiting to PRD deploy","To Do","Blocked","Bugged","Removed/Canceled"];
+const STATUS_COLORS = ["#10b981","#3b82f6","#a855f7","#22d3ee","#f97316","#fb923c",
+  "#94a3b8","#ef4444","#f43f5e","#64748b"];
+const COMPANY_HOLIDAYS = [
+  {name:"New Year",dates:["2026-01-01","2026-01-02"]},
+  {name:"Makha Bucha",dates:["2026-03-03"]},
+  {name:"Songkran",dates:["2026-04-13","2026-04-14","2026-04-15"]},
+  {name:"Labour Day",dates:["2026-05-01"]},
+  {name:"Coronation Day",dates:["2026-05-04"]},
+  {name:"Visakha Bucha",dates:["2026-06-01"]},
+  {name:"Asanha Bucha",dates:["2026-06-03"]},
+  {name:"Asanha Bucha+1",dates:["2026-07-28","2026-07-29"]},
+  {name:"Queen's Birthday",dates:["2026-08-12"]},
+  {name:"King Memorial",dates:["2026-10-13"]},
+  {name:"New Year's Eve",dates:["2026-12-31"]},
+];
+
+function generateSprintDates(){
+  const dates = [];
+  const start = new Date(SPRINT_START);
+  const today = new Date(new Date().toISOString().slice(0,10));
+  for(let i=0;i<MAX_SPRINTS;i++){
+    const s = new Date(start);
+    s.setDate(s.getDate() + i * SPRINT_WEEKS * 7);
+    const e = new Date(s);
+    e.setDate(e.getDate() + SPRINT_WEEKS * 7 - 1);
+    if(s>today) break;
+    dates.push({s:s.toISOString().slice(0,10), e:e.toISOString().slice(0,10)});
+  }
+  return dates;
+}
+const SPRINT_DATES = generateSprintDates();
+COMPANY_HOLIDAYS.forEach(h=>{
+  if(h.sprint!==undefined) return;
+  for(let i=0;i<SPRINT_DATES.length;i++){
+    if(h.dates.some(d=>d>=SPRINT_DATES[i].s && d<=SPRINT_DATES[i].e)){h.sprint=i+1;break;}
+  }
+});
+function currentSprintIdxByDate(){
+  const d = new Date().toISOString().slice(0,10);
+  for(let i=0;i<SPRINT_DATES.length;i++){
+    if(d>=SPRINT_DATES[i].s && d<=SPRINT_DATES[i].e) return i;
+  }
+  return SPRINT_DATES.length-1;
+}
+const CURRENT_SPRINT_IDX = currentSprintIdxByDate();
+
+function roleOf(n){ return ROLES[n]||"—"; }
+function sum(a){ return a.reduce((x,y)=>x+(+y||0),0); }
+function fmt(v){ if(!v&&v!==0) return "—"; return v===0?"—": Number.isInteger(v)?v:(+v).toFixed(2); }
+function heatColor(v,max){ if(!max||!v) return "transparent"; const r=Math.min(1,v/max); return `rgba(99,102,241,${(0.08+r*0.72).toFixed(2)})`; }
+function colorFor(n,i,palette=PROJ_PALETTE){ return palette[i%palette.length]; }
+function percent(v){ return (v*100).toFixed(1)+"%"; }
+
+// ── Load data ──────────────────────────────────────────────────────────────
+let DATA = {};
+try {
+  const [usersSnap,sprintsSnap,tasksSnap,userStatsSnap,projStatsSnap,leavesSnap] = await Promise.all([
+    getDocs(collection(db,"users")),
+    getDocs(collection(db,"sprints")),
+    getDocs(collection(db,"tasks")),
+    getDocs(collection(db,"sprintUserStats")),
+    getDocs(collection(db,"sprintProjectStats")),
+    getDocs(collection(db,"leaves")),
+  ]);
+  const sprintDocs=[];
+  sprintsSnap.forEach(d=>sprintDocs.push(d.data()));
+  sprintDocs.sort((a,b)=>a.index-b.index);
+  DATA.sprints=sprintDocs.map(s=>s.name);
+  DATA.movement=[];
+  tasksSnap.forEach(d=>DATA.movement.push(d.data()));
+  const users=[];
+  usersSnap.forEach(d=>users.push(d.data().id));
+  DATA.points={};DATA.tasks={};
+  users.forEach(u=>{DATA.points[u]=new Array(DATA.sprints.length).fill(0);DATA.tasks[u]=new Array(DATA.sprints.length).fill(0);});
+  userStatsSnap.forEach(d=>{
+    const s=d.data();
+    if(!DATA.points[s.userId]) DATA.points[s.userId]=new Array(DATA.sprints.length).fill(0);
+    if(!DATA.tasks[s.userId]) DATA.tasks[s.userId]=new Array(DATA.sprints.length).fill(0);
+    DATA.points[s.userId][s.sprintIndex]=s.points;
+    DATA.tasks[s.userId][s.sprintIndex]=s.tasks;
+  });
+  // contribution & status
+  DATA.contribution={};
+  DATA.statusPersonCount={};
+  DATA.statusPersonPts={};
+  DATA.movement.forEach(t=>{
+    const p=t.person,proj=t.project,si=(t.sprint||1)-1,pts=parseFloat(t.points)||0;
+    if(!DATA.contribution[p]) DATA.contribution[p]={};
+    if(!DATA.contribution[p][proj]) DATA.contribution[p][proj]=new Array(DATA.sprints.length).fill(0);
+    DATA.contribution[p][proj][si]+=pts;
+    // status buckets
+    let lbl="To Do";
+    const st=(t.state||"").toLowerCase();
+    if(st.includes("done")||st==="closed") lbl="Done";
+    else if(st.includes("progress")||st==="active") lbl="In Progress";
+    else if(st.includes("ready for review")) lbl="Ready for review";
+    else if(st.includes("ready for test")) lbl="Ready for test";
+    else if(st.includes("waiting to int")) lbl="Waiting to INT deploy";
+    else if(st.includes("waiting to prd")) lbl="Waiting to PRD deploy";
+    else if(st.includes("block")) lbl="Blocked";
+    else if(st.includes("bug")) lbl="Bugged";
+    else if(st.includes("cancel")||st.includes("remov")) lbl="Removed/Canceled";
+    if(!DATA.statusPersonCount[p]) DATA.statusPersonCount[p]={};
+    if(!DATA.statusPersonPts[p]) DATA.statusPersonPts[p]={};
+    DATA.statusPersonCount[p][lbl]=(DATA.statusPersonCount[p][lbl]||0)+1;
+    DATA.statusPersonPts[p][lbl]=(DATA.statusPersonPts[p][lbl]||0)+pts;
+  });
+  // leaves
+  DATA.leaves={};
+  leavesSnap.forEach(d=>{
+    const l=d.data(); const s=l.sprint; if(!s) return;
+    if(!DATA.leaves[s]) DATA.leaves[s]={};
+    if(!DATA.leaves[s][l.person]) DATA.leaves[s][l.person]=[];
+    DATA.leaves[s][l.person].push({type:l.type,startDate:l.startDate,endDate:l.endDate,days:l.days||1});
+  });
+} catch(e){
+  document.getElementById("appRoot").innerHTML=`<div style="color:var(--bad);padding:32px"><h2>Firebase Error</h2><pre>${e.stack}</pre></div>`;
+  throw e;
+}
+
+// ── Validate person ────────────────────────────────────────────────────────
+const ALL_PEOPLE = Object.keys(DATA.points);
+if(!PERSON || !ALL_PEOPLE.includes(PERSON)){
+  document.getElementById("appRoot").innerHTML=`
+    <div style="padding:40px;max-width:500px;margin:0 auto;text-align:center;">
+      <div style="font-size:48px;margin-bottom:16px;">👤</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:8px;">Person not found</div>
+      <div style="color:var(--muted);font-size:14px;margin-bottom:24px;">${PERSON ? `"${PERSON}" is not in the team roster.` : "No name specified in URL."}</div>
+      <a href="/" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--accent);color:#fff;border-radius:999px;font-size:14px;font-weight:600;text-decoration:none;">← Back to Dashboard</a>
+    </div>`;
+  throw new Error("Person not found");
+}
+
+// ── Derived data for this person ───────────────────────────────────────────
+const role = roleOf(PERSON);
+const roleColor = ROLE_COLORS[role] || "#94a3b8";
+const pts = DATA.points[PERSON] || [];
+const tks = DATA.tasks[PERSON] || [];
+const contrib = DATA.contribution[PERSON] || {};
+const statusCount = DATA.statusPersonCount[PERSON] || {};
+const statusPts = DATA.statusPersonPts[PERSON] || {};
+const SPR = DATA.sprints.length;
+
+const totalPts = sum(pts);
+const totalTasks = sum(tks);
+const activeSprints = pts.filter((v,i)=>((+v||0)>0||(+tks[i]||0)>0)).length;
+const avgPerTask = totalTasks ? totalPts/totalTasks : 0;
+const grandPts = sum(Object.values(statusPts));
+const donePts = statusPts["Done"] || 0;
+const doneRate = grandPts ? donePts/grandPts : 0;
+const blockedC = statusCount["Blocked"] || 0;
+const buggedC = statusCount["Bugged"] || 0;
+const wipC = (statusCount["In Progress"]||0)+(statusCount["Ready for review"]||0)
+           +(statusCount["Ready for test"]||0)+(statusCount["Waiting to INT deploy"]||0)
+           +(statusCount["Waiting to PRD deploy"]||0);
+const todoC = statusCount["To Do"] || 0;
+
+// Peak sprint
+let peakIdx=0,peakVal=0;
+pts.forEach((v,i)=>{if((+v||0)>peakVal){peakVal=+v;peakIdx=i;}});
+
+// Latest active sprint
+let latest=-1;
+for(let i=Math.min(SPR-1,CURRENT_SPRINT_IDX);i>=0;i--){
+  if(ALL_PEOPLE.some(n=>(DATA.points[n]||[])[i]>0)){ latest=i; break; }
+}
+
+// Trend
+let trendLabel="—",trendClass="info";
+if(latest>=2){
+  const recent=sum(pts.slice(Math.max(0,latest-2),latest+1));
+  const prior=sum(pts.slice(Math.max(0,latest-5),Math.max(0,latest-2)));
+  if(recent===0&&prior===0){trendLabel="ไม่มีข้อมูลเพียงพอ";trendClass="info";}
+  else if(prior===0){trendLabel=`เพิ่มขึ้น (+${recent.toFixed(0)} pts)`;trendClass="good";}
+  else{
+    const delta=recent-prior,pct=(delta/prior)*100;
+    if(delta>0){trendLabel=`📈 กำลังเร่ง (+${pct.toFixed(0)}%)`;trendClass="good";}
+    else if(delta<0){trendLabel=`📉 ชะลอลง (${pct.toFixed(0)}%)`;trendClass=pct<-40?"warn":"info";}
+    else{trendLabel="คงที่";trendClass="info";}
+  }
+}
+
+// Stale check
+const stale = latest>=1 && !(pts[latest]>0||tks[latest]>0) && !(pts[latest-1]>0||tks[latest-1]>0);
+
+// Projects sorted by total contribution
+const projEntries = Object.entries(contrib)
+  .map(([k,arr])=>[k,sum(arr)])
+  .filter(([,v])=>v>0)
+  .sort((a,b)=>b[1]-a[1]);
+
+// Leave records for this person
+const LEAVE_ICON={vacation:"🏖",sick:"🤒",personal:"🏠",other:"📅"};
+const personLeaves=[];
+Object.entries(DATA.leaves||{}).forEach(([sprint,byP])=>{
+  if(byP[PERSON]) byP[PERSON].forEach(l=>personLeaves.push({sprint:parseInt(sprint),...l}));
+});
+personLeaves.sort((a,b)=>a.sprint-b.sprint);
+
+// ── Render skeleton ────────────────────────────────────────────────────────
+const initials = PERSON.slice(0,2).toUpperCase();
+
+document.title = `${PERSON} · Sprint Dashboard 2026`;
+document.getElementById("appRoot").innerHTML = `
+  <div class="page-header">
+    <div class="header-left">
+      <a class="back-btn" href="/">← Back</a>
+      <div class="person-hero">
+        <div class="hero-avatar" style="background:${roleColor}">${initials}</div>
+        <div>
+          <div class="hero-name">${PERSON}<span class="role-badge" style="background:${roleColor}22;color:${roleColor};border:1px solid ${roleColor}55;">${role}</span></div>
+          <div class="hero-meta">${activeSprints}/${SPR} sprints active · ${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts · ${totalTasks} tasks</div>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle"><span id="themeIcon">🌙</span><span id="themeLabel">Dark</span></button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- KPIs -->
+    <div class="kpis" id="kpis"></div>
+
+    <!-- Insights -->
+    <div class="section-label">Insights</div>
+    <div class="insights-grid" id="insights"></div>
+
+    <!-- Sprint trend chart -->
+    <div class="card">
+      <h3>Sprint Trend <span class="tag" id="trendTag">Story Points + Tasks</span></h3>
+      <div class="chart-wrap tall"><canvas id="trendChart"></canvas></div>
+    </div>
+
+    <!-- Status breakdown -->
+    <div class="section-label">Status Breakdown</div>
+    <div class="status-pills" id="statusPills"></div>
+
+    <!-- Projects grid -->
+    <div class="grid-2">
+      <div class="card">
+        <h3>Contribution by Project × Sprint <span class="tag">Story Points</span></h3>
+        <div class="chart-wrap tall"><canvas id="projChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Project Summary <span class="tag">All-time totals</span></h3>
+        <div class="scroll" id="projTable"></div>
+      </div>
+    </div>
+
+    <!-- Leave history -->
+    ${personLeaves.length > 0 ? `
+    <div class="section-label">Leave History</div>
+    <div class="leave-strip" id="leaveStrip"></div>
+    ` : ""}
+
+    <!-- All tasks -->
+    <div class="card">
+      <h3>All Tasks <span class="tag" id="taskCountTag">—</span></h3>
+      <div class="task-filters">
+        <select class="task-filter-select" id="taskSprintFilter">
+          <option value="all">All Sprints</option>
+          ${DATA.sprints.map((s,i)=>`<option value="${i+1}">Sprint ${i+1}</option>`).join("")}
+        </select>
+        <select class="task-filter-select" id="taskStatusFilter">
+          <option value="all">All Statuses</option>
+          ${STATUS_LABELS.map(s=>`<option value="${s}">${s}</option>`).join("")}
+        </select>
+        <select class="task-filter-select" id="taskProjFilter">
+          <option value="all">All Projects</option>
+          ${projEntries.map(([k])=>`<option value="${k}">${k}</option>`).join("")}
+        </select>
+      </div>
+      <div class="task-list" id="taskList"></div>
+    </div>
+
+    <div class="footer">More Studio.Co.,Ltd · <a href="/" style="color:var(--accent-text);text-decoration:none;">Dashboard</a></div>
+  </div>
+`;
+
+// ── Theme wiring ───────────────────────────────────────────────────────────
+(function wireTheme(){
+  const btn=document.getElementById("themeToggle");
+  const saved=(function(){try{return localStorage.getItem("theme")||"dark";}catch(e){return"dark";}})();
+  document.getElementById("themeIcon").textContent=saved==="light"?"☀️":"🌙";
+  document.getElementById("themeLabel").textContent=saved==="light"?"Light":"Dark";
+  if(saved==="light") document.documentElement.setAttribute("data-theme","light");
+  readThemeFromCSS();
+  Chart.defaults.color=THEME.tick;
+  btn.addEventListener("click",()=>{
+    const cur=document.documentElement.getAttribute("data-theme")==="light"?"light":"dark";
+    const next=cur==="light"?"dark":"light";
+    if(next==="light") document.documentElement.setAttribute("data-theme","light");
+    else document.documentElement.removeAttribute("data-theme");
+    readThemeFromCSS();
+    Chart.defaults.color=THEME.tick;
+    document.getElementById("themeIcon").textContent=next==="light"?"☀️":"🌙";
+    document.getElementById("themeLabel").textContent=next==="light"?"Light":"Dark";
+    try{localStorage.setItem("theme",next);}catch(e){}
+    renderCharts();
+  });
+})();
+
+// ── KPIs ───────────────────────────────────────────────────────────────────
+document.getElementById("kpis").innerHTML = `
+  <div class="kpi">
+    <div class="label">Total Points</div>
+    <div class="value">${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})}</div>
+    <div class="hint">all sprints</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Total Tasks</div>
+    <div class="value">${totalTasks}</div>
+    <div class="hint">done tasks</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Done Rate</div>
+    <div class="value" style="color:${doneRate>=0.7?'var(--good)':doneRate>=0.4?'var(--warn-text)':'var(--bad)'}">${percent(doneRate)}</div>
+    <div class="hint">${donePts.toFixed(1)} / ${grandPts.toFixed(1)} pts</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Avg Pts / Task</div>
+    <div class="value">${avgPerTask.toFixed(2)}</div>
+    <div class="hint">done tasks</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Active Sprints</div>
+    <div class="value">${activeSprints}</div>
+    <div class="hint">of ${SPR} total</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Projects</div>
+    <div class="value">${projEntries.length}</div>
+    <div class="hint">contributed to</div>
+  </div>
+`;
+
+// ── Insights ───────────────────────────────────────────────────────────────
+(function renderInsights(){
+  const cards=[];
+  cards.push({cls:totalPts===0?"warn":"info",title:"📊 Workload",
+    value:`${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts · ${totalTasks} tasks`,
+    hint:`Active in ${activeSprints}/${SPR} sprints · avg ${avgPerTask.toFixed(2)} pts/task`});
+  cards.push({cls:doneRate>=0.7?"good":doneRate>=0.4?"info":"warn",title:"✅ Done Rate",
+    value:`${percent(doneRate)} ของ points`,
+    hint:`${donePts.toLocaleString(undefined,{maximumFractionDigits:1})} / ${grandPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts`});
+  cards.push({cls:trendClass,title:"📈 Recent Trend",value:trendLabel,hint:"เทียบ 3 sprints ล่าสุด vs 3 ก่อนหน้า"});
+  if(peakVal>0) cards.push({cls:"info",title:"🏔️ Peak Sprint",
+    value:`Sprint ${peakIdx+1} — ${peakVal.toLocaleString(undefined,{maximumFractionDigits:1})} pts`,hint:"สูงสุดของปี"});
+  if(projEntries.length){
+    const top3=projEntries.slice(0,3).map(([k,v])=>`${k} (${v.toFixed(0)})`).join(" · ");
+    cards.push({cls:"info",title:"🎯 Top Projects",value:top3,hint:`${projEntries.length} projects contributed`});
+  } else {
+    cards.push({cls:"warn",title:"🎯 Top Projects",value:"ยังไม่มี contribution",hint:"ไม่พบ project ในปีนี้"});
+  }
+  if(blockedC>0||buggedC>0) cards.push({cls:"bad",title:"⚠️ Risk Flags",
+    value:`${blockedC} Blocked · ${buggedC} Bugged`,hint:"ต้องติดตามปลดล็อกและแก้ไข"});
+  if(wipC>0) cards.push({cls:wipC>15?"warn":"info",title:"🔄 Work in Progress",
+    value:`${wipC} tasks`,hint:"In Progress + Review/Test + Waiting deploy"});
+  if(todoC>0) cards.push({cls:todoC>20?"warn":"info",title:"📝 To Do",
+    value:`${todoC} tasks รอเริ่ม`,hint:todoC>20?"Backlog ค่อนข้างใหญ่":"ปริมาณปกติ"});
+  if(stale) cards.push({cls:"bad",title:"⏰ Stale",
+    value:"ไม่พบ task งาน 2 sprints ล่าสุด",hint:`Sprint ${latest}-${latest+1} ไม่มี activity`});
+  if(personLeaves.length>0) cards.push({cls:"info",title:"🗓 Leave Records",
+    value:`${personLeaves.length} record${personLeaves.length>1?"s":""}`,
+    hint:personLeaves.map(l=>`Sprint ${l.sprint}: ${l.type} ${l.days}d`).join(" · ")});
+  const roleObs={Dev:totalPts>200?"Heavy delivery":"Contributor สาย dev",
+    Designer:totalPts>100?"Core designer":"Designer contributor",
+    BA:totalPts>100?"BA/Analyst หลัก":"BA/Analyst support",
+    Tester:"QA/Tester",PC:"Project Coordinator",CEO:"Executive"};
+  if(role!=="—") cards.push({cls:"info",title:`👤 Role · ${role}`,value:roleObs[role]||role,
+    hint:`รวม ${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts ทั้งปี`});
+
+  document.getElementById("insights").innerHTML=cards.map(c=>`
+    <div class="insight ${c.cls}">
+      <div class="ins-title">${c.title}</div>
+      <div class="ins-value">${c.value}</div>
+      <div class="ins-hint">${c.hint}</div>
+    </div>`).join("");
+})();
+
+// ── Status pills ───────────────────────────────────────────────────────────
+(function renderStatusPills(){
+  const grandC=sum(Object.values(statusCount));
+  const grandP=sum(Object.values(statusPts));
+  document.getElementById("statusPills").innerHTML=STATUS_LABELS.map((lbl,i)=>{
+    const c=statusCount[lbl]||0,p=statusPts[lbl]||0;
+    const pct=grandC?Math.round(c/grandC*100):0;
+    const empty=c===0?" is-empty":"";
+    return `<div class="status-pill${empty}" style="--c:${STATUS_COLORS[i]};">
+      <div class="sp-head"><span class="sp-dot"></span><span class="sp-label">${lbl}</span></div>
+      <div class="sp-num"><span class="sp-count">${c}</span><span class="sp-unit">งาน</span></div>
+      <div class="sp-bar"><i style="width:${Math.min(100,pct)}%"></i></div>
+      <div class="sp-foot"><span>${p.toLocaleString(undefined,{maximumFractionDigits:1})} pts</span><span class="sp-pct">${pct}%</span></div>
+    </div>`;
+  }).join("");
+})();
+
+// ── Leave strip ────────────────────────────────────────────────────────────
+if(personLeaves.length>0){
+  document.getElementById("leaveStrip").innerHTML=`
+    <span class="leave-title">🗓 Leave & Holidays</span>
+    ${personLeaves.map(l=>{
+      const icon=LEAVE_ICON[l.type?.toLowerCase()]||"📅";
+      const dateStr=l.startDate===l.endDate?l.startDate:`${l.startDate}–${l.endDate}`;
+      return `<span class="leave-entry">${icon} Sprint ${l.sprint} <span class="lt">· ${l.type} ${l.days}d · ${dateStr}</span></span>`;
+    }).join("")}`;
+}
+
+// ── Project table ──────────────────────────────────────────────────────────
+(function renderProjTable(){
+  const rows=projEntries.map(([proj,total],pi)=>{
+    const arr=contrib[proj]||[];
+    return {proj,arr,total,pi};
+  });
+  const allVals=rows.flatMap(r=>r.arr);
+  const max=Math.max(1,...allVals);
+  let html=`<table><thead><tr><th>Project</th>${DATA.sprints.map((_,i)=>`<th>Sp ${i+1}</th>`).join("")}<th>Total</th></tr></thead><tbody>`;
+  rows.forEach(({proj,arr,total,pi})=>{
+    if(total<=0) return;
+    html+=`<tr><td style="font-weight:500;max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="${proj}">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${colorFor(proj,pi)};margin-right:6px;vertical-align:middle;"></span>${proj}</td>`
+      +arr.map(v=>`<td style="background:${heatColor(v,max)}">${fmt(v)}</td>`).join("")
+      +`<td style="font-weight:600">${fmt(total)}</td></tr>`;
+  });
+  html+=`</tbody></table>`;
+  document.getElementById("projTable").innerHTML=html;
+})();
+
+// ── Charts ─────────────────────────────────────────────────────────────────
+let trendChart=null, projChart=null;
+
+function renderCharts(){
+  // Sprint trend chart — points bar + tasks line
+  {
+    const labels=DATA.sprints;
+    const ptsData=pts.map(v=>+v||0);
+    const tksData=tks.map(v=>+v||0);
+    if(trendChart) trendChart.destroy();
+    trendChart=new Chart(document.getElementById("trendChart"),{
+      data:{labels,datasets:[
+        {type:"bar",label:"Story Points",data:ptsData,backgroundColor:roleColor+"bb",borderRadius:6,yAxisID:"y"},
+        {type:"line",label:"Tasks (count)",data:tksData,borderColor:"#22d3ee",backgroundColor:"#22d3ee22",tension:0.35,yAxisID:"y1",borderWidth:2,pointRadius:4}
+      ]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        interaction:{mode:"index",intersect:false},
+        scales:{
+          x:{grid:{color:THEME.grid},ticks:{color:THEME.tick}},
+          y:{beginAtZero:true,grid:{color:THEME.grid},ticks:{color:THEME.tick},title:{display:true,text:"Points",color:"#94a3b8"}},
+          y1:{beginAtZero:true,grid:{display:false},ticks:{color:THEME.tick},position:"right",title:{display:true,text:"Tasks",color:"#94a3b8"}}
+        },
+        plugins:{
+          legend:{labels:{color:THEME.tick,boxWidth:10}},
+          tooltip:{callbacks:{
+            title:its=>its.length?its[0].label:"",
+            label:it=>`${it.dataset.label}: ${it.parsed.y}`
+          }}
+        }
+      }
+    });
+  }
+
+  // Project × Sprint stacked bar chart
+  {
+    const labels=DATA.sprints;
+    const datasets=projEntries.map(([proj],i)=>({
+      label:proj,
+      data:(contrib[proj]||[]).map(v=>+v||0),
+      backgroundColor:colorFor(proj,i),
+      borderRadius:4,
+      stack:"a"
+    }));
+    if(projChart) projChart.destroy();
+    projChart=new Chart(document.getElementById("projChart"),{
+      type:"bar",
+      data:{labels,datasets},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        interaction:{mode:"nearest",intersect:true,axis:"xy"},
+        scales:{
+          x:{stacked:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}},
+          y:{stacked:true,beginAtZero:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}}
+        },
+        plugins:{
+          legend:{position:"bottom",labels:{color:THEME.tick,boxWidth:10,font:{size:10}}},
+          tooltip:{callbacks:{
+            title:its=>its.length?`${its[0].dataset.label} · ${its[0].label}`:"",
+            label:it=>`${(it.parsed.y||0).toLocaleString(undefined,{maximumFractionDigits:2})} pts`
+          }}
+        }
+      }
+    });
+  }
+}
+renderCharts();
+
+// ── Task list ──────────────────────────────────────────────────────────────
+const STATE_STYLE={
+  "Done":{bg:"rgba(16,185,129,0.18)",color:"#6ee7b7"},
+  "In Progress":{bg:"rgba(59,130,246,0.18)",color:"#93c5fd"},
+  "Ready for review":{bg:"rgba(168,85,247,0.18)",color:"#d8b4fe"},
+  "Ready for test":{bg:"rgba(34,211,238,0.18)",color:"#67e8f9"},
+  "Waiting to INT deploy":{bg:"rgba(249,115,22,0.18)",color:"#fdba74"},
+  "Waiting to PRD deploy":{bg:"rgba(251,146,60,0.18)",color:"#fed7aa"},
+  "To Do":{bg:"rgba(148,163,184,0.15)",color:"#cbd5e1"},
+  "Blocked":{bg:"rgba(239,68,68,0.18)",color:"#fca5a5"},
+  "Bugged":{bg:"rgba(244,63,94,0.18)",color:"#fda4af"},
+  "Removed/Canceled":{bg:"rgba(100,116,132,0.15)",color:"#94a3b8"},
+};
+
+const personTasks=DATA.movement.filter(t=>t.person===PERSON);
+
+function renderTaskList(){
+  const sprintFilter=document.getElementById("taskSprintFilter").value;
+  const statusFilter=document.getElementById("taskStatusFilter").value;
+  const projFilter=document.getElementById("taskProjFilter").value;
+
+  let filtered=personTasks.filter(t=>{
+    if(sprintFilter!=="all" && String(t.sprint)!==sprintFilter) return false;
+    // normalise state to STATUS_LABELS bucket
+    if(statusFilter!=="all"){
+      const stLow=(t.state||"").toLowerCase();
+      let bucket="To Do";
+      if(stLow.includes("done")||stLow==="closed") bucket="Done";
+      else if(stLow.includes("progress")||stLow==="active") bucket="In Progress";
+      else if(stLow.includes("ready for review")) bucket="Ready for review";
+      else if(stLow.includes("ready for test")) bucket="Ready for test";
+      else if(stLow.includes("waiting to int")) bucket="Waiting to INT deploy";
+      else if(stLow.includes("waiting to prd")) bucket="Waiting to PRD deploy";
+      else if(stLow.includes("block")) bucket="Blocked";
+      else if(stLow.includes("bug")) bucket="Bugged";
+      else if(stLow.includes("cancel")||stLow.includes("remov")) bucket="Removed/Canceled";
+      if(bucket!==statusFilter) return false;
+    }
+    if(projFilter!=="all" && t.project!==projFilter) return false;
+    return true;
+  });
+  // Sort: sprint desc, then by state (active first)
+  const statePriority=(s)=>{const l=(s||"").toLowerCase();if(l.includes("block")||l.includes("bug"))return 0;if(l.includes("progress")||l.includes("review")||l.includes("test")||l.includes("waiting"))return 1;if(l.includes("done")||l.includes("closed")||l.includes("cancel")||l.includes("remov"))return 3;return 2;};
+  filtered.sort((a,b)=>{ const sd=(b.sprint||0)-(a.sprint||0); return sd!==0?sd:statePriority(a.state)-statePriority(b.state); });
+
+  document.getElementById("taskCountTag").textContent=`${filtered.length} tasks`;
+
+  if(!filtered.length){
+    document.getElementById("taskList").innerHTML=`<div style="text-align:center;color:var(--muted);padding:24px;font-size:14px;">No tasks match the current filters.</div>`;
+    return;
+  }
+
+  document.getElementById("taskList").innerHTML=filtered.map(t=>{
+    const pts=parseFloat(t.points)||0;
+    const style=STATE_STYLE[t.state]||{bg:"rgba(148,163,184,0.12)",color:"#94a3b8"};
+    return `<div class="task-item">
+      <div class="task-item-main">
+        <div class="task-title" title="${(t.title||"").replace(/"/g,"&quot;")}">${t.title||"(untitled)"}</div>
+        <div class="task-meta">
+          <span class="task-state" style="background:${style.bg};color:${style.color}">${t.state||"—"}</span>
+          ${pts>0?`<span class="task-pts">${pts} pt${pts!==1?"s":""}</span>`:""}
+          <span class="task-sprint">Sprint ${t.sprint||"—"}</span>
+          ${t.project?`<span class="task-project" title="${t.project}">${t.project}</span>`:""}
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+renderTaskList();
+document.getElementById("taskSprintFilter").addEventListener("change",renderTaskList);
+document.getElementById("taskStatusFilter").addEventListener("change",renderTaskList);
+document.getElementById("taskProjFilter").addEventListener("change",renderTaskList);
+</script>
+</body>
+</html>
