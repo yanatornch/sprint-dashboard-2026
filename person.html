@@ -3,981 +3,1093 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Person Profile · Sprint Dashboard 2026</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<title>Person · Sprint Dashboard 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
 <style>
   :root {
-    --bg: #0f172a;
-    --panel: #1e293b;
-    --panel-2: #273449;
-    --border: #334155;
-    --text: #e2e8f0;
-    --muted: #94a3b8;
-    --accent: #6366f1;
-    --accent-2: #22d3ee;
-    --good: #10b981;
-    --warn: #f59e0b;
-    --bad: #ef4444;
-    --grid: #334155;
-    --tick: #cbd5e1;
-    --bg-gradient: radial-gradient(1200px 600px at 10% -10%, #1e293b 0%, #0f172a 60%);
-    --shadow: 0 1px 3px rgba(0,0,0,0.3);
-    --accent-text: #a5b4fc;
-    --good-text: #6ee7b7;
-    --warn-text: #fcd34d;
-    --warn-text-strong: #fde68a;
-    --bad-text: #fecaca;
-  }
-  :root[data-theme="light"] {
-    --bg: #f8fafc;
-    --panel: #ffffff;
-    --panel-2: #f1f5f9;
-    --border: #e2e8f0;
-    --text: #0f172a;
-    --muted: #64748b;
-    --accent: #4f46e5;
-    --accent-2: #0891b2;
-    --good: #059669;
-    --warn: #d97706;
-    --bad: #dc2626;
-    --grid: #e2e8f0;
-    --tick: #475569;
-    --bg-gradient: radial-gradient(1200px 600px at 10% -10%, #eef2ff 0%, #f8fafc 60%);
-    --shadow: 0 1px 3px rgba(15,23,42,0.08);
-    --accent-text: #4338ca;
-    --good-text: #047857;
-    --warn-text: #b45309;
-    --warn-text-strong: #92400e;
-    --bad-text: #b91c1c;
+    --bg: #0a0f1c; --bg-2: #0d1424;
+    --panel: #131b2e; --panel-2: #0f1626; --panel-hi: #1a2338;
+    --border: rgba(255,255,255,.07); --border-hi: rgba(255,255,255,.12);
+    --text: #e9edf6; --muted: #8b94a8; --faint: #5a6379;
+    --indigo: #7c7ff5; --indigo-deep: #6366f1;
+    --cyan: #2ad4e5; --teal: #34d399; --green: #2fd39b;
+    --orange: #f5a524; --red: #f0556a; --yellow: #f5c518;
+    --gold: #f5c518; --pink: #f43f6e;
+    --r: 16px; --r-lg: 22px;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
   body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: var(--bg-gradient) fixed;
+    font-family: var(--font);
+    background:
+      radial-gradient(1200px 600px at 18% -8%, rgba(124,127,245,.10), transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, rgba(42,212,229,.06), transparent 55%),
+      var(--bg);
     color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.45;
     min-height: 100vh;
-    overflow-x: hidden;
   }
+  ::selection { background: rgba(124,127,245,.35); }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 26px 28px 80px; }
 
-  /* ── Header ── */
-  .page-header {
-    padding: 20px 32px 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    border-bottom: 1px solid var(--border);
-    background: var(--panel);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .header-left { display: flex; align-items: center; gap: 14px; }
-  .back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 14px;
-    background: var(--panel-2);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
+  /* Header */
+  .topbar { display: flex; align-items: center; gap: 18px; padding: 8px 2px 22px; flex-wrap: wrap; }
+  .btn-back {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--panel); border: 1px solid var(--border);
+    color: var(--text); padding: 11px 16px; border-radius: 999px;
+    font: 600 14px/1 var(--font); cursor: pointer; transition: .18s;
     text-decoration: none;
-    transition: all 0.15s;
   }
-  .back-btn:hover { color: var(--text); border-color: var(--accent); }
-  .person-hero { display: flex; align-items: center; gap: 12px; }
-  .hero-avatar {
-    width: 48px; height: 48px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px; font-weight: 700; color: #fff;
-    flex-shrink: 0;
+  .btn-back:hover { background: var(--panel-hi); border-color: var(--border-hi); }
+  .avatar {
+    width: 60px; height: 60px; border-radius: 50%;
+    display: grid; place-items: center; flex: none;
+    font: 800 21px/1 var(--font); color: #fff; letter-spacing: .5px;
+    box-shadow: 0 8px 22px rgba(99,102,241,.45);
   }
-  .hero-name { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
-  .hero-meta { font-size: 13px; color: var(--muted); margin-top: 2px; }
-  .header-right { display: flex; align-items: center; gap: 10px; }
-  .theme-toggle {
-    background: var(--panel-2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 999px;
-    padding: 6px 14px;
-    font-size: 12px;
-    cursor: pointer;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.15s;
+  .who { display: flex; flex-direction: column; gap: 3px; }
+  .who-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .who-top h1 { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -.5px; }
+  .role-badge {
+    font: 700 12px/1 var(--font); padding: 5px 10px; border-radius: 999px;
   }
-  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .who-sub { color: var(--muted); font-size: 14.5px; font-weight: 500; }
+  .who-sub b { color: var(--text); font-weight: 700; }
+  .spacer { flex: 1; min-width: 0; }
 
-  /* ── Layout ── */
-  .container { padding: 24px 32px 64px; max-width: 1400px; margin: 0 auto; }
+  /* Generic panel */
+  .panel {
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid var(--border); border-radius: var(--r-lg);
+    box-shadow: var(--shadow);
+  }
+  .panel-pad { padding: 22px 24px; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+  .panel-head h2 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -.2px; }
+  .pill {
+    font: 600 12.5px/1 var(--font); color: var(--muted);
+    background: var(--panel-hi); border: 1px solid var(--border);
+    padding: 8px 12px; border-radius: 999px;
+  }
+  .section-label {
+    font: 700 12px/1 var(--font); letter-spacing: 2px; text-transform: uppercase;
+    color: var(--faint); margin: 30px 2px 14px;
+  }
+  .grid { display: grid; gap: 16px; }
 
-  /* ── KPIs ── */
-  .kpis {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
+  @keyframes rise { from { transform: translateY(10px); opacity: .7; } to { transform: none; opacity: 1; } }
+  .rise { animation: rise .45s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes burst {
+    0% { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; }
   }
-  .kpi {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px 18px;
-    position: relative;
-    overflow: hidden;
-  }
-  .kpi::before {
-    content: "";
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(99,102,241,0.10), transparent 60%);
-    pointer-events: none;
-  }
-  .kpi .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
-  .kpi .value { font-size: 26px; font-weight: 700; margin-top: 6px; letter-spacing: -0.02em; }
-  .kpi .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
 
-  /* ── Insights ── */
-  .insights-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .insight {
-    --c: var(--accent);
-    background: var(--panel-2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px 14px;
-    position: relative;
-    overflow: hidden;
-  }
-  .insight::before {
-    content: "";
-    position: absolute; top: 0; right: 0;
-    width: 56px; height: 56px;
-    background: radial-gradient(circle at top right, color-mix(in srgb, var(--c) 16%, transparent), transparent 70%);
-    pointer-events: none;
-  }
-  .insight.good { --c: var(--good); }
-  .insight.warn { --c: var(--warn); }
-  .insight.bad  { --c: var(--bad); }
-  .insight.info { --c: var(--accent-2); }
-  .insight .ins-title {
-    font-size: 11px; color: var(--muted); font-weight: 600;
-    letter-spacing: 0.01em; margin-bottom: 6px;
-    display: flex; align-items: center; gap: 7px; position: relative;
-  }
-  .insight .ins-title::before {
-    content: ""; width: 6px; height: 6px; border-radius: 999px;
-    background: var(--c);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent);
-    flex-shrink: 0;
-  }
-  .insight .ins-value { font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.4; position: relative; }
-  .insight .ins-hint  { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; position: relative; }
-
-  /* ── Cards ── */
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px 18px;
-    margin-bottom: 18px;
-    min-width: 0;
-  }
-  .card h3 {
-    margin: 0 0 14px;
-    font-size: 14px; font-weight: 600; color: var(--text);
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  }
-  .card h3 .tag {
-    font-size: 11px; color: var(--muted);
-    background: var(--panel-2); border: 1px solid var(--border);
-    padding: 3px 8px; border-radius: 999px; font-weight: 500;
-  }
-  .chart-wrap { position: relative; height: 340px; width: 100%; overflow: hidden; }
-  .chart-wrap canvas { max-width: 100% !important; }
-  .chart-wrap.tall { height: 420px; }
-
-  /* ── Grid ── */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
-
-  /* ── Status pills ── */
-  .status-pills {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .status-pill {
-    --c: var(--accent);
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px 14px 10px;
-    display: flex; flex-direction: column; gap: 8px;
-    position: relative; overflow: hidden;
-  }
-  .status-pill::before {
-    content: ""; position: absolute; top: 0; right: 0;
-    width: 50px; height: 50px;
-    background: radial-gradient(circle at top right, color-mix(in srgb, var(--c) 18%, transparent), transparent 70%);
-    pointer-events: none;
-  }
-  .sp-head { display: flex; align-items: center; gap: 7px; min-width: 0; }
-  .sp-dot { width: 7px; height: 7px; border-radius: 999px; background: var(--c); flex-shrink: 0;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent); }
-  .sp-label { font-size: 10.5px; color: var(--muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sp-num { display: flex; align-items: baseline; gap: 4px; line-height: 1; }
-  .sp-count { font-size: 22px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
-  .sp-unit { font-size: 11px; color: var(--muted); }
-  .sp-bar { height: 2px; background: var(--panel-2); border-radius: 999px; overflow: hidden; }
-  .sp-bar > i { display: block; height: 100%; width: 0; background: var(--c); transition: width 0.4s ease; border-radius: 999px; }
-  .sp-foot { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .sp-pct { color: var(--c); font-weight: 600; }
-  .status-pill.is-empty { opacity: 0.38; }
-
-  /* ── Table ── */
-  .scroll { overflow: auto; max-height: 480px; border-radius: 10px; -webkit-overflow-scrolling: touch; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--panel); z-index: 1; }
-  thead th {
-    font-weight: 600; color: var(--muted); text-transform: uppercase;
-    font-size: 11px; letter-spacing: 0.06em;
-    background: var(--panel); position: sticky; top: 0; z-index: 2;
-  }
-  tbody tr:hover { background: rgba(99,102,241,0.07); }
-  tr.total-row td { font-weight: 700; color: var(--text); background: var(--panel-2); }
-
-  /* ── Task list ── */
-  .task-filters {
-    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
-  }
+  /* Task list */
+  .task-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
   .task-filter-select {
-    background: var(--panel-2); color: var(--text);
+    background: var(--panel-hi); color: var(--text);
     border: 1px solid var(--border); border-radius: 8px;
-    padding: 7px 10px; font-size: 13px; outline: none;
-    cursor: pointer;
+    padding: 8px 12px; font: 600 13px/1 var(--font); outline: none; cursor: pointer;
   }
-  .task-filter-select:focus { border-color: var(--accent); }
-  .task-list { display: flex; flex-direction: column; gap: 6px; }
+  .task-filter-select:focus { border-color: var(--indigo); }
   .task-item {
     display: flex; align-items: flex-start; gap: 12px;
     background: var(--panel-2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 10px 12px;
-    transition: border-color 0.12s;
+    border-radius: 12px; padding: 12px 14px;
+    transition: border-color .12s;
   }
-  .task-item:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
-  .task-item-main { flex: 1; min-width: 0; }
-  .task-title { font-weight: 600; font-size: 13px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .task-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; align-items: center; }
-  .task-state { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-  .task-pts { font-size: 12px; color: var(--muted); }
-  .task-sprint { font-size: 11px; background: var(--panel); border: 1px solid var(--border); padding: 1px 7px; border-radius: 999px; color: var(--muted); }
-  .task-project { font-size: 11px; color: var(--muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .task-count-badge { font-size: 12px; color: var(--muted); background: var(--panel-2); border: 1px solid var(--border); padding: 2px 10px; border-radius: 999px; }
+  .task-item:hover { border-color: rgba(124,127,245,.35); }
+  .task-title { font-weight: 700; font-size: 13px; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .task-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; align-items: center; }
+  .task-state { padding: 3px 9px; border-radius: 5px; font-size: 11px; font-weight: 700; }
+  .task-pts { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .task-sprint { font-size: 11px; background: var(--panel); border: 1px solid var(--border); padding: 2px 8px; border-radius: 999px; color: var(--muted); font-weight: 600; }
+  .task-project { font-size: 11px; color: var(--faint); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
 
-  /* ── Leave strip ── */
-  .leave-strip {
-    display: flex; flex-wrap: wrap; align-items: flex-start;
-    gap: 8px; padding: 12px 14px;
-    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
-    font-size: 13px; margin-bottom: 20px;
-  }
-  .leave-title { color: var(--muted); font-weight: 600; margin-right: 4px; }
-  .leave-entry {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: rgba(99,102,241,0.10); border: 1px solid rgba(99,102,241,0.22);
-    color: var(--text); padding: 3px 10px; border-radius: 20px;
-    font-size: 12px;
-  }
-  .leave-entry .lt { color: var(--muted); font-size: 11px; }
-
-  /* ── Pill ── */
-  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
-  .pill.good { background: rgba(16,185,129,0.15); color: var(--good-text); }
-  .pill.warn { background: rgba(245,158,11,0.15); color: var(--warn-text); }
-  .pill.bad  { background: rgba(239,68,68,0.15); color: #fca5a5; }
-  .pill.neutral { background: rgba(148,163,184,0.15); color: var(--text); }
-
-  .role-badge {
-    display: inline-block; padding: 2px 9px; border-radius: 999px;
-    font-size: 11px; font-weight: 600; margin-left: 8px; vertical-align: middle;
-  }
-
-  /* ── Section divider ── */
-  .section-label {
-    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--muted); font-weight: 700; margin-bottom: 10px;
-    margin-top: 4px;
-  }
-
-  /* ── Loading / error states ── */
-  .loading {
+  /* Loading */
+  #root:empty::after {
+    content: "Loading…";
     display: flex; align-items: center; justify-content: center;
-    min-height: 60vh; font-size: 15px; color: var(--muted);
+    min-height: 80vh; font-size: 16px; color: var(--muted);
+    position: fixed; inset: 0;
   }
 
-  /* ── Footer ── */
-  .footer { color: var(--muted); font-size: 12px; text-align: center; padding: 16px 0 0; }
+  /* Tweaks panel light override (panel has light background) */
+  button { font-family: var(--font); }
 
-  /* ── Responsive ── */
   @media (max-width: 900px) {
-    .page-header { padding: 14px 16px 10px; }
-    .container { padding: 14px 16px 48px; }
-    .hero-name { font-size: 18px; }
-    .kpis { grid-template-columns: repeat(2, 1fr); }
-    .kpi .value { font-size: 20px; }
-    .grid-2 { grid-template-columns: 1fr; }
-    .chart-wrap { height: 260px; }
-    .chart-wrap.tall { height: 320px; }
+    .wrap { padding: 16px 16px 60px; }
+    .who-top h1 { font-size: 22px; }
+    .avatar { width: 46px; height: 46px; font-size: 16px; }
   }
   @media (max-width: 600px) {
-    .kpis { grid-template-columns: repeat(2, 1fr); }
-    .status-pills { grid-template-columns: repeat(2, 1fr); }
-    .insights-grid { grid-template-columns: repeat(2, 1fr); }
-    .hero-avatar { width: 38px; height: 38px; font-size: 16px; }
-    .hero-name { font-size: 16px; }
+    .wrap { padding: 12px 12px 48px; }
+    .who-top h1 { font-size: 18px; }
   }
 </style>
 </head>
 <body>
-<div id="appRoot">
-  <div class="loading">Loading…</div>
-</div>
+<div id="root"></div>
+
+<!-- Firebase data loader — runs first, sets window.DATA, then signals React -->
 <script type="module">
 import { db } from "./firebase.js";
-import { collection, doc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// ── Theme ──────────────────────────────────────────────────────────────────
-const THEME = { grid: "#334155", tick: "#cbd5e1" };
-function readThemeFromCSS(){
-  const cs = getComputedStyle(document.documentElement);
-  const g = cs.getPropertyValue("--grid").trim();
-  const t = cs.getPropertyValue("--tick").trim();
-  if (g) THEME.grid = g;
-  if (t) THEME.tick = t;
-}
-(function initTheme(){
-  let saved = "dark";
-  try { saved = localStorage.getItem("theme") || "dark"; } catch(e){}
-  if (saved === "light") document.documentElement.setAttribute("data-theme","light");
-  readThemeFromCSS();
-  Chart.defaults.color = THEME.tick;
-})();
-
-// ── URL param ──────────────────────────────────────────────────────────────
-const params = new URLSearchParams(location.search);
-const PERSON = params.get("name") || "";
-
-// ── Constants (mirrored from main.js) ──────────────────────────────────────
+// ── Constants ────────────────────────────────────────────────────────────────
 const ROLES = {
   "Waew":"BA","Torfah":"BA","Tae":"BA",
   "Ploy":"Designer","Gib":"Designer","Nine":"Designer",
-  "Ping":"Tester",
-  "Dream":"PC",
-  "Karn":"CEO",
+  "Ping":"Tester","Dream":"PC","Karn":"CEO",
   "Ohm":"Dev","Nust":"Dev","Unn":"Dev","Praew":"Dev","P":"Dev","No":"Dev","Tum":"Dev"
 };
 const ROLE_COLORS = {
   "Dev":"#6366f1","Designer":"#ec4899","BA":"#a855f7",
   "Tester":"#06b6d4","PC":"#f59e0b","CEO":"#10b981"
 };
-const PROJ_PALETTE = [
-  "#6366f1","#22d3ee","#f97316","#10b981","#f43f5e","#eab308","#a855f7","#14b8a6",
-  "#3b82f6","#ec4899","#84cc16","#06b6d4","#f59e0b","#8b5cf6","#ef4444","#64748b",
-  "#c084fc","#fb923c","#4ade80","#60a5fa","#f472b6","#fbbf24","#34d399","#93c5fd",
-  "#fda4af","#a3e635","#67e8f9","#d8b4fe","#fdba74","#86efac","#c4b5fd","#fca5a5","#fde047","#d1d5db"
+const STATUS_LABELS = [
+  "Done","In Progress","Ready for review","Ready for test",
+  "Waiting to INT deploy","Waiting to PRD deploy","To Do","Blocked","Bugged","Removed/Canceled"
+];
+const STATUS_COLORS = [
+  "var(--green)","var(--cyan)","var(--indigo)","var(--teal)",
+  "var(--orange)","#fb923c","var(--faint)","var(--red)","var(--red)","var(--faint)"
 ];
 const SPRINT_START = "2026-01-05";
 const SPRINT_WEEKS = 2;
 const MAX_SPRINTS = 26;
-const STATUS_LABELS = ["Done","In Progress","Ready for review","Ready for test",
-  "Waiting to INT deploy","Waiting to PRD deploy","To Do","Blocked","Bugged","Removed/Canceled"];
-const STATUS_COLORS = ["#10b981","#3b82f6","#a855f7","#22d3ee","#f97316","#fb923c",
-  "#94a3b8","#ef4444","#f43f5e","#64748b"];
-const COMPANY_HOLIDAYS = [
-  {name:"New Year",dates:["2026-01-01","2026-01-02"]},
-  {name:"Makha Bucha",dates:["2026-03-03"]},
-  {name:"Songkran",dates:["2026-04-13","2026-04-14","2026-04-15"]},
-  {name:"Labour Day",dates:["2026-05-01"]},
-  {name:"Coronation Day",dates:["2026-05-04"]},
-  {name:"Visakha Bucha",dates:["2026-06-01"]},
-  {name:"Asanha Bucha",dates:["2026-06-03"]},
-  {name:"Asanha Bucha+1",dates:["2026-07-28","2026-07-29"]},
-  {name:"Queen's Birthday",dates:["2026-08-12"]},
-  {name:"King Memorial",dates:["2026-10-13"]},
-  {name:"New Year's Eve",dates:["2026-12-31"]},
-];
 
-function generateSprintDates(){
-  const dates = [];
-  const start = new Date(SPRINT_START);
+function generateSprintDates() {
+  const dates = [], start = new Date(SPRINT_START);
   const today = new Date(new Date().toISOString().slice(0,10));
-  for(let i=0;i<MAX_SPRINTS;i++){
-    const s = new Date(start);
-    s.setDate(s.getDate() + i * SPRINT_WEEKS * 7);
-    const e = new Date(s);
-    e.setDate(e.getDate() + SPRINT_WEEKS * 7 - 1);
-    if(s>today) break;
-    dates.push({s:s.toISOString().slice(0,10), e:e.toISOString().slice(0,10)});
+  for (let i = 0; i < MAX_SPRINTS; i++) {
+    const s = new Date(start); s.setDate(s.getDate() + i * SPRINT_WEEKS * 7);
+    const e = new Date(s);     e.setDate(e.getDate() + SPRINT_WEEKS * 7 - 1);
+    if (s > today) break;
+    dates.push({ s: s.toISOString().slice(0,10), e: e.toISOString().slice(0,10) });
   }
   return dates;
 }
 const SPRINT_DATES = generateSprintDates();
-COMPANY_HOLIDAYS.forEach(h=>{
-  if(h.sprint!==undefined) return;
-  for(let i=0;i<SPRINT_DATES.length;i++){
-    if(h.dates.some(d=>d>=SPRINT_DATES[i].s && d<=SPRINT_DATES[i].e)){h.sprint=i+1;break;}
-  }
-});
-function currentSprintIdxByDate(){
+
+function currentSprintIdx() {
   const d = new Date().toISOString().slice(0,10);
-  for(let i=0;i<SPRINT_DATES.length;i++){
-    if(d>=SPRINT_DATES[i].s && d<=SPRINT_DATES[i].e) return i;
-  }
-  return SPRINT_DATES.length-1;
+  for (let i = 0; i < SPRINT_DATES.length; i++)
+    if (d >= SPRINT_DATES[i].s && d <= SPRINT_DATES[i].e) return i;
+  return SPRINT_DATES.length - 1;
 }
-const CURRENT_SPRINT_IDX = currentSprintIdxByDate();
+const CURRENT_SPRINT_IDX = currentSprintIdx();
 
-function roleOf(n){ return ROLES[n]||"—"; }
-function sum(a){ return a.reduce((x,y)=>x+(+y||0),0); }
-function fmt(v){ if(!v&&v!==0) return "—"; return v===0?"—": Number.isInteger(v)?v:(+v).toFixed(2); }
-function heatColor(v,max){ if(!max||!v) return "transparent"; const r=Math.min(1,v/max); return `rgba(99,102,241,${(0.08+r*0.72).toFixed(2)})`; }
-function colorFor(n,i,palette=PROJ_PALETTE){ return palette[i%palette.length]; }
-function percent(v){ return (v*100).toFixed(1)+"%"; }
+const REWARDS = [
+  { pts:50,  emoji:"☕", name:"Coffee Voucher",       desc:"ฟรีกาแฟ 1 แก้ว ที่ร้านในตึก",          tag:"Café" },
+  { pts:100, emoji:"🍜", name:"Restaurant 10% Off",   desc:"ส่วนลด 10% ร้านอาหารพาร์ทเนอร์",       tag:"Dining" },
+  { pts:150, emoji:"🎬", name:"Movie Ticket ×1",      desc:"ตั๋วหนัง 1 ใบ รอบปกติ",                tag:"Leisure" },
+  { pts:200, emoji:"🍱", name:"Free Team Lunch",      desc:"ข้าวกล่องพรีเมียม 1 มื้อ",             tag:"Dining" },
+  { pts:250, emoji:"🎧", name:"฿500 Gadget Credit",   desc:"เครดิตซื้ออุปกรณ์ทำงาน",               tag:"Gear" },
+  { pts:300, emoji:"🛒", name:"฿500 Shopping Voucher",desc:"บัตรกำนัลห้างสรรพสินค้า",              tag:"Voucher" },
+  { pts:350, emoji:"🚗", name:"Grab Credit ฿300",     desc:"เครดิตเดินทาง 1 เดือน",                tag:"Travel" },
+  { pts:400, emoji:"🍰", name:"Dessert Party",        desc:"ขนมหวานเลี้ยงทีม",                     tag:"Dining" },
+  { pts:450, emoji:"📚", name:"฿1,000 Learning Budget",desc:"คอร์ส/หนังสือพัฒนาตัวเอง",           tag:"Growth" },
+  { pts:500, emoji:"🏖️",name:"Half Day Off",         desc:"ลาครึ่งวันแบบไม่หักวันลา",             tag:"Time off" },
+  { pts:550, emoji:"💆", name:"Spa & Massage",        desc:"นวดผ่อนคลาย 60 นาที",                  tag:"Wellness" },
+  { pts:600, emoji:"🎁", name:"Mystery Box",          desc:"กล่องสุ่มของรางวัลพิเศษ",              tag:"Surprise" },
+  { pts:650, emoji:"🍽️",name:"Dinner for Two",       desc:"ดินเนอร์ 2 ที่ ร้านพรีเมียม",          tag:"Dining" },
+  { pts:700, emoji:"🏨", name:"Hotel Staycation",     desc:"เข้าพักโรงแรม 1 คืน",                  tag:"Travel" },
+  { pts:750, emoji:"🎮", name:"Game Console Raffle",  desc:"สิทธิ์ลุ้นเครื่องเกม",                tag:"Surprise" },
+  { pts:800, emoji:"✈️",name:"Full Day Off",          desc:"วันหยุดพิเศษ 1 วันเต็ม",               tag:"Time off" },
+];
+const TIERS = [
+  { name:"Bronze",   min:0,   color:"#c98a4b" },
+  { name:"Silver",   min:200, color:"#aab4c6" },
+  { name:"Gold",     min:400, color:"#f5c518" },
+  { name:"Platinum", min:600, color:"#6ee7e0" },
+  { name:"Diamond",  min:800, color:"#8b9cff" },
+];
 
-// ── Load data ──────────────────────────────────────────────────────────────
-let DATA = {};
+// ── URL param ────────────────────────────────────────────────────────────────
+const PERSON = new URLSearchParams(location.search).get("name") || "";
+
+function sum(a) { return a.reduce((x,y)=>x+(+y||0),0); }
+
+// ── Load Firebase ────────────────────────────────────────────────────────────
+let rawData;
 try {
-  const [usersSnap,sprintsSnap,tasksSnap,userStatsSnap,projStatsSnap,leavesSnap] = await Promise.all([
+  const [usersSnap, sprintsSnap, tasksSnap, userStatsSnap, leavesSnap] = await Promise.all([
     getDocs(collection(db,"users")),
     getDocs(collection(db,"sprints")),
     getDocs(collection(db,"tasks")),
     getDocs(collection(db,"sprintUserStats")),
-    getDocs(collection(db,"sprintProjectStats")),
     getDocs(collection(db,"leaves")),
   ]);
-  const sprintDocs=[];
-  sprintsSnap.forEach(d=>sprintDocs.push(d.data()));
-  sprintDocs.sort((a,b)=>a.index-b.index);
-  DATA.sprints=sprintDocs.map(s=>s.name);
-  DATA.movement=[];
-  tasksSnap.forEach(d=>DATA.movement.push(d.data()));
-  const users=[];
-  usersSnap.forEach(d=>users.push(d.data().id));
-  DATA.points={};DATA.tasks={};
-  users.forEach(u=>{DATA.points[u]=new Array(DATA.sprints.length).fill(0);DATA.tasks[u]=new Array(DATA.sprints.length).fill(0);});
-  userStatsSnap.forEach(d=>{
-    const s=d.data();
-    if(!DATA.points[s.userId]) DATA.points[s.userId]=new Array(DATA.sprints.length).fill(0);
-    if(!DATA.tasks[s.userId]) DATA.tasks[s.userId]=new Array(DATA.sprints.length).fill(0);
-    DATA.points[s.userId][s.sprintIndex]=s.points;
-    DATA.tasks[s.userId][s.sprintIndex]=s.tasks;
+
+  const sprintDocs = [];
+  sprintsSnap.forEach(d => sprintDocs.push(d.data()));
+  sprintDocs.sort((a,b) => a.index - b.index);
+  const sprints = sprintDocs.map(s => s.name);
+  const SPR = sprints.length;
+
+  const movement = [];
+  tasksSnap.forEach(d => movement.push(d.data()));
+
+  const users = [];
+  usersSnap.forEach(d => users.push(d.data().id));
+
+  const points = {}, tasks = {};
+  users.forEach(u => { points[u] = new Array(SPR).fill(0); tasks[u] = new Array(SPR).fill(0); });
+  userStatsSnap.forEach(d => {
+    const s = d.data();
+    if (!points[s.userId]) points[s.userId] = new Array(SPR).fill(0);
+    if (!tasks[s.userId])  tasks[s.userId]  = new Array(SPR).fill(0);
+    points[s.userId][s.sprintIndex] = s.points;
+    tasks[s.userId][s.sprintIndex]  = s.tasks;
   });
-  // contribution & status
-  DATA.contribution={};
-  DATA.statusPersonCount={};
-  DATA.statusPersonPts={};
-  DATA.movement.forEach(t=>{
-    const p=t.person,proj=t.project,si=(t.sprint||1)-1,pts=parseFloat(t.points)||0;
-    if(!DATA.contribution[p]) DATA.contribution[p]={};
-    if(!DATA.contribution[p][proj]) DATA.contribution[p][proj]=new Array(DATA.sprints.length).fill(0);
-    DATA.contribution[p][proj][si]+=pts;
-    // status buckets
-    let lbl="To Do";
-    const st=(t.state||"").toLowerCase();
-    if(st.includes("done")||st==="closed") lbl="Done";
-    else if(st.includes("progress")||st==="active") lbl="In Progress";
-    else if(st.includes("ready for review")) lbl="Ready for review";
-    else if(st.includes("ready for test")) lbl="Ready for test";
-    else if(st.includes("waiting to int")) lbl="Waiting to INT deploy";
-    else if(st.includes("waiting to prd")) lbl="Waiting to PRD deploy";
-    else if(st.includes("block")) lbl="Blocked";
-    else if(st.includes("bug")) lbl="Bugged";
-    else if(st.includes("cancel")||st.includes("remov")) lbl="Removed/Canceled";
-    if(!DATA.statusPersonCount[p]) DATA.statusPersonCount[p]={};
-    if(!DATA.statusPersonPts[p]) DATA.statusPersonPts[p]={};
-    DATA.statusPersonCount[p][lbl]=(DATA.statusPersonCount[p][lbl]||0)+1;
-    DATA.statusPersonPts[p][lbl]=(DATA.statusPersonPts[p][lbl]||0)+pts;
+
+  // Contribution + status per person
+  const contribution = {}, statusCount = {}, statusPts = {};
+  movement.forEach(t => {
+    const p = t.person, proj = t.project, si = (t.sprint||1)-1, v = parseFloat(t.points)||0;
+    if (!contribution[p]) contribution[p] = {};
+    if (!contribution[p][proj]) contribution[p][proj] = new Array(SPR).fill(0);
+    contribution[p][proj][si] += v;
+
+    let lbl = "To Do";
+    const st = (t.state||"").toLowerCase();
+    if (st.includes("done")||st==="closed") lbl = "Done";
+    else if (st.includes("progress")||st==="active") lbl = "In Progress";
+    else if (st.includes("ready for review")) lbl = "Ready for review";
+    else if (st.includes("ready for test"))   lbl = "Ready for test";
+    else if (st.includes("waiting to int"))   lbl = "Waiting to INT deploy";
+    else if (st.includes("waiting to prd"))   lbl = "Waiting to PRD deploy";
+    else if (st.includes("block")) lbl = "Blocked";
+    else if (st.includes("bug"))   lbl = "Bugged";
+    else if (st.includes("cancel")||st.includes("remov")) lbl = "Removed/Canceled";
+    if (!statusCount[p]) statusCount[p] = {};
+    if (!statusPts[p])   statusPts[p]   = {};
+    statusCount[p][lbl] = (statusCount[p][lbl]||0) + 1;
+    statusPts[p][lbl]   = (statusPts[p][lbl]||0)   + v;
   });
-  // leaves
-  DATA.leaves={};
-  leavesSnap.forEach(d=>{
-    const l=d.data(); const s=l.sprint; if(!s) return;
-    if(!DATA.leaves[s]) DATA.leaves[s]={};
-    if(!DATA.leaves[s][l.person]) DATA.leaves[s][l.person]=[];
-    DATA.leaves[s][l.person].push({type:l.type,startDate:l.startDate,endDate:l.endDate,days:l.days||1});
+
+  // Leaves
+  const leavesData = {};
+  leavesSnap.forEach(d => {
+    const l = d.data(); if (!l.sprint) return;
+    if (!leavesData[l.sprint]) leavesData[l.sprint] = {};
+    if (!leavesData[l.sprint][l.person]) leavesData[l.sprint][l.person] = [];
+    leavesData[l.sprint][l.person].push({ type:l.type, startDate:l.startDate, endDate:l.endDate, days:l.days||1 });
   });
-} catch(e){
-  document.getElementById("appRoot").innerHTML=`<div style="color:var(--bad);padding:32px"><h2>Firebase Error</h2><pre>${e.stack}</pre></div>`;
+
+  rawData = { sprints, SPR, movement, points, tasks, contribution, statusCount, statusPts, leavesData };
+} catch (e) {
+  document.getElementById("root").innerHTML =
+    `<div style="color:#f0556a;padding:40px;font-family:sans-serif;"><h2>Firebase Error</h2><pre>${e.stack}</pre></div>`;
   throw e;
 }
 
-// ── Validate person ────────────────────────────────────────────────────────
-const ALL_PEOPLE = Object.keys(DATA.points);
-if(!PERSON || !ALL_PEOPLE.includes(PERSON)){
-  document.getElementById("appRoot").innerHTML=`
-    <div style="padding:40px;max-width:500px;margin:0 auto;text-align:center;">
-      <div style="font-size:48px;margin-bottom:16px;">👤</div>
-      <div style="font-size:18px;font-weight:700;margin-bottom:8px;">Person not found</div>
-      <div style="color:var(--muted);font-size:14px;margin-bottom:24px;">${PERSON ? `"${PERSON}" is not in the team roster.` : "No name specified in URL."}</div>
-      <a href="/" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--accent);color:#fff;border-radius:999px;font-size:14px;font-weight:600;text-decoration:none;">← Back to Dashboard</a>
+// ── Validate person ──────────────────────────────────────────────────────────
+const allPeople = Object.keys(rawData.points);
+if (!PERSON || !allPeople.includes(PERSON)) {
+  document.getElementById("root").innerHTML = `
+    <div style="padding:60px;max-width:460px;margin:0 auto;text-align:center;font-family:sans-serif;">
+      <div style="font-size:56px;margin-bottom:16px;">👤</div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:8px;color:#e9edf6;">Person not found</div>
+      <div style="color:#8b94a8;font-size:14px;margin-bottom:28px;">${PERSON ? `"${PERSON}" is not in the team roster.` : "No name specified in URL."}</div>
+      <a href="/" style="display:inline-flex;align-items:center;gap:6px;padding:12px 24px;background:#6366f1;color:#fff;border-radius:999px;font-size:14px;font-weight:700;text-decoration:none;">← Back to Dashboard</a>
     </div>`;
   throw new Error("Person not found");
 }
 
-// ── Derived data for this person ───────────────────────────────────────────
-const role = roleOf(PERSON);
+// ── Build window.DATA ────────────────────────────────────────────────────────
+const { sprints, SPR, movement, points, tasks, contribution, statusCount, statusPts, leavesData } = rawData;
+const role = ROLES[PERSON] || "—";
 const roleColor = ROLE_COLORS[role] || "#94a3b8";
-const pts = DATA.points[PERSON] || [];
-const tks = DATA.tasks[PERSON] || [];
-const contrib = DATA.contribution[PERSON] || {};
-const statusCount = DATA.statusPersonCount[PERSON] || {};
-const statusPts = DATA.statusPersonPts[PERSON] || {};
-const SPR = DATA.sprints.length;
 
-const totalPts = sum(pts);
-const totalTasks = sum(tks);
-const activeSprints = pts.filter((v,i)=>((+v||0)>0||(+tks[i]||0)>0)).length;
+const ptsArr  = points[PERSON]  || [];
+const tksArr  = tasks[PERSON]   || [];
+const contrib = contribution[PERSON] || {};
+const sCount  = statusCount[PERSON] || {};
+const sPts    = statusPts[PERSON]   || {};
+
+const totalPts   = sum(ptsArr);
+const totalTasks = sum(tksArr);
+const activeSprints = ptsArr.filter((v,i) => (+v||0)>0||(+tksArr[i]||0)>0).length;
 const avgPerTask = totalTasks ? totalPts/totalTasks : 0;
-const grandPts = sum(Object.values(statusPts));
-const donePts = statusPts["Done"] || 0;
-const doneRate = grandPts ? donePts/grandPts : 0;
-const blockedC = statusCount["Blocked"] || 0;
-const buggedC = statusCount["Bugged"] || 0;
-const wipC = (statusCount["In Progress"]||0)+(statusCount["Ready for review"]||0)
-           +(statusCount["Ready for test"]||0)+(statusCount["Waiting to INT deploy"]||0)
-           +(statusCount["Waiting to PRD deploy"]||0);
-const todoC = statusCount["To Do"] || 0;
-
-// Peak sprint
-let peakIdx=0,peakVal=0;
-pts.forEach((v,i)=>{if((+v||0)>peakVal){peakVal=+v;peakIdx=i;}});
+const grandPts   = sum(Object.values(sPts));
+const donePts    = sPts["Done"] || 0;
+const doneRate   = grandPts ? donePts/grandPts : 0;
 
 // Latest active sprint
-let latest=-1;
-for(let i=Math.min(SPR-1,CURRENT_SPRINT_IDX);i>=0;i--){
-  if(ALL_PEOPLE.some(n=>(DATA.points[n]||[])[i]>0)){ latest=i; break; }
+let latest = -1;
+for (let i = Math.min(SPR-1, CURRENT_SPRINT_IDX); i >= 0; i--) {
+  if (allPeople.some(n => (points[n]||[])[i] > 0)) { latest = i; break; }
 }
 
 // Trend
-let trendLabel="—",trendClass="info";
-if(latest>=2){
-  const recent=sum(pts.slice(Math.max(0,latest-2),latest+1));
-  const prior=sum(pts.slice(Math.max(0,latest-5),Math.max(0,latest-2)));
-  if(recent===0&&prior===0){trendLabel="ไม่มีข้อมูลเพียงพอ";trendClass="info";}
-  else if(prior===0){trendLabel=`เพิ่มขึ้น (+${recent.toFixed(0)} pts)`;trendClass="good";}
-  else{
-    const delta=recent-prior,pct=(delta/prior)*100;
-    if(delta>0){trendLabel=`📈 กำลังเร่ง (+${pct.toFixed(0)}%)`;trendClass="good";}
-    else if(delta<0){trendLabel=`📉 ชะลอลง (${pct.toFixed(0)}%)`;trendClass=pct<-40?"warn":"info";}
-    else{trendLabel="คงที่";trendClass="info";}
+let trendLabel = "ไม่มีข้อมูลเพียงพอ", trendDot = "var(--faint)";
+if (latest >= 2) {
+  const recent = sum(ptsArr.slice(Math.max(0,latest-2), latest+1));
+  const prior  = sum(ptsArr.slice(Math.max(0,latest-5), Math.max(0,latest-2)));
+  if (recent===0 && prior===0) { trendLabel = "ไม่มีข้อมูลเพียงพอ"; trendDot = "var(--faint)"; }
+  else if (prior===0) { trendLabel = `เพิ่มขึ้น (+${recent.toFixed(0)} pts)`; trendDot = "var(--green)"; }
+  else {
+    const delta = recent - prior, pct = (delta/prior)*100;
+    if (delta > 0)  { trendLabel = `📈 กำลังเร่ง (+${pct.toFixed(0)}%)`; trendDot = "var(--green)"; }
+    else if (delta < 0) { trendLabel = `📉 ชะลอลง (${pct.toFixed(0)}%)`; trendDot = pct < -40 ? "var(--orange)" : "var(--cyan)"; }
+    else { trendLabel = "คงที่"; trendDot = "var(--cyan)"; }
   }
 }
 
-// Stale check
-const stale = latest>=1 && !(pts[latest]>0||tks[latest]>0) && !(pts[latest-1]>0||tks[latest-1]>0);
+// Peak sprint
+let peakIdx = 0, peakVal = 0;
+ptsArr.forEach((v,i) => { if ((+v||0) > peakVal) { peakVal = +v; peakIdx = i; } });
 
-// Projects sorted by total contribution
+// Top projects
 const projEntries = Object.entries(contrib)
-  .map(([k,arr])=>[k,sum(arr)])
-  .filter(([,v])=>v>0)
-  .sort((a,b)=>b[1]-a[1]);
+  .map(([k,arr]) => [k, sum(arr)]).filter(([,v]) => v > 0)
+  .sort((a,b) => b[1]-a[1]);
 
-// Leave records for this person
-const LEAVE_ICON={vacation:"🏖",sick:"🤒",personal:"🏠",other:"📅"};
-const personLeaves=[];
-Object.entries(DATA.leaves||{}).forEach(([sprint,byP])=>{
-  if(byP[PERSON]) byP[PERSON].forEach(l=>personLeaves.push({sprint:parseInt(sprint),...l}));
+// Status hero + rest
+const statusHero = [
+  { key:"done",       label:"Done",                tasks: sCount["Done"]||0,              pts: sPts["Done"]||0,              color:"var(--green)", emoji:"✅" },
+  { key:"inprogress", label:"In Progress",          tasks: sCount["In Progress"]||0,       pts: sPts["In Progress"]||0,       color:"var(--cyan)",  emoji:"🛠️" },
+  { key:"review",     label:"Ready for Review",     tasks: sCount["Ready for review"]||0,  pts: sPts["Ready for review"]||0,  color:"var(--indigo)",emoji:"👀" },
+];
+const statusRest = [
+  { label:"Ready for test",         tasks: sCount["Ready for test"]||0,           pts: sPts["Ready for test"]||0,           color:"var(--teal)" },
+  { label:"Waiting to PRD deploy",  tasks: sCount["Waiting to PRD deploy"]||0,    pts: sPts["Waiting to PRD deploy"]||0,    color:"var(--orange)" },
+  { label:"Waiting to INT deploy",  tasks: sCount["Waiting to INT deploy"]||0,    pts: sPts["Waiting to INT deploy"]||0,    color:"var(--orange)" },
+  { label:"To Do",                  tasks: sCount["To Do"]||0,                    pts: sPts["To Do"]||0,                    color:"var(--faint)" },
+  { label:"Blocked",                tasks: sCount["Blocked"]||0,                  pts: sPts["Blocked"]||0,                  color:"var(--red)" },
+  { label:"Bugged",                 tasks: sCount["Bugged"]||0,                   pts: sPts["Bugged"]||0,                   color:"var(--red)" },
+  { label:"Removed/Canceled",       tasks: sCount["Removed/Canceled"]||0,        pts: sPts["Removed/Canceled"]||0,         color:"var(--faint)" },
+].filter(s => s.tasks > 0);
+
+// Insights
+const blockedC = sCount["Blocked"] || 0;
+const buggedC  = sCount["Bugged"]  || 0;
+const wipC     = (sCount["In Progress"]||0)+(sCount["Ready for review"]||0)+(sCount["Ready for test"]||0)+(sCount["Waiting to INT deploy"]||0)+(sCount["Waiting to PRD deploy"]||0);
+const todoC    = sCount["To Do"] || 0;
+const stale    = latest >= 1 && !(ptsArr[latest]>0||tksArr[latest]>0) && !(ptsArr[latest-1]>0||tksArr[latest-1]>0);
+const insights = [];
+insights.push({ emoji:"📦", title:"Workload",     value:`${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts · ${totalTasks} tasks`,  sub:`Active in ${activeSprints}/${SPR} sprints · avg ${avgPerTask.toFixed(2)} pts/task`, dot: totalPts===0?"var(--orange)":"var(--green)" });
+insights.push({ emoji:"✅", title:"Done Rate",    value:`${(doneRate*100).toFixed(1)}% ของ points`, sub:`${donePts.toFixed(1)} / ${grandPts.toFixed(1)} pts`, dot: doneRate>=.7?"var(--green)":doneRate>=.4?"var(--cyan)":"var(--orange)" });
+insights.push({ emoji:"📈", title:"Recent Trend", value:trendLabel, sub:"เทียบ 3 sprints ล่าสุด vs 3 ก่อนหน้า", dot:trendDot });
+if (peakVal > 0) insights.push({ emoji:"🚀", title:"Peak Sprint", value:`Sprint ${peakIdx+1} — ${peakVal.toLocaleString(undefined,{maximumFractionDigits:1})} pts`, sub:"สูงสุดของปี", dot:"var(--cyan)" });
+if (projEntries.length) insights.push({ emoji:"🎯", title:"Top Projects", value:projEntries.slice(0,2).map(([k,v])=>`${k} (${v.toFixed(0)})`).join(" · "), sub:`${projEntries.length} projects contributed`, dot:"var(--cyan)" });
+if (blockedC>0||buggedC>0) insights.push({ emoji:"⚠️", title:"Risk Flags", value:`${blockedC} Blocked · ${buggedC} Bugged`, sub:"ต้องติดตามปลดล็อกและแก้ไข", dot:"var(--red)" });
+if (wipC>0) insights.push({ emoji:"🔄", title:"WIP", value:`${wipC} tasks`, sub:"In Progress + Review/Test + Waiting", dot: wipC>15?"var(--orange)":"var(--cyan)" });
+if (stale)  insights.push({ emoji:"⏰", title:"Stale", value:"ไม่พบ task 2 sprints ล่าสุด", sub:`Sprint ${latest}-${latest+1} ไม่มี activity`, dot:"var(--red)" });
+
+// Sprint trend data
+const sprintTrend = sprints.map((_, i) => ({
+  sprint: i+1,
+  pts:   +ptsArr[i] || 0,
+  tasks: +tksArr[i] || 0,
+}));
+const ptsMax  = Math.max(1, ...sprintTrend.map(d => d.pts));
+const taskMax = Math.max(1, ...sprintTrend.map(d => d.tasks));
+
+// Leave
+const LEAVE_ICON = { vacation:"🏖️", sick:"🤒", personal:"🏠", other:"📅" };
+const personLeaves = [];
+Object.entries(leavesData||{}).forEach(([sprint, byP]) => {
+  if (byP[PERSON]) byP[PERSON].forEach(l => personLeaves.push({ sprint:parseInt(sprint), ...l }));
 });
-personLeaves.sort((a,b)=>a.sprint-b.sprint);
+personLeaves.sort((a,b) => a.sprint - b.sprint);
+const leaveEntries = personLeaves.map(l => ({
+  sprint: l.sprint,
+  kind: l.type,
+  days: l.days,
+  range: l.startDate === l.endDate ? l.startDate : `${l.startDate} – ${l.endDate}`,
+  icon: LEAVE_ICON[l.type?.toLowerCase()] || "📅",
+}));
 
-// ── Render skeleton ────────────────────────────────────────────────────────
-const initials = PERSON.slice(0,2).toUpperCase();
+// All tasks for this person (for task list)
+const personTasks = movement.filter(t => t.person === PERSON);
+
+// Initials
+const words = PERSON.trim().split(/\s+/);
+const initials = words.length === 1 ? PERSON.slice(0,2).toUpperCase() : (words[0][0]+words[1][0]).toUpperCase();
 
 document.title = `${PERSON} · Sprint Dashboard 2026`;
-document.getElementById("appRoot").innerHTML = `
-  <div class="page-header">
-    <div class="header-left">
-      <a class="back-btn" href="/">← Back</a>
-      <div class="person-hero">
-        <div class="hero-avatar" style="background:${roleColor}">${initials}</div>
-        <div>
-          <div class="hero-name">${PERSON}<span class="role-badge" style="background:${roleColor}22;color:${roleColor};border:1px solid ${roleColor}55;">${role}</span></div>
-          <div class="hero-meta">${activeSprints}/${SPR} sprints active · ${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts · ${totalTasks} tasks</div>
-        </div>
-      </div>
-    </div>
-    <div class="header-right">
-      <button class="theme-toggle" id="themeToggle"><span id="themeIcon">🌙</span><span id="themeLabel">Dark</span></button>
-    </div>
-  </div>
 
-  <div class="container">
-
-    <!-- KPIs -->
-    <div class="kpis" id="kpis"></div>
-
-    <!-- Insights -->
-    <div class="section-label">Insights</div>
-    <div class="insights-grid" id="insights"></div>
-
-    <!-- Sprint trend chart -->
-    <div class="card">
-      <h3>Sprint Trend <span class="tag" id="trendTag">Story Points + Tasks</span></h3>
-      <div class="chart-wrap tall"><canvas id="trendChart"></canvas></div>
-    </div>
-
-    <!-- Status breakdown -->
-    <div class="section-label">Status Breakdown</div>
-    <div class="status-pills" id="statusPills"></div>
-
-    <!-- Projects grid -->
-    <div class="grid-2">
-      <div class="card">
-        <h3>Contribution by Project × Sprint <span class="tag">Story Points</span></h3>
-        <div class="chart-wrap tall"><canvas id="projChart"></canvas></div>
-      </div>
-      <div class="card">
-        <h3>Project Summary <span class="tag">All-time totals</span></h3>
-        <div class="scroll" id="projTable"></div>
-      </div>
-    </div>
-
-    <!-- Leave history -->
-    ${personLeaves.length > 0 ? `
-    <div class="section-label">Leave History</div>
-    <div class="leave-strip" id="leaveStrip"></div>
-    ` : ""}
-
-    <!-- All tasks -->
-    <div class="card">
-      <h3>All Tasks <span class="tag" id="taskCountTag">—</span></h3>
-      <div class="task-filters">
-        <select class="task-filter-select" id="taskSprintFilter">
-          <option value="all">All Sprints</option>
-          ${DATA.sprints.map((s,i)=>`<option value="${i+1}">Sprint ${i+1}</option>`).join("")}
-        </select>
-        <select class="task-filter-select" id="taskStatusFilter">
-          <option value="all">All Statuses</option>
-          ${STATUS_LABELS.map(s=>`<option value="${s}">${s}</option>`).join("")}
-        </select>
-        <select class="task-filter-select" id="taskProjFilter">
-          <option value="all">All Projects</option>
-          ${projEntries.map(([k])=>`<option value="${k}">${k}</option>`).join("")}
-        </select>
-      </div>
-      <div class="task-list" id="taskList"></div>
-    </div>
-
-    <div class="footer">More Studio.Co.,Ltd · <a href="/" style="color:var(--accent-text);text-decoration:none;">Dashboard</a></div>
-  </div>
-`;
-
-// ── Theme wiring ───────────────────────────────────────────────────────────
-(function wireTheme(){
-  const btn=document.getElementById("themeToggle");
-  const saved=(function(){try{return localStorage.getItem("theme")||"dark";}catch(e){return"dark";}})();
-  document.getElementById("themeIcon").textContent=saved==="light"?"☀️":"🌙";
-  document.getElementById("themeLabel").textContent=saved==="light"?"Light":"Dark";
-  if(saved==="light") document.documentElement.setAttribute("data-theme","light");
-  readThemeFromCSS();
-  Chart.defaults.color=THEME.tick;
-  btn.addEventListener("click",()=>{
-    const cur=document.documentElement.getAttribute("data-theme")==="light"?"light":"dark";
-    const next=cur==="light"?"dark":"light";
-    if(next==="light") document.documentElement.setAttribute("data-theme","light");
-    else document.documentElement.removeAttribute("data-theme");
-    readThemeFromCSS();
-    Chart.defaults.color=THEME.tick;
-    document.getElementById("themeIcon").textContent=next==="light"?"☀️":"🌙";
-    document.getElementById("themeLabel").textContent=next==="light"?"Light":"Dark";
-    try{localStorage.setItem("theme",next);}catch(e){}
-    renderCharts();
-  });
-})();
-
-// ── KPIs ───────────────────────────────────────────────────────────────────
-document.getElementById("kpis").innerHTML = `
-  <div class="kpi">
-    <div class="label">Total Points</div>
-    <div class="value">${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})}</div>
-    <div class="hint">all sprints</div>
-  </div>
-  <div class="kpi">
-    <div class="label">Total Tasks</div>
-    <div class="value">${totalTasks}</div>
-    <div class="hint">done tasks</div>
-  </div>
-  <div class="kpi">
-    <div class="label">Done Rate</div>
-    <div class="value" style="color:${doneRate>=0.7?'var(--good)':doneRate>=0.4?'var(--warn-text)':'var(--bad)'}">${percent(doneRate)}</div>
-    <div class="hint">${donePts.toFixed(1)} / ${grandPts.toFixed(1)} pts</div>
-  </div>
-  <div class="kpi">
-    <div class="label">Avg Pts / Task</div>
-    <div class="value">${avgPerTask.toFixed(2)}</div>
-    <div class="hint">done tasks</div>
-  </div>
-  <div class="kpi">
-    <div class="label">Active Sprints</div>
-    <div class="value">${activeSprints}</div>
-    <div class="hint">of ${SPR} total</div>
-  </div>
-  <div class="kpi">
-    <div class="label">Projects</div>
-    <div class="value">${projEntries.length}</div>
-    <div class="hint">contributed to</div>
-  </div>
-`;
-
-// ── Insights ───────────────────────────────────────────────────────────────
-(function renderInsights(){
-  const cards=[];
-  cards.push({cls:totalPts===0?"warn":"info",title:"📊 Workload",
-    value:`${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts · ${totalTasks} tasks`,
-    hint:`Active in ${activeSprints}/${SPR} sprints · avg ${avgPerTask.toFixed(2)} pts/task`});
-  cards.push({cls:doneRate>=0.7?"good":doneRate>=0.4?"info":"warn",title:"✅ Done Rate",
-    value:`${percent(doneRate)} ของ points`,
-    hint:`${donePts.toLocaleString(undefined,{maximumFractionDigits:1})} / ${grandPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts`});
-  cards.push({cls:trendClass,title:"📈 Recent Trend",value:trendLabel,hint:"เทียบ 3 sprints ล่าสุด vs 3 ก่อนหน้า"});
-  if(peakVal>0) cards.push({cls:"info",title:"🏔️ Peak Sprint",
-    value:`Sprint ${peakIdx+1} — ${peakVal.toLocaleString(undefined,{maximumFractionDigits:1})} pts`,hint:"สูงสุดของปี"});
-  if(projEntries.length){
-    const top3=projEntries.slice(0,3).map(([k,v])=>`${k} (${v.toFixed(0)})`).join(" · ");
-    cards.push({cls:"info",title:"🎯 Top Projects",value:top3,hint:`${projEntries.length} projects contributed`});
-  } else {
-    cards.push({cls:"warn",title:"🎯 Top Projects",value:"ยังไม่มี contribution",hint:"ไม่พบ project ในปีนี้"});
-  }
-  if(blockedC>0||buggedC>0) cards.push({cls:"bad",title:"⚠️ Risk Flags",
-    value:`${blockedC} Blocked · ${buggedC} Bugged`,hint:"ต้องติดตามปลดล็อกและแก้ไข"});
-  if(wipC>0) cards.push({cls:wipC>15?"warn":"info",title:"🔄 Work in Progress",
-    value:`${wipC} tasks`,hint:"In Progress + Review/Test + Waiting deploy"});
-  if(todoC>0) cards.push({cls:todoC>20?"warn":"info",title:"📝 To Do",
-    value:`${todoC} tasks รอเริ่ม`,hint:todoC>20?"Backlog ค่อนข้างใหญ่":"ปริมาณปกติ"});
-  if(stale) cards.push({cls:"bad",title:"⏰ Stale",
-    value:"ไม่พบ task งาน 2 sprints ล่าสุด",hint:`Sprint ${latest}-${latest+1} ไม่มี activity`});
-  if(personLeaves.length>0) cards.push({cls:"info",title:"🗓 Leave Records",
-    value:`${personLeaves.length} record${personLeaves.length>1?"s":""}`,
-    hint:personLeaves.map(l=>`Sprint ${l.sprint}: ${l.type} ${l.days}d`).join(" · ")});
-  const roleObs={Dev:totalPts>200?"Heavy delivery":"Contributor สาย dev",
-    Designer:totalPts>100?"Core designer":"Designer contributor",
-    BA:totalPts>100?"BA/Analyst หลัก":"BA/Analyst support",
-    Tester:"QA/Tester",PC:"Project Coordinator",CEO:"Executive"};
-  if(role!=="—") cards.push({cls:"info",title:`👤 Role · ${role}`,value:roleObs[role]||role,
-    hint:`รวม ${totalPts.toLocaleString(undefined,{maximumFractionDigits:1})} pts ทั้งปี`});
-
-  document.getElementById("insights").innerHTML=cards.map(c=>`
-    <div class="insight ${c.cls}">
-      <div class="ins-title">${c.title}</div>
-      <div class="ins-value">${c.value}</div>
-      <div class="ins-hint">${c.hint}</div>
-    </div>`).join("");
-})();
-
-// ── Status pills ───────────────────────────────────────────────────────────
-(function renderStatusPills(){
-  const grandC=sum(Object.values(statusCount));
-  const grandP=sum(Object.values(statusPts));
-  document.getElementById("statusPills").innerHTML=STATUS_LABELS.map((lbl,i)=>{
-    const c=statusCount[lbl]||0,p=statusPts[lbl]||0;
-    const pct=grandC?Math.round(c/grandC*100):0;
-    const empty=c===0?" is-empty":"";
-    return `<div class="status-pill${empty}" style="--c:${STATUS_COLORS[i]};">
-      <div class="sp-head"><span class="sp-dot"></span><span class="sp-label">${lbl}</span></div>
-      <div class="sp-num"><span class="sp-count">${c}</span><span class="sp-unit">งาน</span></div>
-      <div class="sp-bar"><i style="width:${Math.min(100,pct)}%"></i></div>
-      <div class="sp-foot"><span>${p.toLocaleString(undefined,{maximumFractionDigits:1})} pts</span><span class="sp-pct">${pct}%</span></div>
-    </div>`;
-  }).join("");
-})();
-
-// ── Leave strip ────────────────────────────────────────────────────────────
-if(personLeaves.length>0){
-  document.getElementById("leaveStrip").innerHTML=`
-    <span class="leave-title">🗓 Leave & Holidays</span>
-    ${personLeaves.map(l=>{
-      const icon=LEAVE_ICON[l.type?.toLowerCase()]||"📅";
-      const dateStr=l.startDate===l.endDate?l.startDate:`${l.startDate}–${l.endDate}`;
-      return `<span class="leave-entry">${icon} Sprint ${l.sprint} <span class="lt">· ${l.type} ${l.days}d · ${dateStr}</span></span>`;
-    }).join("")}`;
-}
-
-// ── Project table ──────────────────────────────────────────────────────────
-(function renderProjTable(){
-  const rows=projEntries.map(([proj,total],pi)=>{
-    const arr=contrib[proj]||[];
-    return {proj,arr,total,pi};
-  });
-  const allVals=rows.flatMap(r=>r.arr);
-  const max=Math.max(1,...allVals);
-  let html=`<table><thead><tr><th>Project</th>${DATA.sprints.map((_,i)=>`<th>Sp ${i+1}</th>`).join("")}<th>Total</th></tr></thead><tbody>`;
-  rows.forEach(({proj,arr,total,pi})=>{
-    if(total<=0) return;
-    html+=`<tr><td style="font-weight:500;max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="${proj}">
-      <span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${colorFor(proj,pi)};margin-right:6px;vertical-align:middle;"></span>${proj}</td>`
-      +arr.map(v=>`<td style="background:${heatColor(v,max)}">${fmt(v)}</td>`).join("")
-      +`<td style="font-weight:600">${fmt(total)}</td></tr>`;
-  });
-  html+=`</tbody></table>`;
-  document.getElementById("projTable").innerHTML=html;
-})();
-
-// ── Charts ─────────────────────────────────────────────────────────────────
-let trendChart=null, projChart=null;
-
-function renderCharts(){
-  // Sprint trend chart — points bar + tasks line
-  {
-    const labels=DATA.sprints;
-    const ptsData=pts.map(v=>+v||0);
-    const tksData=tks.map(v=>+v||0);
-    if(trendChart) trendChart.destroy();
-    trendChart=new Chart(document.getElementById("trendChart"),{
-      data:{labels,datasets:[
-        {type:"bar",label:"Story Points",data:ptsData,backgroundColor:roleColor+"bb",borderRadius:6,yAxisID:"y"},
-        {type:"line",label:"Tasks (count)",data:tksData,borderColor:"#22d3ee",backgroundColor:"#22d3ee22",tension:0.35,yAxisID:"y1",borderWidth:2,pointRadius:4}
-      ]},
-      options:{
-        responsive:true,maintainAspectRatio:false,
-        interaction:{mode:"index",intersect:false},
-        scales:{
-          x:{grid:{color:THEME.grid},ticks:{color:THEME.tick}},
-          y:{beginAtZero:true,grid:{color:THEME.grid},ticks:{color:THEME.tick},title:{display:true,text:"Points",color:"#94a3b8"}},
-          y1:{beginAtZero:true,grid:{display:false},ticks:{color:THEME.tick},position:"right",title:{display:true,text:"Tasks",color:"#94a3b8"}}
-        },
-        plugins:{
-          legend:{labels:{color:THEME.tick,boxWidth:10}},
-          tooltip:{callbacks:{
-            title:its=>its.length?its[0].label:"",
-            label:it=>`${it.dataset.label}: ${it.parsed.y}`
-          }}
-        }
-      }
-    });
-  }
-
-  // Project × Sprint stacked bar chart
-  {
-    const labels=DATA.sprints;
-    const datasets=projEntries.map(([proj],i)=>({
-      label:proj,
-      data:(contrib[proj]||[]).map(v=>+v||0),
-      backgroundColor:colorFor(proj,i),
-      borderRadius:4,
-      stack:"a"
-    }));
-    if(projChart) projChart.destroy();
-    projChart=new Chart(document.getElementById("projChart"),{
-      type:"bar",
-      data:{labels,datasets},
-      options:{
-        responsive:true,maintainAspectRatio:false,
-        interaction:{mode:"nearest",intersect:true,axis:"xy"},
-        scales:{
-          x:{stacked:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}},
-          y:{stacked:true,beginAtZero:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}}
-        },
-        plugins:{
-          legend:{position:"bottom",labels:{color:THEME.tick,boxWidth:10,font:{size:10}}},
-          tooltip:{callbacks:{
-            title:its=>its.length?`${its[0].dataset.label} · ${its[0].label}`:"",
-            label:it=>`${(it.parsed.y||0).toLocaleString(undefined,{maximumFractionDigits:2})} pts`
-          }}
-        }
-      }
-    });
-  }
-}
-renderCharts();
-
-// ── Task list ──────────────────────────────────────────────────────────────
-const STATE_STYLE={
-  "Done":{bg:"rgba(16,185,129,0.18)",color:"#6ee7b7"},
-  "In Progress":{bg:"rgba(59,130,246,0.18)",color:"#93c5fd"},
-  "Ready for review":{bg:"rgba(168,85,247,0.18)",color:"#d8b4fe"},
-  "Ready for test":{bg:"rgba(34,211,238,0.18)",color:"#67e8f9"},
-  "Waiting to INT deploy":{bg:"rgba(249,115,22,0.18)",color:"#fdba74"},
-  "Waiting to PRD deploy":{bg:"rgba(251,146,60,0.18)",color:"#fed7aa"},
-  "To Do":{bg:"rgba(148,163,184,0.15)",color:"#cbd5e1"},
-  "Blocked":{bg:"rgba(239,68,68,0.18)",color:"#fca5a5"},
-  "Bugged":{bg:"rgba(244,63,94,0.18)",color:"#fda4af"},
-  "Removed/Canceled":{bg:"rgba(100,116,132,0.15)",color:"#94a3b8"},
+window.DATA = {
+  person: { name:PERSON, initials, role, roleColor, sprintsActive:activeSprints, sprintsTotal:SPR, totalPoints:totalPts, totalTasks },
+  stats: { totalPoints:totalPts, totalTasks, doneRatePct:(doneRate*100).toFixed(1), donePts:donePts.toFixed(1), targetPts:grandPts.toFixed(1), avgPtsPerTask:avgPerTask.toFixed(2), activeSprints, sprintsTotal:SPR, projects:projEntries.length },
+  statusHero, statusRest, insights, sprintTrend, ptsMax, taskMax,
+  rewards: REWARDS, tiers: TIERS,
+  leave: leaveEntries,
+  projEntries, contrib, sprints, SPR,
+  personTasks,
 };
 
-const personTasks=DATA.movement.filter(t=>t.person===PERSON);
+// Signal React app to mount
+window.__dataReady = true;
+window.dispatchEvent(new Event("dataReady"));
+</script>
 
-function renderTaskList(){
-  const sprintFilter=document.getElementById("taskSprintFilter").value;
-  const statusFilter=document.getElementById("taskStatusFilter").value;
-  const projFilter=document.getElementById("taskProjFilter").value;
+<!-- ── Tweaks panel ──────────────────────────────────────────────────────── -->
+<script type="text/babel">
+const __TWEAKS_STYLE = `
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom right;
+    background:rgba(250,249,247,.88);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:default}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-chips{display:flex;gap:6px}
+  .twk-chip{position:relative;appearance:none;flex:1;min-width:0;height:40px;
+    padding:0;border:0;border-radius:6px;overflow:hidden;cursor:default;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);transition:transform .12s}
+  .twk-chip:hover{transform:translateY(-1px)}
+  .twk-chip[data-on="1"]{box-shadow:0 0 0 1.5px rgba(0,0,0,.85),0 2px 6px rgba(0,0,0,.15)}
+  .twk-chip>span{position:absolute;top:0;bottom:0;right:0;width:34%;
+    display:flex;flex-direction:column;box-shadow:-1px 0 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i{flex:1}
+  .twk-chip svg{position:absolute;top:6px;left:6px;width:13px;height:13px;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+`;
 
-  let filtered=personTasks.filter(t=>{
-    if(sprintFilter!=="all" && String(t.sprint)!==sprintFilter) return false;
-    // normalise state to STATUS_LABELS bucket
-    if(statusFilter!=="all"){
-      const stLow=(t.state||"").toLowerCase();
-      let bucket="To Do";
-      if(stLow.includes("done")||stLow==="closed") bucket="Done";
-      else if(stLow.includes("progress")||stLow==="active") bucket="In Progress";
-      else if(stLow.includes("ready for review")) bucket="Ready for review";
-      else if(stLow.includes("ready for test")) bucket="Ready for test";
-      else if(stLow.includes("waiting to int")) bucket="Waiting to INT deploy";
-      else if(stLow.includes("waiting to prd")) bucket="Waiting to PRD deploy";
-      else if(stLow.includes("block")) bucket="Blocked";
-      else if(stLow.includes("bug")) bucket="Bugged";
-      else if(stLow.includes("cancel")||stLow.includes("remov")) bucket="Removed/Canceled";
-      if(bucket!==statusFilter) return false;
-    }
-    if(projFilter!=="all" && t.project!==projFilter) return false;
-    return true;
-  });
-  // Sort: sprint desc, then by state (active first)
-  const statePriority=(s)=>{const l=(s||"").toLowerCase();if(l.includes("block")||l.includes("bug"))return 0;if(l.includes("progress")||l.includes("review")||l.includes("test")||l.includes("waiting"))return 1;if(l.includes("done")||l.includes("closed")||l.includes("cancel")||l.includes("remov"))return 3;return 2;};
-  filtered.sort((a,b)=>{ const sd=(b.sprint||0)-(a.sprint||0); return sd!==0?sd:statePriority(a.state)-statePriority(b.state); });
-
-  document.getElementById("taskCountTag").textContent=`${filtered.length} tasks`;
-
-  if(!filtered.length){
-    document.getElementById("taskList").innerHTML=`<div style="text-align:center;color:var(--muted);padding:24px;font-size:14px;">No tasks match the current filters.</div>`;
-    return;
-  }
-
-  document.getElementById("taskList").innerHTML=filtered.map(t=>{
-    const pts=parseFloat(t.points)||0;
-    const style=STATE_STYLE[t.state]||{bg:"rgba(148,163,184,0.12)",color:"#94a3b8"};
-    return `<div class="task-item">
-      <div class="task-item-main">
-        <div class="task-title" title="${(t.title||"").replace(/"/g,"&quot;")}">${t.title||"(untitled)"}</div>
-        <div class="task-meta">
-          <span class="task-state" style="background:${style.bg};color:${style.color}">${t.state||"—"}</span>
-          ${pts>0?`<span class="task-pts">${pts} pt${pts!==1?"s":""}</span>`:""}
-          <span class="task-sprint">Sprint ${t.sprint||"—"}</span>
-          ${t.project?`<span class="task-project" title="${t.project}">${t.project}</span>`:""}
-        </div>
-      </div>
-    </div>`;
-  }).join("");
+function __twkIsLight(hex) {
+  const h = String(hex).replace('#','');
+  const x = h.length===3 ? h.replace(/./g,(c)=>c+c) : h.padEnd(6,'0');
+  const n = parseInt(x.slice(0,6),16);
+  if (Number.isNaN(n)) return true;
+  const r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  return r*299+g*587+b*114>148000;
 }
 
-renderTaskList();
-document.getElementById("taskSprintFilter").addEventListener("change",renderTaskList);
-document.getElementById("taskStatusFilter").addEventListener("change",renderTaskList);
-document.getElementById("taskProjFilter").addEventListener("change",renderTaskList);
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits==='object'&&keyOrEdits!==null ? keyOrEdits : {[keyOrEdits]:val};
+    setValues(prev => ({...prev,...edits}));
+    window.parent.postMessage({type:'__edit_mode_set_keys',edits},'*');
+    window.dispatchEvent(new CustomEvent('tweakchange',{detail:edits}));
+  },[]);
+  return [values, setTweak];
+}
+
+function TweaksPanel({title='Tweaks',children}) {
+  const [open,setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  const offsetRef = React.useRef({x:16,y:16});
+  const clamp = React.useCallback(()=>{
+    const p=dragRef.current; if(!p) return;
+    const w=p.offsetWidth,h=p.offsetHeight,PAD=16;
+    offsetRef.current={
+      x:Math.min(Math.max(PAD,window.innerWidth-w-PAD),Math.max(PAD,offsetRef.current.x)),
+      y:Math.min(Math.max(PAD,window.innerHeight-h-PAD),Math.max(PAD,offsetRef.current.y)),
+    };
+    p.style.right=offsetRef.current.x+'px'; p.style.bottom=offsetRef.current.y+'px';
+  },[]);
+  React.useEffect(()=>{
+    const onMsg=(e)=>{
+      if(e?.data?.type==='__activate_edit_mode') setOpen(true);
+      else if(e?.data?.type==='__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message',onMsg);
+    window.parent.postMessage({type:'__edit_mode_available'},'*');
+    return ()=>window.removeEventListener('message',onMsg);
+  },[]);
+  React.useEffect(()=>{ if(open) clamp(); },[open,clamp]);
+  const dismiss=()=>{ setOpen(false); window.parent.postMessage({type:'__edit_mode_dismissed'},'*'); };
+  const onDragStart=(e)=>{
+    const p=dragRef.current; if(!p) return;
+    const r=p.getBoundingClientRect(),sx=e.clientX,sy=e.clientY;
+    const sr=window.innerWidth-r.right,sb=window.innerHeight-r.bottom;
+    const move=(ev)=>{ offsetRef.current={x:sr-(ev.clientX-sx),y:sb-(ev.clientY-sy)}; clamp(); };
+    const up=()=>{ window.removeEventListener('mousemove',move); window.removeEventListener('mouseup',up); };
+    window.addEventListener('mousemove',move); window.addEventListener('mouseup',up);
+  };
+  if (!open) return null;
+  return (<>
+    <style>{__TWEAKS_STYLE}</style>
+    <div ref={dragRef} className="twk-panel" style={{right:offsetRef.current.x,bottom:offsetRef.current.y}}>
+      <div className="twk-hd" onMouseDown={onDragStart}>
+        <b>{title}</b>
+        <button className="twk-x" onMouseDown={e=>e.stopPropagation()} onClick={dismiss}>✕</button>
+      </div>
+      <div className="twk-body">{children}</div>
+    </div>
+  </>);
+}
+function TweakSection({label}) { return <div className="twk-sect">{label}</div>; }
+function TweakToggle({label,value,onChange}) {
+  return <div className="twk-row twk-row-h">
+    <div className="twk-lbl"><span>{label}</span></div>
+    <button type="button" className="twk-toggle" data-on={value?'1':'0'} onClick={()=>onChange(!value)}><i /></button>
+  </div>;
+}
+function TweakButton({label,onClick}) {
+  return <button type="button" className="twk-btn" onClick={onClick}>{label}</button>;
+}
+function TweakColor({label,value,options,onChange}) {
+  const key=(o)=>String(JSON.stringify(o)).toLowerCase();
+  const cur=key(value);
+  return <div className="twk-row">
+    <div className="twk-lbl"><span>{label}</span></div>
+    <div className="twk-chips">
+      {options.map((o,i)=>{
+        const colors=Array.isArray(o)?o:[o];
+        const [hero,...rest]=colors; const sup=rest.slice(0,4); const on=key(o)===cur;
+        return <button key={i} type="button" className="twk-chip" data-on={on?'1':'0'}
+          style={{background:hero}} onClick={()=>onChange(o)}>
+          {sup.length>0&&<span>{sup.map((c,j)=><i key={j} style={{background:c}}/>)}</span>}
+          {on&&<svg viewBox="0 0 14 14"><path d="M3 7.2 5.8 10 11 4.2" fill="none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" stroke={__twkIsLight(hero)?'rgba(0,0,0,.78)':'#fff'}/></svg>}
+        </button>;
+      })}
+    </div>
+  </div>;
+}
+window.__TweakExports = {useTweaks,TweaksPanel,TweakSection,TweakToggle,TweakButton,TweakColor};
+</script>
+
+<!-- ── Components ────────────────────────────────────────────────────────── -->
+<script type="text/babel">
+const {useState,useEffect,useRef} = React;
+
+function StatCard({label,value,sub,accent,delay=0}) {
+  return <div className="panel rise" style={{padding:"18px 20px",animationDelay:delay+"ms"}}>
+    <div style={{font:"700 11px/1 var(--font)",letterSpacing:"1.5px",textTransform:"uppercase",color:"var(--faint)"}}>{label}</div>
+    <div style={{fontSize:34,fontWeight:800,marginTop:10,color:accent||"var(--text)",letterSpacing:"-1px"}}>{value}</div>
+    <div style={{color:"var(--muted)",fontSize:13,fontWeight:500,marginTop:4}}>{sub}</div>
+  </div>;
+}
+
+function StatusHeroCard({s,delay=0}) {
+  return <div className="panel rise" style={{padding:"20px 22px",position:"relative",overflow:"hidden",animationDelay:delay+"ms"}}>
+    <div style={{position:"absolute",inset:0,background:`linear-gradient(135deg, ${s.color}22, transparent 60%)`,pointerEvents:"none"}}/>
+    <div style={{position:"relative"}}>
+      <div style={{display:"flex",alignItems:"center",gap:9}}>
+        <span style={{width:9,height:9,borderRadius:"50%",background:s.color,boxShadow:`0 0 10px ${s.color}`}}/>
+        <span style={{fontSize:14.5,fontWeight:700}}>{s.emoji} {s.label}</span>
+      </div>
+      <div style={{display:"flex",alignItems:"baseline",gap:8,marginTop:12}}>
+        <span style={{fontSize:42,fontWeight:800,lineHeight:1,color:s.color,letterSpacing:"-1.5px"}}>{s.tasks}</span>
+        <span style={{color:"var(--muted)",fontSize:14,fontWeight:600}}>tasks</span>
+      </div>
+      <div style={{color:"var(--muted)",fontSize:12.5,fontWeight:600,marginTop:8}}>{s.pts} pts</div>
+    </div>
+  </div>;
+}
+
+function StatusChip({s}) {
+  return <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,background:"var(--panel-2)",border:"1px solid var(--border)",borderRadius:12,padding:"11px 14px"}}>
+    <span style={{display:"flex",alignItems:"center",gap:8,fontSize:13,fontWeight:600,color:"var(--text)"}}>
+      <span style={{width:8,height:8,borderRadius:"50%",background:s.color}}/>{s.label}
+    </span>
+    <span style={{fontSize:14,fontWeight:800,color:s.tasks?"var(--text)":"var(--faint)"}}>{s.tasks}</span>
+  </div>;
+}
+
+function InsightCard({it,delay=0}) {
+  return <div className="panel rise" style={{padding:"16px 18px",animationDelay:delay+"ms"}}>
+    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:9}}>
+      <span style={{width:8,height:8,borderRadius:"50%",background:it.dot}}/>
+      <span style={{fontSize:13.5,fontWeight:700}}>{it.emoji} {it.title}</span>
+    </div>
+    <div style={{fontSize:18,fontWeight:800,letterSpacing:"-.3px"}}>{it.value}</div>
+    <div style={{color:"var(--muted)",fontSize:12.5,fontWeight:500,marginTop:6,lineHeight:1.4}}>{it.sub}</div>
+  </div>;
+}
+
+window.__ComponentExports = {StatCard,StatusHeroCard,StatusChip,InsightCard};
+</script>
+
+<!-- ── Charts ─────────────────────────────────────────────────────────────── -->
+<script type="text/babel">
+function smoothPath(pts) {
+  if (pts.length < 2) return "";
+  let d = `M ${pts[0].x} ${pts[0].y}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+    const c1x=p1.x+(p2.x-p0.x)/6,c1y=p1.y+(p2.y-p0.y)/6;
+    const c2x=p2.x-(p3.x-p1.x)/6,c2y=p2.y-(p3.y-p1.y)/6;
+    d+=` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y}`;
+  }
+  return d;
+}
+
+function SprintTrendChart({data,ptsMax,taskMax}) {
+  const W=1000,H=360,padL=44,padR=44,padT=22,padB=40;
+  const iW=W-padL-padR,iH=H-padT-padB,n=data.length,band=iW/n;
+  const x=(i)=>padL+band*(i+0.5);
+  const yP=(v)=>padT+iH*(1-v/ptsMax);
+  const yT=(v)=>padT+iH*(1-v/taskMax);
+  const linePts=data.map((d,i)=>({x:x(i),y:yT(d.tasks)}));
+  const path=smoothPath(linePts);
+  const ptsSteps=5;
+  const ptsGrid=Array.from({length:ptsSteps+1},(_,i)=>Math.round((ptsMax/ptsSteps)*i));
+  const taskSteps=4;
+  const taskGrid=Array.from({length:taskSteps+1},(_,i)=>Math.round((taskMax/taskSteps)*i));
+  return <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",height:"auto",display:"block"}}>
+    <defs>
+      <linearGradient id="barFill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="var(--indigo)"/>
+        <stop offset="100%" stopColor="var(--indigo-deep)"/>
+      </linearGradient>
+      <linearGradient id="lineGlow" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="rgba(42,212,229,.25)"/>
+        <stop offset="100%" stopColor="rgba(42,212,229,0)"/>
+      </linearGradient>
+    </defs>
+    {ptsGrid.map(v=><g key={v}>
+      <line x1={padL} y1={yP(v)} x2={W-padR} y2={yP(v)} stroke="rgba(255,255,255,.06)"/>
+      <text x={padL-10} y={yP(v)+4} textAnchor="end" fontSize="12" fill="var(--faint)">{v}</text>
+    </g>)}
+    {taskGrid.map(v=><text key={v} x={W-padR+10} y={yT(v)+4} textAnchor="start" fontSize="12" fill="var(--faint)">{v}</text>)}
+    {data.map((d,i)=>{
+      const bw=band*0.5,h=iH*(d.pts/ptsMax);
+      return <g key={i}>
+        <rect x={x(i)-bw/2} y={yP(d.pts)} width={bw} height={Math.max(h,0)} rx="5" fill="url(#barFill)" opacity={d.pts?0.95:0.15}/>
+        <text x={x(i)} y={H-14} textAnchor="middle" fontSize="12" fontWeight="600" fill="var(--muted)">Sp {d.sprint}</text>
+        {d.pts>0&&<text x={x(i)} y={yP(d.pts)-6} textAnchor="middle" fontSize="10.5" fontWeight="700" fill="var(--indigo)">{d.pts}</text>}
+      </g>;
+    })}
+    <path d={`${path} L ${x(n-1)} ${padT+iH} L ${x(0)} ${padT+iH} Z`} fill="url(#lineGlow)" opacity="0.6"/>
+    <path d={path} fill="none" stroke="#2ad4e5" strokeWidth="3" strokeLinecap="round"/>
+    {linePts.map((p,i)=><circle key={i} cx={p.x} cy={p.y} r="4.5" fill="var(--bg)" stroke="#2ad4e5" strokeWidth="2.5"/>)}
+  </svg>;
+}
+
+function ChartLegend() {
+  const item=(color,label,hollow)=><span style={{display:"inline-flex",alignItems:"center",gap:7,fontSize:13,fontWeight:600,color:"var(--muted)"}}>
+    <span style={{width:12,height:12,borderRadius:3,background:hollow?"transparent":color,border:hollow?`2px solid ${color}`:"none"}}/>
+    {label}
+  </span>;
+  return <div style={{display:"flex",gap:22,justifyContent:"center",marginBottom:4}}>
+    {item("#7c7ff5","Story Points")}
+    {item("#2ad4e5","Tasks (count)",true)}
+  </div>;
+}
+
+window.__ChartExports = {SprintTrendChart,ChartLegend};
+</script>
+
+<!-- ── Gamification ────────────────────────────────────────────────────────── -->
+<script type="text/babel">
+function tierFor(points,tiers) {
+  let cur=tiers[0];
+  for (const t of tiers) if (points>=t.min) cur=t;
+  const idx=tiers.indexOf(cur),next=tiers[idx+1]||null;
+  return {cur,next};
+}
+function nextMilestone(points) { return Math.floor(points/50)*50+50; }
+
+function RewardHero({points,rewards,claimed,tiers,onScrollToRewards}) {
+  const {cur,next}=tierFor(points,tiers);
+  const reached=rewards.filter(r=>r.pts<=points);
+  const claimable=reached.filter(r=>!claimed.includes(r.pts)).length;
+  const level=reached.length;
+  const nm=nextMilestone(points),bandStart=nm-50;
+  const pct=Math.min(100,Math.round(((points-bandStart)/50)*100));
+  const toNext=nm-points;
+  return <div className="panel rise" style={{padding:0,overflow:"hidden",position:"relative"}}>
+    <div style={{position:"absolute",inset:0,pointerEvents:"none",background:`radial-gradient(700px 300px at 12% -20%, ${cur.color}33, transparent 60%), radial-gradient(600px 300px at 90% 120%, rgba(124,127,245,.18), transparent 60%)`}}/>
+    <div style={{position:"relative",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:28,alignItems:"center",padding:"26px 30px"}}>
+      {/* medallion */}
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
+        <div style={{width:96,height:96,borderRadius:"50%",display:"grid",placeItems:"center",background:`conic-gradient(${cur.color} ${pct}%, rgba(255,255,255,.08) ${pct}%)`,position:"relative"}}>
+          <div style={{position:"absolute",inset:7,borderRadius:"50%",background:"var(--panel)",display:"grid",placeItems:"center",border:`1px solid ${cur.color}55`}}>
+            <div style={{textAlign:"center",lineHeight:1}}>
+              <div style={{fontSize:11,fontWeight:700,color:"var(--faint)",letterSpacing:1}}>LVL</div>
+              <div style={{fontSize:30,fontWeight:800,color:cur.color}}>{level}</div>
+            </div>
+          </div>
+        </div>
+        <span style={{font:"800 12px/1 var(--font)",letterSpacing:1.5,textTransform:"uppercase",color:cur.color,padding:"6px 12px",borderRadius:999,background:`${cur.color}1f`,border:`1px solid ${cur.color}55`}}>{cur.name}</span>
+      </div>
+      {/* progress */}
+      <div>
+        <div style={{font:"700 12px/1 var(--font)",letterSpacing:2,textTransform:"uppercase",color:"var(--faint)"}}>Reward Points</div>
+        <div style={{display:"flex",alignItems:"baseline",gap:10,marginTop:6}}>
+          <span style={{fontSize:54,fontWeight:800,letterSpacing:"-2px",lineHeight:1,background:"linear-gradient(120deg, #fff, var(--indigo))",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{points.toLocaleString()}</span>
+          <span style={{color:"var(--muted)",fontWeight:700,fontSize:16}}>pts</span>
+        </div>
+        <div style={{marginTop:16,maxWidth:520}}>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:12.5,fontWeight:600,color:"var(--muted)",marginBottom:7}}>
+            <span>Next reward at <b style={{color:"var(--text)"}}>{nm} pts</b></span>
+            <span>{toNext} pts to go</span>
+          </div>
+          <div style={{height:12,borderRadius:999,background:"rgba(255,255,255,.07)",overflow:"hidden",border:"1px solid var(--border)"}}>
+            <div style={{height:"100%",width:pct+"%",borderRadius:999,background:`linear-gradient(90deg, ${cur.color}, var(--indigo))`,boxShadow:`0 0 16px ${cur.color}aa`,transition:"width .8s cubic-bezier(.2,.8,.2,1)"}}/>
+          </div>
+          {next&&<div style={{fontSize:12,color:"var(--faint)",fontWeight:600,marginTop:8}}>{next.min-points} pts to reach <b style={{color:next.color}}>{next.name}</b> tier</div>}
+        </div>
+      </div>
+      {/* claimable CTA */}
+      <div style={{textAlign:"center"}}>
+        <div style={{width:150,padding:"18px 14px",borderRadius:18,background:claimable?"linear-gradient(160deg, rgba(245,197,24,.18), rgba(245,165,36,.06))":"var(--panel-2)",border:`1px solid ${claimable?"rgba(245,197,24,.4)":"var(--border)"}`}}>
+          <div style={{fontSize:40,fontWeight:800,color:claimable?"var(--gold)":"var(--faint)",lineHeight:1}}>{claimable}</div>
+          <div style={{fontSize:12.5,fontWeight:700,color:"var(--muted)",marginTop:4}}>rewards ready</div>
+          <button onClick={onScrollToRewards} disabled={!claimable} style={{marginTop:14,width:"100%",padding:"10px 0",borderRadius:999,cursor:claimable?"pointer":"default",border:"none",font:"700 13px/1 var(--font)",background:claimable?"linear-gradient(120deg, var(--gold), var(--orange))":"rgba(255,255,255,.06)",color:claimable?"#1a1206":"var(--faint)"}}>{claimable?"Claim now →":"All claimed"}</button>
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+function MilestoneTrack({points,rewards,claimed}) {
+  const railRef=useRef(null);
+  useEffect(()=>{
+    const el=railRef.current; if(!el) return;
+    const idx=rewards.findIndex(r=>r.pts>points);
+    const node=el.children[Math.max(0,idx-1)];
+    if(node) el.scrollLeft=node.offsetLeft-40;
+  },[]);
+  return <div className="panel panel-pad rise">
+    <div className="panel-head"><h2>🏁 Reward Journey</h2><span className="pill">+50 pts = 1 reward</span></div>
+    <div ref={railRef} style={{display:"flex",gap:0,overflowX:"auto",paddingBottom:8}}>
+      {rewards.map((r,i)=>{
+        const reached=r.pts<=points,isClaimed=claimed.includes(r.pts);
+        const state=isClaimed?"claimed":reached?"ready":"locked";
+        const color=state==="ready"?"var(--gold)":state==="claimed"?"var(--green)":"var(--faint)";
+        return <div key={r.pts} style={{minWidth:96,display:"flex",flexDirection:"column",alignItems:"center",position:"relative"}}>
+          {i>0&&<div style={{position:"absolute",top:28,left:"-50%",width:"100%",height:3,background:r.pts<=points?"linear-gradient(90deg, var(--green), var(--gold))":"rgba(255,255,255,.08)"}}/>}
+          <div style={{width:56,height:56,borderRadius:"50%",display:"grid",placeItems:"center",position:"relative",zIndex:1,background:state==="locked"?"var(--panel-2)":`${color}1f`,border:`2px solid ${state==="ready"?"var(--gold)":state==="claimed"?"var(--green)":"var(--border)"}`,fontSize:24,filter:state==="locked"?"grayscale(1) opacity(.55)":"none",boxShadow:state==="ready"?"0 0 18px rgba(245,197,24,.5)":"none"}}>
+            {state==="locked"?"🔒":r.emoji}
+            {state==="claimed"&&<span style={{position:"absolute",bottom:-4,right:-4,width:20,height:20,borderRadius:"50%",background:"var(--green)",color:"#08130d",display:"grid",placeItems:"center",fontSize:12,fontWeight:900}}>✓</span>}
+          </div>
+          <div style={{fontSize:12.5,fontWeight:800,marginTop:8,color:state==="locked"?"var(--faint)":"var(--text)"}}>{r.pts}</div>
+          <div style={{fontSize:10.5,fontWeight:600,color:"var(--faint)",textTransform:"uppercase",letterSpacing:.5}}>{state==="ready"?"Ready":state==="claimed"?"Claimed":"Locked"}</div>
+        </div>;
+      })}
+    </div>
+  </div>;
+}
+
+function RewardCard({r,state,onClaim,confetti=true}) {
+  const [burst,setBurst]=useState(false);
+  const colors=["#f5c518","#2fd39b","#7c7ff5","#2ad4e5","#f0556a"];
+  function claim(){
+    if(confetti){setBurst(true);setTimeout(()=>setBurst(false),800);}
+    onClaim(r.pts);
+  }
+  const ready=state==="ready",claimed=state==="claimed";
+  return <div className="panel" style={{padding:"18px",position:"relative",overflow:"hidden",opacity:state==="locked"?.55:1,borderColor:ready?"rgba(245,197,24,.4)":"var(--border)"}}>
+    {ready&&<div style={{position:"absolute",inset:0,background:"linear-gradient(160deg, rgba(245,197,24,.12), transparent 55%)",pointerEvents:"none"}}/>}
+    <div style={{position:"relative",display:"flex",gap:14,alignItems:"flex-start"}}>
+      <div style={{width:50,height:50,borderRadius:14,display:"grid",placeItems:"center",fontSize:26,flex:"none",background:"var(--panel-2)",border:"1px solid var(--border)",filter:state==="locked"?"grayscale(1)":"none"}}>{state==="locked"?"🔒":r.emoji}</div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:15,fontWeight:800}}>{r.name}</span>
+          <span style={{fontSize:10.5,fontWeight:700,color:"var(--muted)",background:"var(--panel-hi)",border:"1px solid var(--border)",padding:"3px 7px",borderRadius:999}}>{r.tag}</span>
+        </div>
+        <div style={{color:"var(--muted)",fontSize:12.5,fontWeight:500,marginTop:4,lineHeight:1.4}}>{r.desc}</div>
+      </div>
+    </div>
+    <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:16}}>
+      <span style={{fontSize:13,fontWeight:800,color:"var(--gold)"}}>★ {r.pts} pts</span>
+      {ready&&<button onClick={claim} style={{padding:"9px 18px",borderRadius:999,border:"none",cursor:"pointer",font:"700 13px/1 var(--font)",background:"linear-gradient(120deg, var(--gold), var(--orange))",color:"#1a1206"}}>Redeem</button>}
+      {claimed&&<span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,fontWeight:700,color:"var(--green)"}}>✓ Claimed</span>}
+      {state==="locked"&&<span style={{fontSize:12.5,fontWeight:700,color:"var(--faint)"}}>Locked</span>}
+    </div>
+    {burst&&<div style={{position:"absolute",top:"55%",right:50,pointerEvents:"none"}}>
+      {Array.from({length:14}).map((_,i)=><span key={i} style={{position:"absolute",width:8,height:8,borderRadius:2,background:colors[i%colors.length],"--dx":(Math.cos((i/14)*6.28)*(40+Math.random()*40))+"px","--dy":(Math.sin((i/14)*6.28)*(40+Math.random()*40))+"px",animation:"burst .8s ease-out forwards"}}/>)}
+    </div>}
+  </div>;
+}
+
+function RewardsSection({points,claimed,onClaim,anchorRef,confetti}) {
+  const [tab,setTab]=useState("ready");
+  const stateOf=(r)=>claimed.includes(r.pts)?"claimed":(r.pts<=points?"ready":"locked");
+  const D=window.DATA;
+  const groups={ready:D.rewards.filter(r=>stateOf(r)==="ready"),claimed:D.rewards.filter(r=>stateOf(r)==="claimed"),locked:D.rewards.filter(r=>stateOf(r)==="locked")};
+  const tabs=[{k:"ready",label:`Ready (${groups.ready.length})`},{k:"claimed",label:`Claimed (${groups.claimed.length})`},{k:"locked",label:`Locked (${groups.locked.length})`}];
+  return <div ref={anchorRef} className="panel panel-pad rise">
+    <div className="panel-head" style={{flexWrap:"wrap",gap:12}}>
+      <h2>🎁 Rewards Store</h2>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        {tabs.map(t=><button key={t.k} onClick={()=>setTab(t.k)} style={{padding:"8px 14px",borderRadius:999,cursor:"pointer",font:"600 12.5px/1 var(--font)",border:`1px solid ${tab===t.k?"var(--border-hi)":"var(--border)"}`,background:tab===t.k?"var(--panel-hi)":"transparent",color:tab===t.k?"var(--text)":"var(--muted)"}}>{t.label}</button>)}
+      </div>
+    </div>
+    {groups[tab].length===0
+      ?<div style={{color:"var(--faint)",fontSize:14,fontWeight:600,padding:"26px 0",textAlign:"center"}}>{tab==="ready"?"🎉 All caught up — keep earning points!":"Nothing here yet."}</div>
+      :<div className="grid" style={{gridTemplateColumns:"repeat(auto-fill, minmax(290px, 1fr))"}}>
+        {groups[tab].map(r=><RewardCard key={r.pts} r={r} state={stateOf(r)} onClaim={onClaim} confetti={confetti}/>)}
+      </div>
+    }
+  </div>;
+}
+
+window.__GameExports = {RewardHero,MilestoneTrack,RewardCard,RewardsSection};
+</script>
+
+<!-- ── Task list component ────────────────────────────────────────────────── -->
+<script type="text/babel">
+const STATE_STYLE_MAP = {
+  "Done":                    {bg:"rgba(47,211,155,.18)",  color:"#6ee7b7"},
+  "In Progress":             {bg:"rgba(42,212,229,.18)",  color:"#67e8f9"},
+  "Ready for review":        {bg:"rgba(124,127,245,.18)", color:"#c4b5fd"},
+  "Ready for test":          {bg:"rgba(52,211,153,.18)",  color:"#6ee7b7"},
+  "Waiting to INT deploy":   {bg:"rgba(245,165,36,.18)",  color:"#fcd34d"},
+  "Waiting to PRD deploy":   {bg:"rgba(245,165,36,.18)",  color:"#fcd34d"},
+  "To Do":                   {bg:"rgba(90,99,121,.25)",   color:"#94a3b8"},
+  "Blocked":                 {bg:"rgba(240,85,106,.18)",  color:"#fca5a5"},
+  "Bugged":                  {bg:"rgba(240,85,106,.18)",  color:"#fda4af"},
+  "Removed/Canceled":        {bg:"rgba(90,99,121,.18)",   color:"#5a6379"},
+};
+
+function TaskList() {
+  const D = window.DATA;
+  const sprintOptions = D.sprints.map((s,i)=>({label:s,value:String(i+1)}));
+  const projOptions   = D.projEntries.map(([k])=>k);
+  const [sprintF,setSprintF] = useState("all");
+  const [statusF,setStatusF] = useState("all");
+  const [projF,  setProjF  ] = useState("all");
+
+  const STATUS_LABELS_ALL = ["Done","In Progress","Ready for review","Ready for test","Waiting to INT deploy","Waiting to PRD deploy","To Do","Blocked","Bugged","Removed/Canceled"];
+
+  function normState(raw) {
+    const s = (raw||"").toLowerCase();
+    if (s.includes("done")||s==="closed") return "Done";
+    if (s.includes("progress")||s==="active") return "In Progress";
+    if (s.includes("ready for review")) return "Ready for review";
+    if (s.includes("ready for test"))   return "Ready for test";
+    if (s.includes("waiting to int"))   return "Waiting to INT deploy";
+    if (s.includes("waiting to prd"))   return "Waiting to PRD deploy";
+    if (s.includes("block")) return "Blocked";
+    if (s.includes("bug"))   return "Bugged";
+    if (s.includes("cancel")||s.includes("remov")) return "Removed/Canceled";
+    return "To Do";
+  }
+
+  const statePri = s => {const l=(s||"").toLowerCase();if(l.includes("block")||l.includes("bug"))return 0;if(l.includes("progress")||l.includes("review")||l.includes("test")||l.includes("waiting"))return 1;if(l.includes("done")||l.includes("closed")||l.includes("cancel")||l.includes("remov"))return 3;return 2;};
+
+  let filtered = D.personTasks.filter(t => {
+    if (sprintF!=="all" && String(t.sprint)!==sprintF) return false;
+    if (statusF!=="all" && normState(t.state)!==statusF) return false;
+    if (projF!=="all"   && t.project!==projF) return false;
+    return true;
+  });
+  filtered.sort((a,b) => { const sd=(b.sprint||0)-(a.sprint||0); return sd!==0?sd:statePri(a.state)-statePri(b.state); });
+
+  const sel = {background:"var(--panel-hi)",color:"var(--text)",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",font:"600 13px/1 var(--font)",outline:"none",cursor:"pointer"};
+  return <div>
+    <div className="task-filters">
+      <select style={sel} value={sprintF} onChange={e=>setSprintF(e.target.value)}>
+        <option value="all">All Sprints</option>
+        {sprintOptions.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+      <select style={sel} value={statusF} onChange={e=>setStatusF(e.target.value)}>
+        <option value="all">All Statuses</option>
+        {STATUS_LABELS_ALL.map(s=><option key={s} value={s}>{s}</option>)}
+      </select>
+      <select style={sel} value={projF} onChange={e=>setProjF(e.target.value)}>
+        <option value="all">All Projects</option>
+        {projOptions.map(p=><option key={p} value={p}>{p}</option>)}
+      </select>
+      <span style={{fontSize:13,fontWeight:700,color:"var(--faint)",alignSelf:"center"}}>{filtered.length} tasks</span>
+    </div>
+    {filtered.length===0
+      ?<div style={{textAlign:"center",color:"var(--faint)",padding:"32px 0",fontSize:14,fontWeight:600}}>No tasks match filters.</div>
+      :<div style={{display:"flex",flexDirection:"column",gap:6}}>
+        {filtered.map((t,i)=>{
+          const pts=parseFloat(t.points)||0;
+          const bucket=normState(t.state);
+          const style=STATE_STYLE_MAP[bucket]||{bg:"rgba(90,99,121,.18)",color:"#94a3b8"};
+          return <div key={i} className="task-item">
+            <div style={{flex:1,minWidth:0}}>
+              <div className="task-title" title={t.title}>{t.title||"(untitled)"}</div>
+              <div className="task-meta">
+                <span className="task-state" style={{background:style.bg,color:style.color}}>{t.state||"—"}</span>
+                {pts>0&&<span className="task-pts">{pts}pt{pts!==1?"s":""}</span>}
+                <span className="task-sprint">Sprint {t.sprint||"—"}</span>
+                {t.project&&<span className="task-project" title={t.project}>{t.project}</span>}
+              </div>
+            </div>
+          </div>;
+        })}
+      </div>
+    }
+  </div>;
+}
+window.__TaskListExport = TaskList;
+</script>
+
+<!-- ── App (root) ──────────────────────────────────────────────────────────── -->
+<script type="text/babel">
+const CLAIM_KEY_PREFIX = "sprint_claimed_v1_";
+
+function loadClaimed(name) {
+  try { const r=localStorage.getItem(CLAIM_KEY_PREFIX+name); if(r) return JSON.parse(r); } catch(e){}
+  return [];
+}
+
+function App() {
+  const D = window.DATA;
+  const {useTweaks,TweaksPanel,TweakSection,TweakToggle,TweakButton,TweakColor} = window.__TweakExports;
+  const {StatCard,StatusHeroCard,StatusChip,InsightCard} = window.__ComponentExports;
+  const {SprintTrendChart,ChartLegend} = window.__ChartExports;
+  const {RewardHero,MilestoneTrack,RewardsSection} = window.__GameExports;
+  const TaskList = window.__TaskListExport;
+
+  const TWEAK_DEFAULTS = {
+    accent: ["#7c7ff5","#6366f1"],
+    rewardColor: "#f5c518",
+    confetti: true,
+    showJourney: true,
+  };
+
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [claimed, setClaimed] = useState(() => loadClaimed(D.person.name));
+  const rewardsRef = useRef(null);
+  const points = D.stats.totalPoints;
+
+  useEffect(() => {
+    try { localStorage.setItem(CLAIM_KEY_PREFIX+D.person.name, JSON.stringify(claimed)); } catch(e){}
+  }, [claimed]);
+
+  function claim(pts) { setClaimed(c => c.includes(pts)?c:[...c,pts]); }
+  function scrollToRewards() {
+    const el=rewardsRef.current;
+    if(el) window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-20,behavior:"smooth"});
+  }
+
+  const accentVars = {"--indigo":t.accent[0],"--indigo-deep":t.accent[1],"--gold":t.rewardColor};
+
+  return <div className="wrap" style={accentVars}>
+    {/* Header */}
+    <div className="topbar">
+      <a className="btn-back" href="/">← Back</a>
+      <div className="avatar" style={{background:`linear-gradient(150deg, ${t.accent[0]}, ${t.accent[1]})`,boxShadow:`0 8px 22px ${t.accent[1]}66`}}>{D.person.initials}</div>
+      <div className="who">
+        <div className="who-top">
+          <h1>{D.person.name}</h1>
+          <span className="role-badge" style={{color:t.accent[0],border:`1px solid ${t.accent[0]}55`,background:`${t.accent[0]}18`}}>{D.person.role}</span>
+        </div>
+        <div className="who-sub">{D.person.sprintsActive}/{D.person.sprintsTotal} sprints active · <b>{D.person.totalPoints.toLocaleString(undefined,{maximumFractionDigits:1})} pts</b> · {D.person.totalTasks} tasks</div>
+      </div>
+      <div className="spacer"/>
+    </div>
+
+    {/* Gamification hero */}
+    <RewardHero points={points} rewards={D.rewards} claimed={claimed} tiers={D.tiers} onScrollToRewards={scrollToRewards}/>
+
+    {/* Status */}
+    <div className="section-label">Task Status</div>
+    <div className="grid" style={{gridTemplateColumns:"repeat(3,1fr)"}}>
+      {D.statusHero.map((s,i)=><StatusHeroCard key={s.key} s={s} delay={i*60}/>)}
+    </div>
+    {D.statusRest.length>0&&<div className="grid" style={{gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",marginTop:14}}>
+      {D.statusRest.map((s,i)=><StatusChip key={i} s={s}/>)}
+    </div>}
+
+    {/* Milestone journey */}
+    {t.showJourney&&<div style={{marginTop:26}}>
+      <MilestoneTrack points={points} rewards={D.rewards} claimed={claimed}/>
+    </div>}
+
+    {/* Rewards store */}
+    <div style={{marginTop:16}}>
+      <RewardsSection points={points} claimed={claimed} onClaim={claim} anchorRef={rewardsRef} confetti={t.confetti}/>
+    </div>
+
+    {/* Stats strip */}
+    <div className="section-label">Overview</div>
+    <div className="grid" style={{gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))"}}>
+      <StatCard label="Total Points"  value={D.stats.totalPoints.toLocaleString(undefined,{maximumFractionDigits:1})} sub="all sprints" delay={0}/>
+      <StatCard label="Total Tasks"   value={D.stats.totalTasks}       sub="done tasks" delay={40}/>
+      <StatCard label="Done Rate"     value={D.stats.doneRatePct+"%"}  sub={`${D.stats.donePts} / ${D.stats.targetPts} pts`} accent="var(--green)" delay={80}/>
+      <StatCard label="Avg Pts/Task"  value={D.stats.avgPtsPerTask}    sub="done tasks" delay={120}/>
+      <StatCard label="Active Sprints"value={D.stats.activeSprints}    sub={`of ${D.stats.sprintsTotal} total`} delay={160}/>
+      <StatCard label="Projects"      value={D.stats.projects}         sub="contributed to" delay={200}/>
+    </div>
+
+    {/* Insights */}
+    <div className="section-label">Insights</div>
+    <div className="grid" style={{gridTemplateColumns:"repeat(auto-fill,minmax(250px,1fr))"}}>
+      {D.insights.map((it,i)=><InsightCard key={i} it={it} delay={i*50}/>)}
+    </div>
+
+    {/* Sprint trend */}
+    <div style={{marginTop:26}}>
+      <div className="panel panel-pad rise">
+        <div className="panel-head"><h2>Sprint Trend</h2><span className="pill">Story Points + Tasks</span></div>
+        <ChartLegend/>
+        <SprintTrendChart data={D.sprintTrend} ptsMax={D.ptsMax} taskMax={D.taskMax}/>
+      </div>
+    </div>
+
+    {/* Leave */}
+    {D.leave.length>0&&<>
+      <div className="section-label">Leave History</div>
+      <div className="panel" style={{padding:"16px 20px",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+        <span style={{fontSize:18}}>🗓</span>
+        <span style={{fontWeight:700}}>Leave &amp; Holidays</span>
+        {D.leave.map((l,i)=><span key={i} style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--panel-2)",border:"1px solid var(--border)",borderRadius:999,padding:"8px 14px",fontSize:13,fontWeight:600,color:"var(--muted)"}}>
+          {l.icon} Sprint {l.sprint} · {l.kind} {l.days}d · {l.range}
+        </span>)}
+      </div>
+    </>}
+
+    {/* All tasks */}
+    <div className="section-label">All Tasks</div>
+    <div className="panel panel-pad">
+      <TaskList/>
+    </div>
+
+    <div style={{color:"var(--faint)",fontSize:12,textAlign:"center",marginTop:32,fontWeight:500}}>
+      More Studio.Co.,Ltd · <a href="/" style={{color:"var(--indigo)",textDecoration:"none"}}>Dashboard</a>
+    </div>
+
+    <TweaksPanel>
+      <TweakSection label="Theme"/>
+      <TweakColor label="Accent" value={t.accent}
+        options={[["#7c7ff5","#6366f1"],["#34e3a8","#10b981"],["#b06cff","#8b5cf6"],["#3ad8e8","#06b6d4"],["#fb9e5a","#f5733a"]]}
+        onChange={v=>setTweak('accent',v)}/>
+      <TweakColor label="Reward color" value={t.rewardColor}
+        options={["#f5c518","#f43f6e","#2ad4e5","#2fd39b"]}
+        onChange={v=>setTweak('rewardColor',v)}/>
+      <TweakSection label="Gamification"/>
+      <TweakToggle label="Show reward journey" value={t.showJourney} onChange={v=>setTweak('showJourney',v)}/>
+      <TweakToggle label="Confetti on redeem"  value={t.confetti}    onChange={v=>setTweak('confetti',v)}/>
+      <TweakButton label="Reset claimed rewards" onClick={()=>setClaimed([])}/>
+    </TweaksPanel>
+  </div>;
+}
+
+// Wait for Firebase data then mount
+function mountWhenReady() {
+  if (window.__dataReady) {
+    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+  } else {
+    window.addEventListener("dataReady", () => ReactDOM.createRoot(document.getElementById("root")).render(<App/>), {once:true});
+  }
+}
+mountWhenReady();
 </script>
 </body>
 </html>
