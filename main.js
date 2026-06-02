@@ -138,45 +138,63 @@ const VIEW_LABEL = { points: "Story Points", tasks: "Tasks" };
 
 // ---- Company holidays (hardcoded for 2026) ----
 const COMPANY_HOLIDAYS = [
-  { name: "New Year",         dates: ["2026-01-01","2026-01-02"], sprint: 1  },
-  { name: "Makha Bucha",      dates: ["2026-03-03"],              sprint: 4  },
-  { name: "Songkran",         dates: ["2026-04-13","2026-04-14","2026-04-15"], sprint: 8 },
-  { name: "Labour Day",       dates: ["2026-05-01"],              sprint: 9  },
-  { name: "Coronation Day",   dates: ["2026-05-04"],              sprint: 9  },
-  { name: "Visakha Bucha",    dates: ["2026-06-01"],              sprint: 11 },
-  { name: "Asanha Bucha",     dates: ["2026-06-03"],              sprint: 11 },
-  { name: "Asanha Bucha+1",   dates: ["2026-07-28","2026-07-29"], sprint: null },
-  { name: "Queen's Birthday", dates: ["2026-08-12"],              sprint: null },
-  { name: "King Memorial",    dates: ["2026-10-13"],              sprint: null },
-  { name: "New Year's Eve",   dates: ["2026-12-31"],              sprint: null },
+  { name: "New Year",         dates: ["2026-01-01","2026-01-02"] },
+  { name: "Makha Bucha",      dates: ["2026-03-03"] },
+  { name: "Songkran",         dates: ["2026-04-13","2026-04-14","2026-04-15"] },
+  { name: "Labour Day",       dates: ["2026-05-01"] },
+  { name: "Coronation Day",   dates: ["2026-05-04"] },
+  { name: "Visakha Bucha",    dates: ["2026-06-01"] },
+  { name: "Asanha Bucha",     dates: ["2026-06-03"] },
+  { name: "Asanha Bucha+1",   dates: ["2026-07-28","2026-07-29"] },
+  { name: "Queen's Birthday", dates: ["2026-08-12"] },
+  { name: "King Memorial",    dates: ["2026-10-13"] },
+  { name: "New Year's Eve",   dates: ["2026-12-31"] },
 ];
 
-// ---- Sprint calendar (2-week sprints) — used to pick "current sprint" by date ----
-const SPRINT_DATES = [
-  { s: "2026-01-05", e: "2026-01-18" },  // Sprint 1
-  { s: "2026-01-19", e: "2026-02-01" },  // Sprint 2
-  { s: "2026-02-02", e: "2026-02-15" },  // Sprint 3
-  { s: "2026-02-16", e: "2026-03-01" },  // Sprint 4
-  { s: "2026-03-02", e: "2026-03-15" },  // Sprint 5
-  { s: "2026-03-16", e: "2026-03-29" },  // Sprint 6
-  { s: "2026-03-30", e: "2026-04-12" },  // Sprint 7
-  { s: "2026-04-13", e: "2026-04-26" },  // Sprint 8
-  { s: "2026-04-27", e: "2026-05-10" },  // Sprint 9
-  { s: "2026-05-11", e: "2026-05-24" },  // Sprint 10
-  { s: "2026-05-25", e: "2026-06-07" },  // Sprint 11
-  { s: "2026-06-08", e: "2026-06-21" }   // Sprint 12
-];
-// Reference date = data snapshot date (so results don't drift with real-world clock)
-const SNAPSHOT_DATE = "2026-05-25";
-function currentSprintIdxByDate(dateStr){
-  const d = dateStr || SNAPSHOT_DATE;
+// ---- Sprint calendar — auto-generated from Sprint 1 start date, 2-week cadence ----
+// To extend: just increase MAX_SPRINTS. New sprints appear automatically when their date arrives.
+const SPRINT_START = "2026-01-05"; // Sprint 1 start date
+const SPRINT_WEEKS = 2;
+const MAX_SPRINTS = 26; // generate up to 26 sprints (1 year)
+
+function generateSprintDates() {
+  const dates = [];
+  const start = new Date(SPRINT_START);
+  const today = new Date(new Date().toISOString().slice(0, 10));
+  for (let i = 0; i < MAX_SPRINTS; i++) {
+    const s = new Date(start);
+    s.setDate(s.getDate() + i * SPRINT_WEEKS * 7);
+    const e = new Date(s);
+    e.setDate(e.getDate() + SPRINT_WEEKS * 7 - 1);
+    const sStr = s.toISOString().slice(0, 10);
+    // Only include sprints that have already started
+    if (s > today) break;
+    dates.push({ s: sStr, e: e.toISOString().slice(0, 10) });
+  }
+  return dates;
+}
+const SPRINT_DATES = generateSprintDates();
+
+function currentSprintIdxByDate(dateStr) {
+  const d = dateStr || new Date().toISOString().slice(0, 10);
   for (let i = 0; i < SPRINT_DATES.length; i++) {
     if (d >= SPRINT_DATES[i].s && d <= SPRINT_DATES[i].e) return i;
   }
-  // before first sprint or after last
   if (d < SPRINT_DATES[0].s) return 0;
   return SPRINT_DATES.length - 1;
 }
+
+// Auto-assign sprint numbers to company holidays
+COMPANY_HOLIDAYS.forEach(h => {
+  if (h.sprint !== undefined) return; // already set
+  for (let i = 0; i < SPRINT_DATES.length; i++) {
+    if (h.dates.some(d => d >= SPRINT_DATES[i].s && d <= SPRINT_DATES[i].e)) {
+      h.sprint = i + 1;
+      break;
+    }
+  }
+});
+
 const CURRENT_SPRINT_IDX = Math.min(currentSprintIdxByDate(), DATA.sprints.length - 1);
 
 // ---- Any-task-assigned index (ALL states, for staleness checks) ----

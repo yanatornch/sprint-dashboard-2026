@@ -17,28 +17,30 @@ const AZURE_ORG = process.env.AZURE_ORG || process.env.ADO_ORG || 'morestudio';
 const AZURE_PROJECT = process.env.AZURE_PROJECT || process.env.ADO_PROJECT || 'M';
 const AZURE_PAT = process.env.AZURE_PAT || process.env.ADO_PAT;
 
-const SPRINT_DATES = [
-  { sprint: 1,  s: "2026-01-05", e: "2026-01-18" },
-  { sprint: 2,  s: "2026-01-19", e: "2026-02-01" },
-  { sprint: 3,  s: "2026-02-02", e: "2026-02-15" },
-  { sprint: 4,  s: "2026-02-16", e: "2026-03-01" },
-  { sprint: 5,  s: "2026-03-02", e: "2026-03-15" },
-  { sprint: 6,  s: "2026-03-16", e: "2026-03-29" },
-  { sprint: 7,  s: "2026-03-30", e: "2026-04-12" },
-  { sprint: 8,  s: "2026-04-13", e: "2026-04-26" },
-  { sprint: 9,  s: "2026-04-27", e: "2026-05-10" },
-  { sprint: 10, s: "2026-05-11", e: "2026-05-24" },
-  { sprint: 11, s: "2026-05-25", e: "2026-06-07" },
-  { sprint: 12, s: "2026-06-08", e: "2026-06-21" },
-];
+const SPRINT_START = "2026-01-05";
+const SPRINT_WEEKS = 2;
+const MAX_SPRINTS = 26;
+
+function generateSprintDates() {
+  const dates = [];
+  const start = new Date(SPRINT_START);
+  for (let i = 0; i < MAX_SPRINTS; i++) {
+    const s = new Date(start);
+    s.setDate(s.getDate() + i * SPRINT_WEEKS * 7);
+    const e = new Date(s);
+    e.setDate(e.getDate() + SPRINT_WEEKS * 7 - 1);
+    dates.push({ sprint: i + 1, s: s.toISOString().slice(0, 10), e: e.toISOString().slice(0, 10) });
+  }
+  return dates;
+}
+const SPRINT_DATES = generateSprintDates();
 
 function getCurrentSprint() {
   const today = new Date().toISOString().slice(0, 10);
   const found = SPRINT_DATES.find(d => today >= d.s && today <= d.e);
   if (found) return found.sprint;
-  // If past all sprints, return the last one
   if (today > SPRINT_DATES[SPRINT_DATES.length - 1].e) return SPRINT_DATES[SPRINT_DATES.length - 1].sprint;
-  return SPRINT_DATES[0].sprint;
+  return 1;
 }
 
 if (!AZURE_PAT) {

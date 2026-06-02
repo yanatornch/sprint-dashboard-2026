@@ -25,24 +25,13 @@ async function run() {
   console.log("Fetching tasks from Firestore...");
   const snap = await getDocs(collection(db, "tasks"));
 
-  // Find current sprint by date
-  const SPRINT_DATES = [
-    { sprint: 1,  s: "2026-01-05", e: "2026-01-18" },
-    { sprint: 2,  s: "2026-01-19", e: "2026-02-01" },
-    { sprint: 3,  s: "2026-02-02", e: "2026-02-15" },
-    { sprint: 4,  s: "2026-02-16", e: "2026-03-01" },
-    { sprint: 5,  s: "2026-03-02", e: "2026-03-15" },
-    { sprint: 6,  s: "2026-03-16", e: "2026-03-29" },
-    { sprint: 7,  s: "2026-03-30", e: "2026-04-12" },
-    { sprint: 8,  s: "2026-04-13", e: "2026-04-26" },
-    { sprint: 9,  s: "2026-04-27", e: "2026-05-10" },
-    { sprint: 10, s: "2026-05-11", e: "2026-05-24" },
-    { sprint: 11, s: "2026-05-25", e: "2026-06-07" },
-    { sprint: 12, s: "2026-06-08", e: "2026-06-21" },
-  ];
+  // Find current sprint by date — auto-generated, no need to update manually
+  const SPRINT_START = "2026-01-05";
   const today = new Date().toISOString().slice(0, 10);
-  const found = SPRINT_DATES.find(d => today >= d.s && today <= d.e);
-  const currentSprint = found ? found.sprint : SPRINT_DATES[SPRINT_DATES.length - 1].sprint;
+  const startMs = new Date(SPRINT_START).getTime();
+  const todayMs = new Date(today).getTime();
+  const sprintNum = Math.floor((todayMs - startMs) / (14 * 24 * 60 * 60 * 1000));
+  const currentSprint = Math.max(1, sprintNum + 1);
   console.log(`Current sprint: ${currentSprint} (today: ${today})`);
 
   // Collect unfinished tasks for dev team in current sprint
