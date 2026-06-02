@@ -145,8 +145,8 @@ const COMPANY_HOLIDAYS = [
   { name: "Coronation Day",   dates: ["2026-05-04"],              sprint: 9  },
   { name: "Visakha Bucha",    dates: ["2026-06-01"],              sprint: 11 },
   { name: "Asanha Bucha",     dates: ["2026-06-03"],              sprint: 11 },
-  { name: "Asanha Bucha+1",   dates: ["2026-07-28","2026-07-29"], sprint: 12 },
-  { name: "Queen's Birthday", dates: ["2026-08-12"],              sprint: 12 },
+  { name: "Asanha Bucha+1",   dates: ["2026-07-28","2026-07-29"], sprint: null },
+  { name: "Queen's Birthday", dates: ["2026-08-12"],              sprint: null },
   { name: "King Memorial",    dates: ["2026-10-13"],              sprint: null },
   { name: "New Year's Eve",   dates: ["2026-12-31"],              sprint: null },
 ];
