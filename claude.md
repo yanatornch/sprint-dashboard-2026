@@ -1,35 +1,74 @@
-# Project Documentation & AI Instructions
+# CLAUDE.md
 
-## Architecture Overview
-This is the **Sprint Contribution Dashboard** for More Studio. 
-The architecture was recently migrated from a massive hardcoded HTML file to a dynamic, modular system using **Vite** and **Firebase Firestore**.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-### Tech Stack
-- **Frontend**: HTML / CSS / Vanilla JavaScript (bundled with Vite).
-- **Backend/Database**: Firebase Firestore (`morestudio-sprint-2026`).
-- **Data Pipeline**: A Node.js script (`azure_sync.js`) pulls live data from Azure DevOps and syncs it into Firebase. This script runs via GitHub Actions on a schedule.
-- **Hosting**: Vercel (Production URL: `https://morestudio-sprint-contribution.vercel.app/`).
+## Commands
 
-## Project Structure
-- `index.html`: The UI skeleton. **Do not put hardcoded Sprint data here.** It imports `main.js` as a module.
-- `main.js`: The core frontend logic. It fetches data from Firestore, aggregates the points/tasks, and draws the charts using Chart.js.
-- `azure_sync.js`: The sync script. Queries Azure DevOps, transforms the data, and writes to the `tasks`, `sprintUserStats`, and `sprintProjectStats` collections in Firebase.
-- `firebase.js`: Contains the Firebase config and initialization.
-- `vite.config.js`: Critically sets the build target to `esnext` so Vite supports the top-level `await` used in `main.js`.
+```bash
+npm run dev        # Start local Vite dev server
+npm run build      # Build to dist/ (Vercel runs this on deploy)
+node azure_sync.js          # Manual Azure DevOps → Firestore sync (needs .env)
+node notify_unfinished.js   # Manual Friday report trigger (needs .env)
+node seed_backlog.js        # One-time seed of backlog collection into Firestore
+```
 
-## Firebase Collections
-- **`sprints`**: Contains metadata about sprints (names, dates).
-- **`users`**: Contains the team roster (name, role).
-- **`projects`**: Contains project paths.
-- **`tasks`**: Individual Work Items from Azure.
-- **`sprintUserStats`**: Aggregated story points and tasks per person, per sprint.
-- **`sprintProjectStats`**: Aggregated story points per project, per sprint.
+Requires `.env` with: `AZURE_ORG`, `AZURE_PROJECT`, `AZURE_PAT`, `WEBHOOK_URL`, `WEBHOOK_SECRET`, `SPRINT_NOTIFY_URL`
 
-## Common Tasks & Commands
-- **Local Development**: Run `npm run dev` to start the local Vite server.
-- **Production Build**: Run `npm run build` to output the bundled app into the `dist/` directory.
-- **Manual Data Sync**: Run `node azure_sync.js` (Requires `.env` file with Azure credentials `ADO_ORG`, `ADO_PROJECT`, `ADO_PAT`).
+## Architecture
 
-## Deployment Rules (Vercel)
-Vercel is hooked up to this GitHub repository. When code is pushed, Vercel automatically runs `npm run build` and serves the `dist/` folder.
-**Troubleshooting Vercel**: If the website doesn't update, verify that Vercel is tracking the correct branch (`main` vs `dev`) and that the build logs on the Vercel dashboard show a successful Vite build.
+**Frontend** (`index.html` + `main.js`): Vanilla JS bundled by Vite. `main.js` uses top-level `await` (requires `esnext` target in `vite.config.js`). Fetches all data from Firestore on load, then renders purely client-side using Chart.js (loaded via CDN in `index.html`).
+
+**Firebase** (`firebase.js`): Browser-side uses CDN ESM imports (`https://www.gstatic.com/firebasejs/11.0.1/`). Node.js scripts (`azure_sync.js`, `notify_unfinished.js`, `api/*.js`) use npm `firebase` package. **Never mix these** — CDN imports break in Node.js, npm imports break in the browser.
+
+**Vercel API functions** (`api/`): Three serverless functions:
+- `api/leave.js` — POST endpoint to record personal leave into Firestore. Requires `Authorization: Bearer ${LEAVE_API_SECRET}` header.
+- `api/trigger-sync.js` — POST endpoint that fires GitHub Actions `azure-sync.yml` workflow via `workflow_dispatch`. Requires `GITHUB_ACTIONS_TOKEN` env var.
+- `api/team-status.js` — team status helper.
+
+**GitHub Actions** (`.github/workflows/`):
+- `azure-sync.yml` — runs `azure_sync.js` every Friday at 23:00 UTC (06:00 ICT Saturday). Also triggered by the Sync Azure button via `api/trigger-sync.js`.
+- `notify-unfinished.yml` — runs `notify_unfinished.js` every Friday at 11:00 UTC (18:00 ICT). Sends dev team unfinished task report to `SPRINT_NOTIFY_URL`.
+
+## Firestore Collections
+
+| Collection | Description |
+|---|---|
+| `tasks` | Individual Azure DevOps work items. Doc ID: `task_${azureId}` |
+| `sprintUserStats` | Points + task count per person per sprint. Doc ID: `sprint_${n}_${person}` |
+| `sprintProjectStats` | Points per project per sprint. Doc ID: `sprint_${n}_${projectId}` |
+| `sprints` | Sprint metadata (name, index, dates) |
+| `users` | Team roster (id, role) |
+| `projects` | Project paths (id, name) |
+| `leaves` | Personal leave records written by `api/leave.js` |
+| `backlog` | Next sprint backlog items (seeded by `seed_backlog.js`, editable in Firebase Console) |
+| `dashboardStats/v1` | Last sync timestamp written by `azure_sync.js` |
+
+## Key Patterns in main.js
+
+**ROLES**: The `ROLES` object is the single source of truth for role assignments. `notify_unfinished.js` has its own copy — keep them in sync.
+
+**SPRINT_DATES**: Both `azure_sync.js` and `notify_unfinished.js` have a `SPRINT_DATES` array for date-based sprint detection. Sprint 11 = `2026-05-25 → 2026-06-07`, Sprint 12 = `2026-06-08 → 2026-06-21`.
+
+**CURRENT_SPRINT_IDX**: Computed in `main.js` from `SPRINT_DATES` based on today's date (0-indexed).
+
+**Task states**: `To Do`, `In Progress`, `Blocked`, `Bugged`, `Ready for review`, `Ready for test`, `Waiting to INT deploy`, `Waiting to PRD deploy`, `Done`. Done detection uses lowercase `.includes()` check for: `done`, `closed`, `removed`, `canceled`, `cancelled`.
+
+**Chart.js plugins**: `buildLeavePlugin()` is a factory (returns a new plugin object each call) because Chart.js plugin IDs must be unique per chart instance. `buildBarHoverPlugin()` renders rich HTML tooltips on bar hover using a fixed-position `div`.
+
+## Production URLs
+
+- Dashboard: `https://sprint-dashboard-2026.vercel.app/`
+- Leave API: `POST https://sprint-dashboard-2026.vercel.app/api/leave`
+- Repo: `https://github.com/yanatornch/sprint-dashboard-2026`
+- Firebase project: `morestudio-sprint-2026`
+
+## Vercel Environment Variables
+
+| Variable | Used by |
+|---|---|
+| `LEAVE_API_SECRET` | `api/leave.js` auth |
+| `GITHUB_ACTIONS_TOKEN` | `api/trigger-sync.js` |
+
+## GitHub Secrets
+
+`AZURE_ORG`, `AZURE_PROJECT`, `AZURE_PAT`, `WEBHOOK_URL`, `WEBHOOK_SECRET`, `SPRINT_NOTIFY_URL`
