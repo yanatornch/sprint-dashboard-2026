@@ -3308,105 +3308,11 @@ function showToast(message, type = "info", duration = 4000) {
   });
 })();
 
-// ============================================================================
-//  STATUS DETAIL CARDS (overview)
-// ============================================================================
-(function wireStatusDetailCards() {
-  const container = document.getElementById("statusDetailCards");
-  const hint      = document.getElementById("statusFilterHint");
-  if (!container) return;
-
-  function buildCards(filter) {
-    if (!filter || filter === "all") {
-      container.style.display = "none";
-      if (hint) hint.textContent = "";
-      return;
-    }
-
-    // Match tasks by exact state value
-    const sprintSet = S.range === "all" ? null : new Set(rangeIdx(S.range).map(i => i + 1));
-    const hl = S.highlight !== "All" ? S.highlight : null;
-    const byPerson = {};
-
-    DATA.movement.forEach(t => {
-      if ((t.state || "") !== filter) return;
-      if (sprintSet && !sprintSet.has(t.sprint)) return;
-      if (hl && t.person !== hl) return;
-      if (!byPerson[t.person]) byPerson[t.person] = [];
-      byPerson[t.person].push(t);
-    });
-
-    // Sort tasks per person: sprint desc
-    Object.values(byPerson).forEach(arr => arr.sort((a, b) => (b.sprint || 0) - (a.sprint || 0)));
-
-    const people = Object.keys(byPerson).sort((a, b) => {
-      const ra = ROLE_ORDER.indexOf(roleOf(a)), rb = ROLE_ORDER.indexOf(roleOf(b));
-      return ra !== rb ? ra - rb : byPerson[b].length - byPerson[a].length;
-    });
-
-    const total = people.reduce((s, p) => s + byPerson[p].length, 0);
-    if (hint) hint.textContent = total ? `(${total})` : "";
-
-    if (people.length === 0) {
-      container.style.display = "none";
-      return;
-    }
-
-    const stateStyle = STATE_STYLE[filter] || { bg: "#1c1917", color: "#a8a29e" };
-
-    const cardsHtml = people.map(person => {
-      const tasks = byPerson[person];
-      const color = ROLE_COLORS[roleOf(person)] || "#6366f1";
-      const initial = person[0].toUpperCase();
-      const taskRows = tasks.map(t => {
-        const pts = parseFloat(t.points) || 0;
-        return `<div class="person-task-item">
-          <div class="person-task-title" title="${(t.title||"").replace(/"/g,"&quot;")}">${t.title || "(untitled)"}</div>
-          <div class="person-task-meta">
-            <span class="person-task-state" style="background:${stateStyle.bg};color:${stateStyle.color}">${t.state}</span>
-            ${pts > 0 ? `<span>${pts}pt</span>` : ""}
-            <span style="color:var(--muted)">${t.project || "—"}</span>
-            <span style="font-size:11px;color:var(--muted);background:var(--panel-2);border:1px solid var(--border);padding:1px 5px;border-radius:999px;">Sp ${t.sprint||"—"}</span>
-          </div>
-        </div>`;
-      }).join("");
-
-      return `<div class="person-card" style="cursor:pointer;" onclick="window.location.href='/person.html?name=${encodeURIComponent(person)}'">
-        <div class="person-card-header">
-          <div class="person-avatar" style="background:${color}">${initial}</div>
-          <div style="flex:1;min-width:0;">
-            <div class="person-card-name">${person} <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:999px;background:${color}22;color:${color};border:1px solid ${color}44;margin-left:4px;vertical-align:middle;">${roleOf(person)}</span></div>
-            <div class="person-card-meta">${tasks.length} task${tasks.length !== 1 ? "s" : ""}</div>
-          </div>
-          <span style="font-size:12px;color:var(--accent-text);font-weight:500;white-space:nowrap;padding-left:8px;">View →</span>
-        </div>
-        <div class="person-tasks">${taskRows}</div>
-      </div>`;
-    }).join("");
-
-    container.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">
-          ${filter} <span style="color:var(--accent);margin-left:6px;">${total} task${total!==1?"s":""} · ${people.length} people</span>
-        </div>
-      </div>
-      <div class="team-grid">${cardsHtml}</div>`;
-    container.style.display = "block";
-  }
-
-  document.getElementById("statusFilter").addEventListener("change", e => {
-    S.statusFilter = e.target.value;
-    S.doneOnly = (e.target.value === "Done");
-    refresh();
-    buildCards(e.target.value);
-  });
-
-  const _origRefresh = refresh;
-  refresh = function() {
-    _origRefresh();
-    const f = document.getElementById("statusFilter")?.value;
-    if (f && f !== "all") buildCards(f);
-  };
-})();
+// Wire status filter change (charts only, no detail cards)
+document.getElementById("statusFilter")?.addEventListener("change", e => {
+  S.statusFilter = e.target.value;
+  S.doneOnly = (e.target.value === "Done");
+  refresh();
+});
 
 refresh();
