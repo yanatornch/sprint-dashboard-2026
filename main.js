@@ -3258,4 +3258,120 @@ function showToast(message, type = "info", duration = 4000) {
     }
   });
 })();
+
+// ============================================================================
+//  STATUS DETAIL POPOVER
+// ============================================================================
+(function wireStatusDetailPopover() {
+  const popover = document.getElementById("statusDetailPopover");
+  const hint    = document.getElementById("statusFilterHint");
+  if (!popover) return;
+
+  const BUCKET_MATCH = {
+    done:    st => { const s=(st||"").toLowerCase(); return s.includes("done")||s==="closed"; },
+    wip:     st => { const s=(st||"").toLowerCase(); return ["in progress","active","doing","ready for review","ready for test","waiting to int deploy","waiting to prd deploy"].some(w=>s.includes(w)); },
+    todo:    st => { const s=(st||"").toLowerCase(); return s.includes("to do")||s==="new"; },
+    blocked: st => { const s=(st||"").toLowerCase(); return s.includes("block")||s.includes("bug"); },
+  };
+  const STATE_STYLE = {
+    "In Progress":           {bg:"rgba(59,130,246,.2)",  color:"#93c5fd"},
+    "Ready for review":      {bg:"rgba(168,85,247,.2)",  color:"#d8b4fe"},
+    "Ready for test":        {bg:"rgba(34,211,238,.2)",  color:"#67e8f9"},
+    "Waiting to INT deploy": {bg:"rgba(249,115,22,.2)",  color:"#fdba74"},
+    "Waiting to PRD deploy": {bg:"rgba(249,115,22,.2)",  color:"#fdba74"},
+    "To Do":                 {bg:"rgba(148,163,184,.15)",color:"#cbd5e1"},
+    "Done":                  {bg:"rgba(16,185,129,.18)", color:"#6ee7b7"},
+    "Blocked":               {bg:"rgba(239,68,68,.18)",  color:"#fca5a5"},
+    "Bugged":                {bg:"rgba(244,63,94,.18)",  color:"#fda4af"},
+  };
+  const BUCKET_LABEL = {done:"Done", wip:"In Progress / WIP", todo:"To Do", blocked:"Blocked / Bugged"};
+  const BUCKET_COLOR = {done:"#10b981", wip:"#3b82f6", todo:"#94a3b8", blocked:"#ef4444"};
+
+  function getMatchingTasks(filter) {
+    const matcher = BUCKET_MATCH[filter];
+    if (!matcher) return {};
+    const sprintSet = S.range === "all" ? null : new Set(rangeIdx(S.range).map(i=>i+1));
+    const hl = S.highlight !== "All" ? S.highlight : null;
+    const byPerson = {};
+    DATA.movement.forEach(t => {
+      if (!matcher(t.state||"")) return;
+      if (sprintSet && !sprintSet.has(t.sprint)) return;
+      if (hl && t.person !== hl) return;
+      if (!byPerson[t.person]) byPerson[t.person] = [];
+      byPerson[t.person].push(t);
+    });
+    Object.values(byPerson).forEach(arr => arr.sort((a,b)=>(b.sprint||0)-(a.sprint||0)));
+    return byPerson;
+  }
+
+  function buildPopover(filter) {
+    if (!filter || filter === "all") {
+      popover.style.display = "none";
+      if (hint) hint.textContent = "";
+      return;
+    }
+    const byPerson = getMatchingTasks(filter);
+    const people = Object.keys(byPerson).sort((a,b) => {
+      const ra=ROLE_ORDER.indexOf(roleOf(a)), rb=ROLE_ORDER.indexOf(roleOf(b));
+      return ra!==rb ? ra-rb : byPerson[b].length-byPerson[a].length;
+    });
+    const total = people.reduce((s,p)=>s+byPerson[p].length, 0);
+    if (hint) hint.textContent = total ? `(${total})` : "";
+
+    const dot = `<span style="width:8px;height:8px;border-radius:50%;background:${BUCKET_COLOR[filter]};display:inline-block;box-shadow:0 0 6px ${BUCKET_COLOR[filter]}88;flex-shrink:0;"></span>`;
+
+    const bodyHtml = people.length === 0
+      ? `<div class="sdp-empty">No tasks found for this filter.</div>`
+      : people.map(person => {
+          const tasks = byPerson[person];
+          const rc = ROLE_COLORS[roleOf(person)] || "#94a3b8";
+          const ini = person.slice(0,2).toUpperCase();
+          const tasksHtml = tasks.map(t => {
+            const pts = parseFloat(t.points)||0;
+            const sc = STATE_STYLE[t.state] || {bg:"rgba(148,163,184,.15)",color:"#94a3b8"};
+            return `<div class="sdp-task">
+              <span class="sdp-task-dot" style="background:${BUCKET_COLOR[filter]};margin-top:5px;"></span>
+              <div class="sdp-task-body">
+                <div class="sdp-task-title" title="${(t.title||"").replace(/"/g,"&quot;")}">${t.title||"(untitled)"}</div>
+                <div class="sdp-task-meta">
+                  <span class="sdp-state" style="background:${sc.bg};color:${sc.color}">${t.state||"—"}</span>
+                  ${pts>0?`<span class="sdp-pts">${pts}pt</span>`:""}
+                  ${t.project?`<span class="sdp-proj" title="${t.project}">${t.project}</span>`:""}
+                  <span class="sdp-sprint">Sp ${t.sprint||"—"}</span>
+                </div>
+              </div>
+            </div>`;
+          }).join("");
+          return `<div class="sdp-person">
+            <div class="sdp-person-header">
+              <span class="sdp-avatar" style="background:${rc}">${ini}</span>
+              <a href="/person.html?name=${encodeURIComponent(person)}" style="color:inherit;text-decoration:none;border-bottom:1px dotted var(--muted);">${person}</a>
+              <span style="font-size:10px;color:${rc};font-weight:700;padding:1px 6px;border-radius:999px;background:${rc}22;border:1px solid ${rc}44;">${roleOf(person)}</span>
+              <span class="sdp-count">${tasks.length} task${tasks.length!==1?"s":""}</span>
+            </div>
+            ${tasksHtml}
+          </div>`;
+        }).join("");
+
+    popover.innerHTML = `
+      <div class="sdp-header">
+        <span class="sdp-title">${dot}${BUCKET_LABEL[filter]}<span style="font-size:11px;color:var(--muted);font-weight:600;">${total} task${total!==1?"s":""} · ${people.length} people</span></span>
+        <button class="sdp-close" id="sdpClose">✕</button>
+      </div>
+      <div class="sdp-body">${bodyHtml}</div>`;
+    popover.style.display = "block";
+    document.getElementById("sdpClose").onclick = () => { popover.style.display = "none"; };
+  }
+
+  document.getElementById("statusFilter").addEventListener("change", e => buildPopover(e.target.value));
+
+  // Re-render popover when sprint range or person filter changes (keeps counts in sync)
+  const _origRefresh = refresh;
+  refresh = function() {
+    _origRefresh();
+    const f = document.getElementById("statusFilter")?.value;
+    if (f && f !== "all") buildPopover(f);
+  };
+})();
+
 refresh();
