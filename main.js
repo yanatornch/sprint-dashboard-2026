@@ -370,6 +370,7 @@ let S = {
   statusMetric: "points",
   statusView: "person",
   doneOnly: false,
+  statusFilter: "all", // all | done | wip | todo | blocked
   role: "all",
   topSprint: "all"
 };
@@ -414,17 +415,45 @@ Object.keys(DATA.projectSprint).forEach(n => {
   DONE_RATIO.projCount[n] = tc ? ac[0]/tc : 0;
 });
 
+// Per-person, per-sprint points/tasks broken down by status bucket — built from movement.
+// Used by the overview status filter.
+const STATUS_FILTER_PTS   = {}; // { name: { done:[], wip:[], todo:[], blocked:[] } }
+const STATUS_FILTER_TASKS = {};
+(function buildStatusFilterData(){
+  const SPR = DATA.sprints.length;
+  const blank = () => ({ done: new Array(SPR).fill(0), wip: new Array(SPR).fill(0), todo: new Array(SPR).fill(0), blocked: new Array(SPR).fill(0) });
+  const WIP_ST = ["in progress","active","doing","ready for review","ready for test","waiting to int deploy","waiting to prd deploy"];
+  DATA.movement.forEach(t => {
+    const p = t.person, si = (t.sprint||1)-1, pts = parseFloat(t.points)||0;
+    if (!STATUS_FILTER_PTS[p])   STATUS_FILTER_PTS[p]   = blank();
+    if (!STATUS_FILTER_TASKS[p]) STATUS_FILTER_TASKS[p] = blank();
+    const st = (t.state||"").toLowerCase();
+    let bucket;
+    if (st.includes("done") || st === "closed") bucket = "done";
+    else if (st.includes("block") || st.includes("bug"))  bucket = "blocked";
+    else if (st.includes("to do") || st === "new")        bucket = "todo";
+    else if (WIP_ST.some(w => st.includes(w)))            bucket = "wip";
+    else bucket = "todo";
+    if (si >= 0 && si < SPR) {
+      STATUS_FILTER_PTS[p][bucket][si]   += pts;
+      STATUS_FILTER_TASKS[p][bucket][si] += 1;
+    }
+  });
+})();
+
 function getPersonPoints(name) {
   const a = DATA.points[name] || [];
-  if (!S.doneOnly) return a;
-  const r = DONE_RATIO.personPts[name] || 0;
-  return a.map(v => v * r);
+  const f = S.statusFilter;
+  if (!f || f === "all") return a;
+  if (f === "done" || S.doneOnly) { const r = DONE_RATIO.personPts[name] || 0; return a.map(v => v * r); }
+  return (STATUS_FILTER_PTS[name] || {})[f] || new Array(a.length).fill(0);
 }
 function getPersonTasks(name) {
   const a = DATA.tasks[name] || [];
-  if (!S.doneOnly) return a;
-  const r = DONE_RATIO.personCount[name] || 0;
-  return a.map(v => v * r);
+  const f = S.statusFilter;
+  if (!f || f === "all") return a;
+  if (f === "done" || S.doneOnly) { const r = DONE_RATIO.personCount[name] || 0; return a.map(v => v * r); }
+  return (STATUS_FILTER_TASKS[name] || {})[f] || new Array(a.length).fill(0);
 }
 function getProjectSprint(name) {
   const a = DATA.projectSprint[name] || [];
@@ -3121,6 +3150,7 @@ function wireUp(){
   document.getElementById("memberSelect").addEventListener("change", e => { S.highlight = e.target.value; refresh(); });
   document.getElementById("roleSelect").addEventListener("change", e => { S.role = e.target.value; refresh(); });
   document.getElementById("sprintRange").addEventListener("change", e => { S.range = e.target.value; refresh(); });
+  document.getElementById("statusFilter").addEventListener("change", e => { S.statusFilter = e.target.value; S.doneOnly = (e.target.value === "done"); refresh(); });
   document.getElementById("chartType").addEventListener("change", e => { S.chartType = e.target.value; buildTrendChart(); });
   document.getElementById("topSprint").addEventListener("change", e => { S.topSprint = e.target.value; buildTopChart(); });
 
