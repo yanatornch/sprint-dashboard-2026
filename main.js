@@ -3161,7 +3161,6 @@ function wireUp(){
 
   document.getElementById("viewSelect").addEventListener("change", e => { S.view = e.target.value; refresh(); });
   document.getElementById("memberSelect").addEventListener("change", e => { S.highlight = e.target.value; refresh(); });
-  document.getElementById("roleSelect").addEventListener("change", e => { S.role = e.target.value; refresh(); });
   document.getElementById("sprintRange").addEventListener("change", e => { S.range = e.target.value; refresh(); });
   document.getElementById("statusFilter").addEventListener("change", e => { S.statusFilter = e.target.value; S.doneOnly = (e.target.value === "done"); refresh(); });
   document.getElementById("chartType").addEventListener("change", e => { S.chartType = e.target.value; buildTrendChart(); });
