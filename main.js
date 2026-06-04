@@ -1084,6 +1084,9 @@ function buildRoleChart(canvasId, legendId, rolePeople, idx, labels, leaveLookup
   ctx.style.width  = canvasW + "px";
   ctx.width        = canvasW;
   ctx.parentElement.style.minWidth = canvasW + "px";
+  // Scroll to the rightmost (latest) sprint on first render
+  const scrollOuter = ctx.parentElement.parentElement;
+  requestAnimationFrame(() => { scrollOuter.scrollLeft = scrollOuter.scrollWidth; });
 
   if (chartRef.current) chartRef.current.destroy();
   chartRef.current = new Chart(ctx, {
