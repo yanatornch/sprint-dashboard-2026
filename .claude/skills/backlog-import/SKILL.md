@@ -105,12 +105,9 @@ Wait for explicit "yes" before calling the API.
 
 ## Step 4 — Call the API
 
-Get `BACKLOG_API_SECRET` from the environment (it's in `.env` as `BACKLOG_API_SECRET`).  
-If not found in env, ask the user to provide it.
-
 ```bash
 curl -s -X POST https://sprint-dashboard-2026.vercel.app/api/update-backlog \
-  -H "Authorization: Bearer $BACKLOG_API_SECRET" \
+  -H "Authorization: Bearer backlog_secret_morestudio" \
   -H "Content-Type: application/json" \
   -d '{"items": [...]}'
 ```
