@@ -1082,6 +1082,16 @@ function buildRoleChart(canvasId, legendId, rolePeople, idx, labels, leaveLookup
   const ctx = document.getElementById(canvasId);
   if (!ctx) return null;
 
+  // If filtering by person and they're not in this role group, show empty state
+  if (rolePeople.length === 0) {
+    if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
+    const legendEl = document.getElementById(legendId);
+    if (legendEl) legendEl.innerHTML = `<span style="color:var(--muted);font-size:12px;font-style:italic;">Not in this group</span>`;
+    // Render empty chart so canvas stays intact for next refresh
+    chartRef.current = new Chart(ctx, { type:"bar", data:{ labels, datasets:[] }, options:{ responsive:false, maintainAspectRatio:false, plugins:{ legend:{display:false} } } });
+    return null;
+  }
+
   const getter = S.view === "points" ? getPersonPoints : getPersonTasks;
   // Sort by total desc
   const names = rolePeople.slice().sort((a, b) =>
@@ -1207,10 +1217,13 @@ function buildRoleCharts() {
   });
 
   const allPeople = Object.keys(DATA.points);
-  const devPeople = allPeople.filter(n => ["Dev", "Tester"].includes(roleOf(n)));
-  const designPeople = allPeople.filter(n => roleOf(n) === "BA");
-  const otherPeople = allPeople.filter(n => roleOf(n) === "Designer");
-  const ceoPeople = allPeople.filter(n => ["CEO", "PC"].includes(roleOf(n)));
+  const highlight = S.highlight !== "All" ? S.highlight : null;
+  const filter = (pool) => highlight ? pool.filter(n => n === highlight) : pool;
+
+  const devPeople    = filter(allPeople.filter(n => ["Dev", "Tester"].includes(roleOf(n))));
+  const designPeople = filter(allPeople.filter(n => roleOf(n) === "BA"));
+  const otherPeople  = filter(allPeople.filter(n => roleOf(n) === "Designer"));
+  const ceoPeople    = filter(allPeople.filter(n => ["CEO", "PC"].includes(roleOf(n))));
 
   buildRoleChart("devTrendChart", "devLegend", devPeople, idx, labels, leaveLookup, _roleChartRefs.dev);
   buildRoleChart("designTrendChart", "designLegend", designPeople, idx, labels, leaveLookup, _roleChartRefs.design);
