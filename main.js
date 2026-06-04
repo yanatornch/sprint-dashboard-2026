@@ -415,56 +415,39 @@ Object.keys(DATA.projectSprint).forEach(n => {
   DONE_RATIO.projCount[n] = tc ? ac[0]/tc : 0;
 });
 
-// Per-person, per-sprint points/tasks broken down by status bucket — built from movement.
-// Used by the overview status filter.
-const STATUS_FILTER_PTS   = {}; // { name: { done:[], wip:[], todo:[], blocked:[] } }
-const STATUS_FILTER_TASKS = {};
+// Per-person, per-sprint points/tasks indexed by exact state string.
+// Enables the overview status filter to show per-state data accurately.
+const STATUS_FILTER_PTS   = {}; // { name: { [exactState]: pts[] } }
+const STATUS_FILTER_TASKS = {}; // { name: { [exactState]: count[] } }
 (function buildStatusFilterData(){
   const SPR = DATA.sprints.length;
-  const blank = () => ({ done: new Array(SPR).fill(0), wip: new Array(SPR).fill(0), todo: new Array(SPR).fill(0), blocked: new Array(SPR).fill(0) });
-  const WIP_ST = ["in progress","active","doing","ready for review","ready for test","waiting to int deploy","waiting to prd deploy"];
   DATA.movement.forEach(t => {
     const p = t.person, si = (t.sprint||1)-1, pts = parseFloat(t.points)||0;
-    if (!STATUS_FILTER_PTS[p])   STATUS_FILTER_PTS[p]   = blank();
-    if (!STATUS_FILTER_TASKS[p]) STATUS_FILTER_TASKS[p] = blank();
-    const st = (t.state||"").toLowerCase();
-    let bucket;
-    if (st.includes("done") || st === "closed") bucket = "done";
-    else if (st.includes("block") || st.includes("bug"))  bucket = "blocked";
-    else if (st.includes("to do") || st === "new")        bucket = "todo";
-    else if (WIP_ST.some(w => st.includes(w)))            bucket = "wip";
-    else bucket = "todo";
+    const state = t.state || "To Do";
+    if (!STATUS_FILTER_PTS[p])   STATUS_FILTER_PTS[p]   = {};
+    if (!STATUS_FILTER_TASKS[p]) STATUS_FILTER_TASKS[p] = {};
+    if (!STATUS_FILTER_PTS[p][state])   STATUS_FILTER_PTS[p][state]   = new Array(SPR).fill(0);
+    if (!STATUS_FILTER_TASKS[p][state]) STATUS_FILTER_TASKS[p][state] = new Array(SPR).fill(0);
     if (si >= 0 && si < SPR) {
-      STATUS_FILTER_PTS[p][bucket][si]   += pts;
-      STATUS_FILTER_TASKS[p][bucket][si] += 1;
+      STATUS_FILTER_PTS[p][state][si]   += pts;
+      STATUS_FILTER_TASKS[p][state][si] += 1;
     }
   });
 })();
-
-// Map a specific state value to its bucket for chart filtering
-function stateToBucket(state) {
-  const s = (state || "").toLowerCase();
-  if (s === "done" || s.includes("done") || s === "closed" || s.includes("cancel") || s.includes("remov")) return "done";
-  if (s.includes("block") || s.includes("bug")) return "blocked";
-  if (s.includes("to do") || s === "new") return "todo";
-  return "wip"; // in progress, review, test, waiting
-}
 
 function getPersonPoints(name) {
   const a = DATA.points[name] || [];
   const f = S.statusFilter;
   if (!f || f === "all") return a;
-  const bucket = stateToBucket(f);
-  if (bucket === "done" || S.doneOnly) { const r = DONE_RATIO.personPts[name] || 0; return a.map(v => v * r); }
-  return (STATUS_FILTER_PTS[name] || {})[bucket] || new Array(a.length).fill(0);
+  if (f === "Done" || S.doneOnly) { const r = DONE_RATIO.personPts[name] || 0; return a.map(v => v * r); }
+  return (STATUS_FILTER_PTS[name] || {})[f] || new Array(a.length).fill(0);
 }
 function getPersonTasks(name) {
   const a = DATA.tasks[name] || [];
   const f = S.statusFilter;
   if (!f || f === "all") return a;
-  const bucket = stateToBucket(f);
-  if (bucket === "done" || S.doneOnly) { const r = DONE_RATIO.personCount[name] || 0; return a.map(v => v * r); }
-  return (STATUS_FILTER_TASKS[name] || {})[bucket] || new Array(a.length).fill(0);
+  if (f === "Done" || S.doneOnly) { const r = DONE_RATIO.personCount[name] || 0; return a.map(v => v * r); }
+  return (STATUS_FILTER_TASKS[name] || {})[f] || new Array(a.length).fill(0);
 }
 function getProjectSprint(name) {
   const a = DATA.projectSprint[name] || [];
@@ -1060,9 +1043,9 @@ function buildBarHoverPlugin(labels, idx, roleNames, leaveLookup) {
       const sprintLabel = labels[sprintLocalIdx];
       const sprintGlobalIdx = idx[sprintLocalIdx];
 
-      const pts = (DATA.points[person] || [])[sprintGlobalIdx] || 0;
-      const tasks = (DATA.tasks[person] || [])[sprintGlobalIdx] || 0;
-      const ytdPts = sum((DATA.points[person] || []).slice(0, sprintGlobalIdx + 1));
+      const pts = getPersonPoints(person)[sprintGlobalIdx] || 0;
+      const tasks = getPersonTasks(person)[sprintGlobalIdx] || 0;
+      const ytdPts = sum(getPersonPoints(person).slice(0, sprintGlobalIdx + 1));
       const role = roleOf(person);
       const color = ds.backgroundColor;
 
@@ -1128,17 +1111,16 @@ function buildRoleChart(canvasId, legendId, rolePeople, idx, labels, leaveLookup
   const leavePlugin = buildLeavePlugin(labels, idx, leaveLookup, () => "bar");
   const hoverPlugin = buildBarHoverPlugin(labels, idx, names, leaveLookup);
 
-  // Size canvas so each sprint bar gets ~58px — scroll container handles overflow
+  // Destroy first, then resize canvas, then create — order matters with responsive:false
+  if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
+
   const BAR_WIDTH = 58;
   const canvasW = Math.max(400, labels.length * BAR_WIDTH);
   ctx.style.width  = canvasW + "px";
   ctx.width        = canvasW;
   ctx.parentElement.style.minWidth = canvasW + "px";
-  // Scroll to the rightmost (latest) sprint on first render
   const scrollOuter = ctx.parentElement.parentElement;
   requestAnimationFrame(() => { scrollOuter.scrollLeft = scrollOuter.scrollWidth; });
-
-  if (chartRef.current) chartRef.current.destroy();
   chartRef.current = new Chart(ctx, {
     type: "bar",
     data: { labels, datasets },
