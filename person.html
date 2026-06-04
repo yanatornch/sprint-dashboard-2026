@@ -417,16 +417,45 @@ const personTasks = movement.filter(t => t.person === PERSON);
 const words = PERSON.trim().split(/\s+/);
 const initials = words.length === 1 ? PERSON.slice(0,2).toUpperCase() : (words[0][0]+words[1][0]).toUpperCase();
 
+// ── Leaderboard — all team members ranked by total points ─────────────────
+const leaderboard = allPeople.map(name => {
+  const p = sum(points[name] || []);
+  const tk = sum(tasks[name] || []);
+  const gp = sum(Object.values(statusPts[name] || {}));
+  const dp = (statusPts[name] || {})["Done"] || 0;
+  const dr = gp ? dp / gp : 0;
+  const r = ROLES[name] || "—";
+  const { cur: tier } = (() => {
+    let cur = TIERS[0];
+    for (const t of TIERS) if (p >= t.min) cur = t;
+    return { cur };
+  })();
+  const nameWords = name.trim().split(/\s+/);
+  const ini = nameWords.length === 1 ? name.slice(0,2).toUpperCase() : (nameWords[0][0]+nameWords[1][0]).toUpperCase();
+  return { name, pts: p, tasks: tk, doneRate: dr, role: r, roleColor: ROLE_COLORS[r] || "#94a3b8", tier, initials: ini };
+}).sort((a, b) => b.pts - a.pts);
+
+// Assign ranks (tied scores share the same rank)
+let curRank = 1;
+leaderboard.forEach((row, i) => {
+  if (i > 0 && row.pts === leaderboard[i-1].pts) row.rank = leaderboard[i-1].rank;
+  else { row.rank = curRank; }
+  curRank = row.rank + 1;
+});
+
+const myRank = (leaderboard.find(r => r.name === PERSON) || {}).rank || "—";
+
 document.title = `${PERSON} · Sprint Dashboard 2026`;
 
 window.DATA = {
   person: { name:PERSON, initials, role, roleColor, sprintsActive:activeSprints, sprintsTotal:SPR, totalPoints:totalPts, totalTasks },
-  stats: { totalPoints:totalPts, totalTasks, doneRatePct:(doneRate*100).toFixed(1), donePts:donePts.toFixed(1), targetPts:grandPts.toFixed(1), avgPtsPerTask:avgPerTask.toFixed(2), activeSprints, sprintsTotal:SPR, projects:projEntries.length },
+  stats: { totalPoints:totalPts, totalTasks, doneRatePct:(doneRate*100).toFixed(1), donePts:donePts.toFixed(1), targetPts:grandPts.toFixed(1), avgPtsPerTask:avgPerTask.toFixed(2), activeSprints, sprintsTotal:SPR, projects:projEntries.length, myRank, teamSize:allPeople.length },
   statusHero, statusRest, insights, sprintTrend, ptsMax, taskMax,
   rewards: REWARDS, tiers: TIERS,
   leave: leaveEntries,
   projEntries, contrib, sprints, SPR,
   personTasks,
+  leaderboard,
 };
 
 // Signal React app to mount
@@ -847,6 +876,173 @@ function RewardsSection({points,claimed,onClaim,anchorRef,confetti}) {
 window.__GameExports = {RewardHero,MilestoneTrack,RewardCard,RewardsSection};
 </script>
 
+<!-- ── Leaderboard ────────────────────────────────────────────────────────── -->
+<script type="text/babel">
+const RANK_MEDAL = ["🥇","🥈","🥉"];
+
+function Leaderboard() {
+  const D = window.DATA;
+  const [metric, setMetric] = useState("pts"); // pts | tasks | doneRate
+  const rows = [...D.leaderboard].sort((a,b) => {
+    if (metric === "tasks")    return b.tasks    - a.tasks;
+    if (metric === "doneRate") return b.doneRate - a.doneRate;
+    return b.pts - a.pts;
+  });
+  // Re-rank for the selected metric
+  let cr = 1;
+  rows.forEach((row, i) => {
+    const val = row[metric];
+    if (i > 0 && val === rows[i-1][metric]) row._rank = rows[i-1]._rank;
+    else row._rank = cr;
+    cr = row._rank + 1;
+  });
+  const myRow = rows.find(r => r.name === D.person.name);
+  const myPos = rows.indexOf(myRow) + 1;
+
+  const tabStyle = (k) => ({
+    padding:"7px 14px", borderRadius:999, cursor:"pointer",
+    font:"600 12.5px/1 var(--font)",
+    border:`1px solid ${metric===k?"var(--border-hi)":"var(--border)"}`,
+    background: metric===k ? "var(--panel-hi)" : "transparent",
+    color: metric===k ? "var(--text)" : "var(--muted)",
+  });
+
+  return <div className="panel panel-pad rise">
+    <div className="panel-head">
+      <h2>🏆 Leaderboard</h2>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+        <button style={tabStyle("pts")}      onClick={()=>setMetric("pts")}>Points</button>
+        <button style={tabStyle("tasks")}    onClick={()=>setMetric("tasks")}>Tasks</button>
+        <button style={tabStyle("doneRate")} onClick={()=>setMetric("doneRate")}>Done %</button>
+        <span style={{fontSize:12.5,fontWeight:700,color:"var(--faint)",marginLeft:4}}>
+          {D.stats.teamSize} members
+        </span>
+      </div>
+    </div>
+
+    {/* current person rank summary */}
+    <div style={{display:"flex",alignItems:"center",gap:14,padding:"12px 16px",borderRadius:14,marginBottom:18,
+      background:`linear-gradient(135deg, ${D.person.roleColor}18, transparent 70%)`,
+      border:`1px solid ${D.person.roleColor}35`}}>
+      <div style={{fontSize:28,fontWeight:900,color:"var(--gold)",minWidth:36,textAlign:"center",letterSpacing:"-1px"}}>
+        {myRow && myRow._rank <= 3 ? RANK_MEDAL[myRow._rank-1] : `#${myRow?._rank||"—"}`}
+      </div>
+      <div>
+        <div style={{fontWeight:800,fontSize:15}}>{D.person.name} · your rank</div>
+        <div style={{color:"var(--muted)",fontSize:13,marginTop:2}}>
+          {metric==="pts"    && `${D.person.totalPoints.toLocaleString(undefined,{maximumFractionDigits:1})} pts`}
+          {metric==="tasks"  && `${D.person.totalTasks} tasks`}
+          {metric==="doneRate" && `${(myRow?.doneRate*100||0).toFixed(1)}% done rate`}
+          {" · "}position {myPos} of {rows.length}
+        </div>
+      </div>
+    </div>
+
+    {/* table */}
+    <div style={{overflowX:"auto"}}>
+      <table style={{width:"100%",borderCollapse:"collapse",fontSize:13.5}}>
+        <thead>
+          <tr style={{borderBottom:"1px solid var(--border)"}}>
+            <th style={{textAlign:"left",padding:"8px 10px",fontSize:11,fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:"var(--faint)"}}>Rank</th>
+            <th style={{textAlign:"left",padding:"8px 10px",fontSize:11,fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:"var(--faint)"}}>Member</th>
+            <th style={{textAlign:"right",padding:"8px 10px",fontSize:11,fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:metric==="pts"?"var(--indigo)":"var(--faint)"}}>Points</th>
+            <th style={{textAlign:"right",padding:"8px 10px",fontSize:11,fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:metric==="tasks"?"var(--indigo)":"var(--faint)"}}>Tasks</th>
+            <th style={{textAlign:"right",padding:"8px 10px",fontSize:11,fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:metric==="doneRate"?"var(--indigo)":"var(--faint)"}}>Done %</th>
+            <th style={{textAlign:"right",padding:"8px 10px",fontSize:11,fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:"var(--faint)"}}>Tier</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => {
+            const isMe = row.name === D.person.name;
+            const medal = row._rank <= 3 ? RANK_MEDAL[row._rank-1] : null;
+            const barW  = metric==="pts"      ? (rows[0].pts      ? row.pts/rows[0].pts           : 0)
+                        : metric==="tasks"    ? (rows[0].tasks    ? row.tasks/rows[0].tasks       : 0)
+                        :                       (rows[0].doneRate ? row.doneRate/rows[0].doneRate : 0);
+            return <tr key={row.name} style={{
+              borderBottom:"1px solid var(--border)",
+              background: isMe ? `${D.person.roleColor}14` : i%2===0?"transparent":"rgba(255,255,255,.015)",
+              transition:".12s",
+            }}>
+              {/* rank */}
+              <td style={{padding:"11px 10px",fontWeight:800,fontSize:medal?18:14,color:medal?"inherit":"var(--faint)",minWidth:44}}>
+                {medal || `#${row._rank}`}
+              </td>
+              {/* name */}
+              <td style={{padding:"11px 10px",minWidth:160}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <div style={{width:30,height:30,borderRadius:"50%",display:"grid",placeItems:"center",
+                    background:`linear-gradient(150deg, ${row.roleColor}cc, ${row.roleColor}88)`,
+                    fontSize:11,fontWeight:800,color:"#fff",flexShrink:0,
+                    boxShadow: isMe ? `0 0 0 2px ${row.roleColor}` : "none",
+                  }}>{row.initials}</div>
+                  <div>
+                    {isMe
+                      ? <span style={{fontWeight:800,color:"var(--text)"}}>{row.name}</span>
+                      : <a href={`/person.html?name=${encodeURIComponent(row.name)}`}
+                           style={{fontWeight:700,color:"var(--text)",textDecoration:"none",borderBottom:"1px dotted var(--faint)"}}>
+                          {row.name}
+                        </a>
+                    }
+                    <div style={{fontSize:11,color:row.roleColor,fontWeight:700,marginTop:1}}>{row.role}</div>
+                  </div>
+                  {isMe && <span style={{fontSize:10,fontWeight:800,padding:"3px 8px",borderRadius:999,
+                    background:`${D.person.roleColor}28`,color:D.person.roleColor,border:`1px solid ${D.person.roleColor}44`,
+                    marginLeft:2,whiteSpace:"nowrap"}}>You</span>}
+                </div>
+              </td>
+              {/* points */}
+              <td style={{padding:"11px 10px",textAlign:"right"}}>
+                <div style={{fontWeight:metric==="pts"?800:600,fontSize:metric==="pts"?15:13.5,
+                  color:metric==="pts"?"var(--text)":"var(--muted)"}}>
+                  {row.pts.toLocaleString(undefined,{maximumFractionDigits:1})}
+                </div>
+                {metric==="pts"&&<div style={{marginTop:5,height:3,borderRadius:999,background:"rgba(255,255,255,.07)"}}>
+                  <div style={{height:"100%",width:(barW*100).toFixed(1)+"%",borderRadius:999,
+                    background:isMe?`linear-gradient(90deg,${D.person.roleColor},var(--indigo))`:"rgba(124,127,245,.55)",
+                    transition:"width .6s cubic-bezier(.2,.8,.2,1)"}}/>
+                </div>}
+              </td>
+              {/* tasks */}
+              <td style={{padding:"11px 10px",textAlign:"right"}}>
+                <div style={{fontWeight:metric==="tasks"?800:600,fontSize:metric==="tasks"?15:13.5,
+                  color:metric==="tasks"?"var(--text)":"var(--muted)"}}>
+                  {row.tasks}
+                </div>
+                {metric==="tasks"&&<div style={{marginTop:5,height:3,borderRadius:999,background:"rgba(255,255,255,.07)"}}>
+                  <div style={{height:"100%",width:(barW*100).toFixed(1)+"%",borderRadius:999,
+                    background:isMe?`linear-gradient(90deg,${D.person.roleColor},var(--cyan))`:"rgba(42,212,229,.55)",
+                    transition:"width .6s cubic-bezier(.2,.8,.2,1)"}}/>
+                </div>}
+              </td>
+              {/* done rate */}
+              <td style={{padding:"11px 10px",textAlign:"right"}}>
+                <div style={{fontWeight:metric==="doneRate"?800:600,fontSize:metric==="doneRate"?15:13.5,
+                  color:metric==="doneRate"?(row.doneRate>=.7?"var(--green)":row.doneRate>=.4?"var(--cyan)":"var(--orange)"):"var(--muted)"}}>
+                  {(row.doneRate*100).toFixed(0)}%
+                </div>
+                {metric==="doneRate"&&<div style={{marginTop:5,height:3,borderRadius:999,background:"rgba(255,255,255,.07)"}}>
+                  <div style={{height:"100%",width:(barW*100).toFixed(1)+"%",borderRadius:999,
+                    background:isMe?`linear-gradient(90deg,${D.person.roleColor},var(--green))`:"rgba(47,211,155,.55)",
+                    transition:"width .6s cubic-bezier(.2,.8,.2,1)"}}/>
+                </div>}
+              </td>
+              {/* tier */}
+              <td style={{padding:"11px 10px",textAlign:"right",whiteSpace:"nowrap"}}>
+                <span style={{fontSize:11,fontWeight:800,padding:"4px 9px",borderRadius:999,
+                  color:row.tier.color,background:`${row.tier.color}1a`,border:`1px solid ${row.tier.color}44`}}>
+                  {row.tier.name}
+                </span>
+              </td>
+            </tr>;
+          })}
+        </tbody>
+      </table>
+    </div>
+  </div>;
+}
+window.__LeaderboardExport = Leaderboard;
+</script>
+
 <!-- ── Task list component ────────────────────────────────────────────────── -->
 <script type="text/babel">
 const STATE_STYLE_MAP = {
@@ -955,6 +1151,7 @@ function App() {
   const {SprintTrendChart,ChartLegend} = window.__ChartExports;
   const {RewardHero,MilestoneTrack,RewardsSection} = window.__GameExports;
   const TaskList = window.__TaskListExport;
+  const Leaderboard = window.__LeaderboardExport;
 
   const TWEAK_DEFAULTS = {
     accent: ["#7c7ff5","#6366f1"],
@@ -990,7 +1187,7 @@ function App() {
           <h1>{D.person.name}</h1>
           <span className="role-badge" style={{color:t.accent[0],border:`1px solid ${t.accent[0]}55`,background:`${t.accent[0]}18`}}>{D.person.role}</span>
         </div>
-        <div className="who-sub">{D.person.sprintsActive}/{D.person.sprintsTotal} sprints active · <b>{D.person.totalPoints.toLocaleString(undefined,{maximumFractionDigits:1})} pts</b> · {D.person.totalTasks} tasks</div>
+        <div className="who-sub">{D.person.sprintsActive}/{D.person.sprintsTotal} sprints active · <b>{D.person.totalPoints.toLocaleString(undefined,{maximumFractionDigits:1})} pts</b> · {D.person.totalTasks} tasks · <b>#{D.stats.myRank}</b> of {D.stats.teamSize}</div>
       </div>
       <div className="spacer"/>
     </div>
@@ -1027,6 +1224,10 @@ function App() {
       <StatCard label="Active Sprints"value={D.stats.activeSprints}    sub={`of ${D.stats.sprintsTotal} total`} delay={160}/>
       <StatCard label="Projects"      value={D.stats.projects}         sub="contributed to" delay={200}/>
     </div>
+
+    {/* Leaderboard */}
+    <div className="section-label">Leaderboard</div>
+    <Leaderboard/>
 
     {/* Insights */}
     <div className="section-label">Insights</div>
