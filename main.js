@@ -2697,20 +2697,30 @@ const STATE_STYLE = {
 };
 
 function buildTeamSection() {
-  const sprintIdx = CURRENT_SPRINT_IDX;
-  const sprintNum = sprintIdx + 1;
+  const sprintSel  = document.getElementById("teamSprintFilter");
+  const roleSel    = document.getElementById("teamRoleFilter");
+  const statusSel  = document.getElementById("teamStatusFilter");
 
-  // Collect unfinished tasks per dev person for current sprint
+  const sprintNum  = sprintSel  ? parseInt(sprintSel.value,  10) : CURRENT_SPRINT_IDX + 1;
+  const roleFilter = roleSel    ? roleSel.value    : "all";
+  const statusFilter = statusSel ? statusSel.value : "unfinished";
+
+  // Determine people to show
+  const allPeople = Object.keys(DATA.points);
+  const people = allPeople.filter(p => roleFilter === "all" || roleOf(p) === roleFilter);
+
+  // Collect tasks per person for the selected sprint
   const byPerson = {};
-  DEV_PEOPLE.forEach(p => { byPerson[p] = { tasks: [], points: 0, done: 0, donePoints: 0 }; });
+  people.forEach(p => { byPerson[p] = { tasks: [], points: 0, done: 0, donePoints: 0 }; });
 
   DATA.movement.forEach(t => {
     if (t.sprint !== sprintNum) return;
-    if (!DEV_PEOPLE.includes(t.person)) return;
+    if (!byPerson[t.person] && !people.includes(t.person)) return;
+    if (!people.includes(t.person)) return;
     const stateLower = (t.state || "").toLowerCase();
     const isDone = DONE_STATES_TEAM.some(s => stateLower.includes(s));
     const pts = parseFloat(t.points) || 0;
-    if (!byPerson[t.person]) byPerson[t.person] = { tasks: [], points: 0, done: 0, donePoints: 0 };
+
     if (isDone) {
       byPerson[t.person].done++;
       byPerson[t.person].donePoints += pts;
@@ -2720,31 +2730,42 @@ function buildTeamSection() {
     }
   });
 
-  const totalUnfinished = DEV_PEOPLE.reduce((a, p) => a + byPerson[p].tasks.length, 0);
-  const totalPtsLeft = DEV_PEOPLE.reduce((a, p) => a + byPerson[p].points, 0);
-  const totalDone = DEV_PEOPLE.reduce((a, p) => a + byPerson[p].done, 0);
+  const totalUnfinished = people.reduce((a, p) => a + byPerson[p].tasks.length, 0);
+  const totalPtsLeft    = people.reduce((a, p) => a + byPerson[p].points, 0);
+  const totalDone       = people.reduce((a, p) => a + byPerson[p].done, 0);
+  const totalAll        = totalUnfinished + totalDone;
 
   // Summary KPIs
   const summaryEl = document.getElementById("teamSummary");
   summaryEl.innerHTML = `
-    <div class="team-summary-kpi"><div class="val">${sprintNum}</div><div class="lbl">Current Sprint</div></div>
+    <div class="team-summary-kpi"><div class="val">Sprint ${sprintNum}</div><div class="lbl">Selected Sprint</div></div>
     <div class="team-summary-kpi"><div class="val" style="color:#4ade80">${totalDone}</div><div class="lbl">Tasks Done</div></div>
     <div class="team-summary-kpi"><div class="val" style="color:#f87171">${totalUnfinished}</div><div class="lbl">Tasks Remaining</div></div>
     <div class="team-summary-kpi"><div class="val" style="color:#f87171">${totalPtsLeft.toFixed(1)}</div><div class="lbl">Points Remaining</div></div>
   `;
 
+  // Filter tasks shown per card based on statusFilter
+  function getDisplayTasks(person) {
+    const data = byPerson[person];
+    if (statusFilter === "unfinished") return data.tasks;
+    if (statusFilter === "all")        return [...data.tasks, ...DATA.movement.filter(t => t.sprint === sprintNum && t.person === person && DONE_STATES_TEAM.some(s => (t.state||"").toLowerCase().includes(s)))];
+    if (statusFilter === "Done")       return DATA.movement.filter(t => t.sprint === sprintNum && t.person === person && DONE_STATES_TEAM.some(s => (t.state||"").toLowerCase().includes(s)));
+    return data.tasks.filter(t => t.state === statusFilter);
+  }
+
   // Person cards
   const grid = document.getElementById("teamGrid");
-  grid.innerHTML = DEV_PEOPLE.map(person => {
-    const data = byPerson[person];
-    const color = ROLE_COLORS["Dev"] || "#6366f1";
+  grid.innerHTML = people.map(person => {
+    const data  = byPerson[person];
+    const color = ROLE_COLORS[roleOf(person)] || "#6366f1";
     const initial = person[0].toUpperCase();
     const totalPersonTasks = data.tasks.length + data.done;
     const pct = totalPersonTasks > 0 ? Math.round((data.done / totalPersonTasks) * 100) : 100;
+    const displayTasks = getDisplayTasks(person);
 
-    const taskRows = data.tasks.length === 0
-      ? `<div class="person-no-tasks">✓ All tasks done</div>`
-      : data.tasks.map(t => {
+    const taskRows = displayTasks.length === 0
+      ? `<div class="person-no-tasks">${statusFilter === "unfinished" ? "✓ All tasks done" : "No tasks match filter"}</div>`
+      : displayTasks.map(t => {
           const style = STATE_STYLE[t.state] || { bg: "#1c1917", color: "#a8a29e" };
           const pts = parseFloat(t.points) || 0;
           return `<div class="person-task-item">
@@ -2761,7 +2782,7 @@ function buildTeamSection() {
       <div class="person-card-header">
         <div class="person-avatar" style="background:${color}">${initial}</div>
         <div style="flex:1;min-width:0;">
-          <div class="person-card-name">${person}</div>
+          <div class="person-card-name">${person} <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:999px;background:${color}22;color:${color};border:1px solid ${color}44;margin-left:4px;vertical-align:middle;">${roleOf(person)}</span></div>
           <div class="person-card-meta">${data.done}/${totalPersonTasks} done · ${data.points.toFixed(1)} pts left · ${pct}%</div>
         </div>
         <span style="font-size:12px;color:var(--accent-text);font-weight:500;white-space:nowrap;padding-left:8px;">View →</span>
@@ -3174,6 +3195,23 @@ function wireUp(){
 
   document.getElementById("statusMetric").addEventListener("change", e => { S.statusMetric = e.target.value; refresh(); });
   document.getElementById("statusView").addEventListener("change", e => { S.statusView = e.target.value; refresh(); });
+
+  // Team tab filters
+  const teamSprintEl  = document.getElementById("teamSprintFilter");
+  const teamRoleEl    = document.getElementById("teamRoleFilter");
+  const teamStatusEl  = document.getElementById("teamStatusFilter");
+  if (teamSprintEl) {
+    // Populate sprint options
+    const sprints = DATA.sprints;
+    teamSprintEl.innerHTML = sprints.map((s, i) => {
+      const num = i + 1;
+      const label = num === CURRENT_SPRINT_IDX + 1 ? `Sprint ${num} (current)` : `Sprint ${num}`;
+      return `<option value="${num}" ${num === CURRENT_SPRINT_IDX + 1 ? "selected" : ""}>${label}</option>`;
+    }).join("");
+    teamSprintEl.addEventListener("change", () => buildTeamSection());
+  }
+  if (teamRoleEl)   teamRoleEl.addEventListener("change",   () => buildTeamSection());
+  if (teamStatusEl) teamStatusEl.addEventListener("change", () => buildTeamSection());
 }
 
 

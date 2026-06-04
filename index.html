@@ -1259,6 +1259,38 @@
 
   <!-- =========================== TEAM =========================== -->
   <section class="section" id="section-team">
+    <div class="controls" style="margin-bottom:16px;">
+      <div class="control">
+        <label for="teamSprintFilter">Sprint</label>
+        <select id="teamSprintFilter"></select>
+      </div>
+      <div class="control">
+        <label for="teamRoleFilter">Role</label>
+        <select id="teamRoleFilter">
+          <option value="all">All Roles</option>
+          <option value="Dev">Dev</option>
+          <option value="Tester">Tester</option>
+          <option value="Designer">Designer</option>
+          <option value="BA">BA</option>
+          <option value="PC">PC</option>
+          <option value="CEO">CEO</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="teamStatusFilter">Status</label>
+        <select id="teamStatusFilter">
+          <option value="unfinished">Unfinished only</option>
+          <option value="all">All tasks</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Blocked">Blocked</option>
+          <option value="Bugged">Bugged</option>
+          <option value="Ready for review">Ready for review</option>
+          <option value="Ready for test">Ready for test</option>
+          <option value="To Do">To Do</option>
+          <option value="Done">Done</option>
+        </select>
+      </div>
+    </div>
     <div class="team-summary" id="teamSummary"></div>
     <div class="team-grid" id="teamGrid"></div>
   </section>
