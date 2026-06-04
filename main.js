@@ -1078,13 +1078,20 @@ function buildRoleChart(canvasId, legendId, rolePeople, idx, labels, leaveLookup
   const leavePlugin = buildLeavePlugin(labels, idx, leaveLookup, () => "bar");
   const hoverPlugin = buildBarHoverPlugin(labels, idx, names, leaveLookup);
 
+  // Size canvas so each sprint bar gets ~58px — scroll container handles overflow
+  const BAR_WIDTH = 58;
+  const canvasW = Math.max(400, labels.length * BAR_WIDTH);
+  ctx.style.width  = canvasW + "px";
+  ctx.width        = canvasW;
+  ctx.parentElement.style.minWidth = canvasW + "px";
+
   if (chartRef.current) chartRef.current.destroy();
   chartRef.current = new Chart(ctx, {
     type: "bar",
     data: { labels, datasets },
     plugins: [leavePlugin, hoverPlugin],
     options: {
-      responsive: true, maintainAspectRatio: false,
+      responsive: false, maintainAspectRatio: false,
       layout: { padding: { bottom: 68 } },
       interaction: { mode: "nearest", intersect: true },
       scales: {
@@ -1092,9 +1099,9 @@ function buildRoleChart(canvasId, legendId, rolePeople, idx, labels, leaveLookup
         y: { stacked: true, beginAtZero: true, grid: { color: THEME.grid }, ticks: { color: THEME.tick } }
       },
       plugins: {
-        legend: { display: false }, // custom HTML legend below
+        legend: { display: false },
         stackTotals: { enabled: true },
-        tooltip: { enabled: false } // using our custom HTML tooltip
+        tooltip: { enabled: false }
       }
     }
   });
