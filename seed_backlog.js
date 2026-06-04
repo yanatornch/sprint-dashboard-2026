@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, writeBatch, doc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, writeBatch, doc } from 'firebase/firestore';
 
 const firebaseConfig = {
   projectId: "morestudio-sprint-2026",
@@ -258,16 +258,23 @@ const BACKLOG_ITEMS = [
 ];
 
 async function seedBacklog() {
-  console.log(`Seeding ${BACKLOG_ITEMS.length} backlog items into Firestore...`);
-
-  const batch = writeBatch(db);
   const col = collection(db, "backlog");
 
+  // Clear existing items first to avoid duplicates on re-run
+  const existing = await getDocs(col);
+  if (existing.size > 0) {
+    console.log(`Clearing ${existing.size} existing backlog items...`);
+    const deleteBatch = writeBatch(db);
+    existing.forEach(d => deleteBatch.delete(d.ref));
+    await deleteBatch.commit();
+  }
+
+  console.log(`Seeding ${BACKLOG_ITEMS.length} backlog items into Firestore...`);
+  const batch = writeBatch(db);
   BACKLOG_ITEMS.forEach(item => {
     const ref = doc(col);
     batch.set(ref, item);
   });
-
   await batch.commit();
   console.log(`Done! ${BACKLOG_ITEMS.length} items written to 'backlog' collection.`);
 }
