@@ -3304,15 +3304,56 @@ document.getElementById("statusFilter")?.addEventListener("change", e => {
 
 refresh();
 
-// User info + logout
+// User avatar dropdown
 (function wireAuth(){
-  const emailEl = document.getElementById("userEmail");
-  const logoutBtn = document.getElementById("logoutBtn");
-  if (emailEl && currentUser) emailEl.textContent = currentUser.email;
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", async () => {
-      await signOut();
-      window.location.href = "/login.html";
+  if (!currentUser) return;
+
+  const email = currentUser.email;
+  const name = currentUser.displayName || email.split("@")[0];
+  const initials = name.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase();
+
+  document.getElementById("userInitials").textContent = initials;
+  document.getElementById("userInitials2").textContent = initials;
+  document.getElementById("userDisplayName").textContent = currentUser.displayName || name;
+  document.getElementById("userEmailDrop").textContent = email;
+
+  const badge = document.getElementById("userRoleBadge");
+  badge.textContent = currentRole === "admin" ? "Admin" : "Member";
+  badge.style.background = currentRole === "admin" ? "rgba(99,102,241,0.18)" : "rgba(148,163,184,0.15)";
+  badge.style.color = currentRole === "admin" ? "#a5b4fc" : "var(--muted)";
+
+  // Toggle dropdown
+  const avatarBtn = document.getElementById("userAvatarBtn");
+  const dropdown = document.getElementById("userDropdown");
+  avatarBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const open = dropdown.style.display === "block";
+    dropdown.style.display = open ? "none" : "block";
+    avatarBtn.style.borderColor = open ? "var(--border)" : "var(--accent)";
+  });
+  document.addEventListener("click", () => {
+    dropdown.style.display = "none";
+    avatarBtn.style.borderColor = "var(--border)";
+  });
+  dropdown.addEventListener("click", e => e.stopPropagation());
+
+  // View profile — navigate to person page
+  document.getElementById("viewProfileBtn").addEventListener("click", () => {
+    const shortName = Object.keys(DATA.points).find(n => {
+      const docEmail = n.toLowerCase() + "@morestudio.co.th";
+      return docEmail === email.toLowerCase();
     });
-  }
+    if (shortName) {
+      window.location.href = `/person.html?name=${encodeURIComponent(shortName)}`;
+    } else {
+      showToast("No profile page found for your account.", "error");
+      dropdown.style.display = "none";
+    }
+  });
+
+  // Sign out
+  document.getElementById("logoutBtn").addEventListener("click", async () => {
+    await signOut();
+    window.location.href = "/login.html";
+  });
 })();
