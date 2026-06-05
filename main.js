@@ -3,7 +3,11 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
   return false;
 };
 import { db } from "./firebase.js";
+import { requireAuth, signOut } from "./auth.js";
 import { collection, doc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+// Auth gate — redirects to login.html if not signed in
+const { user: currentUser, role: currentRole } = await requireAuth();
 
 let DATA = {};
 try {
@@ -3258,10 +3262,11 @@ function showToast(message, type = "info", duration = 4000) {
   toast._timer = setTimeout(() => { toast.className = ""; }, duration);
 }
 
-// Sync button
+// Sync button (admin only)
 (function wireSyncBtn(){
   const btn = document.getElementById("syncBtn");
   if (!btn) return;
+  if (currentRole !== "admin") { btn.style.display = "none"; return; }
   btn.addEventListener("click", async () => {
     btn.disabled = true;
     btn.classList.add("syncing");
@@ -3298,3 +3303,16 @@ document.getElementById("statusFilter")?.addEventListener("change", e => {
 });
 
 refresh();
+
+// User info + logout
+(function wireAuth(){
+  const emailEl = document.getElementById("userEmail");
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (emailEl && currentUser) emailEl.textContent = currentUser.email;
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      await signOut();
+      window.location.href = "/login.html";
+    });
+  }
+})();

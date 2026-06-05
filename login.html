@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign In · Sprint Dashboard 2026</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #6366f1;
+    --bad: #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 10% -10%, #1e293b 0%, #0f172a 60%) fixed;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+  }
+  .logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+  }
+  .logo-icon {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #6366f1, #22d3ee);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+  }
+  .logo h1 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .logo p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .ms-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 20px;
+    background: #ffffff;
+    color: #1a1a1a;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    line-height: 1;
+  }
+  .ms-btn:hover { background: #f0f0f0; }
+  .ms-btn:active { transform: scale(0.98); }
+  .ms-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .ms-btn svg { flex-shrink: 0; }
+  .divider {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .hint {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.6;
+  }
+  .error {
+    width: 100%;
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #fca5a5;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    text-align: center;
+    display: none;
+  }
+  .error.visible { display: block; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">📊</div>
+    <div>
+      <h1>Sprint Dashboard 2026</h1>
+      <p>More Studio · Team Contribution Tracker</p>
+    </div>
+  </div>
+
+  <div class="error" id="errorMsg"></div>
+
+  <button class="ms-btn" id="msBtn" onclick="handleSignIn()">
+    <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="1" width="9" height="9" fill="#F25022"/>
+      <rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>
+      <rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
+      <rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
+    </svg>
+    Sign in with Microsoft
+  </button>
+
+  <div class="divider">or</div>
+  <p class="hint">Use your <strong>@morestudio.co.th</strong> account.<br/>Only team members have access.</p>
+</div>
+
+<script type="module">
+  import { signInWithMicrosoft, getUserRole, auth } from "./auth.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+  // Already logged in → go straight to dashboard
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const role = await getUserRole(user.email);
+      if (role) {
+        window.location.href = "/";
+      }
+    }
+  });
+
+  window.handleSignIn = async function() {
+    const btn = document.getElementById("msBtn");
+    const err = document.getElementById("errorMsg");
+    err.classList.remove("visible");
+    btn.disabled = true;
+    btn.textContent = "Signing in…";
+    try {
+      const user = await signInWithMicrosoft();
+      const role = await getUserRole(user.email);
+      if (!role) {
+        err.textContent = "Your account (" + user.email + ") is not in the team roster. Contact an admin.";
+        err.classList.add("visible");
+        await import("./auth.js").then(m => m.signOut());
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="9" height="9" fill="#F25022"/><rect x="11" y="1" width="9" height="9" fill="#7FBA00"/><rect x="1" y="11" width="9" height="9" fill="#00A4EF"/><rect x="11" y="11" width="9" height="9" fill="#FFB900"/></svg> Sign in with Microsoft`;
+        return;
+      }
+      window.location.href = "/";
+    } catch (e) {
+      let msg = "Sign-in failed. Please try again.";
+      if (e.code === "auth/popup-closed-by-user") msg = "Sign-in cancelled.";
+      else if (e.code === "auth/network-request-failed") msg = "Network error. Check your connection.";
+      err.textContent = msg;
+      err.classList.add("visible");
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="9" height="9" fill="#F25022"/><rect x="11" y="1" width="9" height="9" fill="#7FBA00"/><rect x="1" y="11" width="9" height="9" fill="#00A4EF"/><rect x="11" y="11" width="9" height="9" fill="#FFB900"/></svg> Sign in with Microsoft`;
+    }
+  };
+</script>
+</body>
+</html>
