@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, writeBatch, collection, getDocs } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, writeBatch, collection, getDocs } from 'firebase/firestore';
 
 const firebaseConfig = {
   projectId: "morestudio-sprint-2026",
@@ -141,12 +141,13 @@ async function runSync() {
   // 3. Process into our Firebase schema
   let batchWrite = writeBatch(db);
   let syncCount = 0;
-  
+  const movedTasks = []; // track sprint moves for manager notification
+
   let targetSprintIndex = currentSprint - 1;
 
   for (const item of batchData.value) {
     const fields = item.fields;
-    
+
     // Parse Sprint Index from Iteration Path (e.g. "M\2026\11")
     const iteration = fields["System.IterationPath"] || "";
     const sprintMatch = iteration.match(/\\(\d+)$/);
@@ -165,21 +166,50 @@ async function runSync() {
       project = "General";
     }
 
+    const taskId = String(fields["System.Id"]);
+    const newSprint = targetSprintIndex + 1;
+
+    // Detect sprint move: read existing doc before overwriting
+    const existingSnap = await getDoc(doc(db, "tasks", `task_${taskId}`));
+    let moveFields = {};
+    if (existingSnap.exists()) {
+      const existing = existingSnap.data();
+      if (existing.sprint && existing.sprint < newSprint) {
+        moveFields = {
+          movedFromSprint: existing.sprint,
+          movedToSprint: newSprint,
+          movedAt: new Date().toISOString()
+        };
+        movedTasks.push({
+          id: taskId,
+          title: fields["System.Title"] || "Untitled",
+          person: mapAzureUserToShortName(assignedTo),
+          project,
+          points: parseFloat(fields["Custom.Points"] || 0),
+          state: fields["System.State"] || "New",
+          movedFromSprint: existing.sprint,
+          movedToSprint: newSprint
+        });
+        console.log(`⚠ Task ${taskId} moved: Sprint ${existing.sprint} → ${newSprint}`);
+      }
+    }
+
     const taskObj = {
-      id: String(fields["System.Id"]),
+      id: taskId,
       title: fields["System.Title"] || "Untitled",
       state: fields["System.State"] || "New",
       points: parseFloat(fields["Custom.Points"] || 0),
       person: mapAzureUserToShortName(assignedTo),
       project: project,
-      sprint: targetSprintIndex + 1,
-      type: "Task" // Or derive from Work Item Type
+      sprint: newSprint,
+      type: "Task",
+      ...moveFields
     };
 
     const docRef = doc(db, "tasks", `task_${taskObj.id}`);
     batchWrite.set(docRef, taskObj, { merge: true });
     syncCount++;
-    
+
     if (syncCount % 400 === 0) {
       await batchWrite.commit();
       batchWrite = writeBatch(db);
@@ -190,6 +220,9 @@ async function runSync() {
     await batchWrite.commit();
   }
   console.log(`Successfully synced ${syncCount} tasks into Firestore.`);
+  if (movedTasks.length > 0) {
+    console.log(`⚠ ${movedTasks.length} task(s) detected as carried over to a new sprint.`);
+  }
 
   // Recalculate stats for the synced sprint
   console.log("Recalculating Sprint Stats...");
@@ -279,35 +312,54 @@ async function runSync() {
   }, { merge: true });
   console.log("Last sync timestamp saved.");
 
-  // 6. Notify external system via API (Webhook)
-  const webhookUrl = process.env.WEBHOOK_URL;
-  if (webhookUrl) {
-    console.log(`Sending webhook notification to ${webhookUrl}...`);
+  // 6. Notify managers via webhook (MANAGER_NOTIFY_URL)
+  const managerWebhookUrl = process.env.MANAGER_NOTIFY_URL;
+  if (managerWebhookUrl) {
+    console.log(`Sending manager notification to ${managerWebhookUrl}...`);
     try {
-      const payload = {
-        status: "success",
-        message: `Azure Sync complete for Sprint ${currentSprint}`,
-        tasksSynced: syncCount,
-        newProjectsAdded: newProjectsAdded,
-        timestamp: new Date().toISOString()
-      };
-      
-      const webhookRes = await fetch(webhookUrl, {
+      let message = `✅ Sprint ${currentSprint} sync complete — ${syncCount} tasks synced`;
+      if (newProjectsAdded > 0) message += `, ${newProjectsAdded} new projects`;
+      message += `.`;
+
+      if (movedTasks.length > 0) {
+        message += `\n\n⚠️ ${movedTasks.length} task(s) carried over to Sprint ${currentSprint}:`;
+        const byPerson = {};
+        movedTasks.forEach(t => {
+          if (!byPerson[t.person]) byPerson[t.person] = [];
+          byPerson[t.person].push(t);
+        });
+        for (const [person, tasks] of Object.entries(byPerson).sort()) {
+          message += `\n👤 ${person}`;
+          tasks.forEach(t => {
+            message += `\n  • ${t.title} (${t.points}pt · S${t.movedFromSprint}→S${t.movedToSprint})`;
+          });
+        }
+      }
+
+      const webhookRes = await fetch(managerWebhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.WEBHOOK_SECRET}`
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          status: "sync_complete",
+          message,
+          sprint: currentSprint,
+          tasksSynced: syncCount,
+          newProjectsAdded,
+          carriedTasks: movedTasks,
+          timestamp: new Date().toISOString()
+        })
       });
-      
+
       if (!webhookRes.ok) {
-        console.error(`Webhook failed: ${webhookRes.status} ${webhookRes.statusText}`);
+        console.error(`Manager webhook failed: ${webhookRes.status} ${webhookRes.statusText}`);
       } else {
-        console.log("Webhook notification sent successfully!");
+        console.log("Manager notification sent successfully!");
       }
     } catch (e) {
-      console.error("Failed to send webhook notification:", e.message);
+      console.error("Failed to send manager notification:", e.message);
     }
   }
 }

@@ -2650,6 +2650,10 @@ function switchSection(name){
 }
 
 function refresh(){
+  if (S.section === "carried") {
+    buildCarriedTab();
+    return;
+  }
   if (S.section === "overview") {
     updateKPIs();
     renderLeaveStrip();
@@ -3172,6 +3176,145 @@ async function buildBacklogTab() {
   });
 
   el.innerHTML = html;
+}
+
+// ===================== CARRIED OVER TAB =====================
+function buildCarriedTab() {
+  const el = document.getElementById("carriedContent");
+  if (!el) return;
+
+  // All tasks with movedFromSprint set
+  const allCarried = DATA.movement.filter(t => t.movedFromSprint != null);
+
+  // Build sprint filter options from data
+  const sprintNums = [...new Set(allCarried.map(t => t.movedToSprint))].sort((a,b)=>a-b);
+
+  // Default to current sprint if available, else latest
+  let selectedSprint = S.carriedSprint;
+  if (!selectedSprint) {
+    selectedSprint = sprintNums.includes(CURRENT_SPRINT_IDX + 1)
+      ? CURRENT_SPRINT_IDX + 1
+      : (sprintNums[sprintNums.length - 1] || CURRENT_SPRINT_IDX + 1);
+    S.carriedSprint = selectedSprint;
+  }
+
+  const tasks = allCarried.filter(t => t.movedToSprint === selectedSprint);
+
+  // KPIs
+  const totalPts = tasks.reduce((a, t) => a + (parseFloat(t.points) || 0), 0);
+  const people = new Set(tasks.map(t => t.person)).size;
+
+  const sprintOpts = sprintNums.map(n =>
+    `<option value="${n}" ${n === selectedSprint ? "selected" : ""}>Sprint ${n}</option>`
+  ).join("");
+
+  let html = `
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+      <div>
+        <h2 style="margin:0;font-size:18px;font-weight:700;">Carried Over Tasks</h2>
+        <div style="color:var(--muted);font-size:13px;margin-top:3px;">Tasks moved from a previous sprint</div>
+      </div>
+      <div class="control" style="min-width:160px;">
+        <label for="carriedSprintFilter">Carried into Sprint</label>
+        <select id="carriedSprintFilter">${sprintOpts}</select>
+      </div>
+    </div>`;
+
+  if (sprintNums.length === 0) {
+    html += `<div class="card" style="padding:32px;text-align:center;color:var(--muted);font-size:14px;">
+      No carried-over tasks recorded yet.<br>
+      <span style="font-size:12px;margin-top:6px;display:block;">Run <code>node check_carried.js</code> to backfill historical data, or wait for the next sync.</span>
+    </div>`;
+    el.innerHTML = html;
+    document.getElementById("carriedSprintFilter")?.addEventListener("change", e => {
+      S.carriedSprint = parseInt(e.target.value);
+      buildCarriedTab();
+    });
+    return;
+  }
+
+  // KPI strip
+  html += `<div class="kpis" style="margin-bottom:20px;">
+    <div class="kpi"><div class="kpi-val" style="color:var(--warn)">${tasks.length}</div><div class="kpi-label">Carried Tasks</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--warn)">${totalPts.toFixed(1)}</div><div class="kpi-label">Carried Points</div></div>
+    <div class="kpi"><div class="kpi-val">${people}</div><div class="kpi-label">People Affected</div></div>
+  </div>`;
+
+  if (tasks.length === 0) {
+    html += `<div class="card" style="padding:32px;text-align:center;color:var(--muted);font-size:14px;">
+      No tasks carried into Sprint ${selectedSprint}.
+    </div>`;
+    el.innerHTML = html;
+    document.getElementById("carriedSprintFilter")?.addEventListener("change", e => {
+      S.carriedSprint = parseInt(e.target.value);
+      buildCarriedTab();
+    });
+    return;
+  }
+
+  // Group by person
+  const byPerson = {};
+  tasks.forEach(t => {
+    if (!byPerson[t.person]) byPerson[t.person] = [];
+    byPerson[t.person].push(t);
+  });
+
+  const STATE_COLORS = {
+    "Done": "var(--good)", "In Progress": "var(--accent)",
+    "Blocked": "var(--bad)", "Bugged": "var(--bad)",
+    "To Do": "var(--muted)", "Ready for review": "#22d3ee",
+    "Ready for test": "#a78bfa", "Waiting to INT deploy": "var(--warn)",
+    "Waiting to PRD deploy": "var(--warn)"
+  };
+
+  html += `<div style="display:flex;flex-direction:column;gap:16px;">`;
+  for (const [person, ptasks] of Object.entries(byPerson).sort()) {
+    const pPts = ptasks.reduce((a, t) => a + (parseFloat(t.points) || 0), 0);
+    html += `<div class="card" style="padding:0;overflow:hidden;">
+      <div style="padding:12px 16px;background:var(--panel-2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-weight:700;font-size:14px;">${person} <span style="color:var(--muted);font-weight:400;font-size:12px;">${roleOf(person)}</span></div>
+        <div style="font-size:12px;color:var(--warn);font-weight:600;">${ptasks.length} task${ptasks.length>1?"s":""} · ${pPts.toFixed(1)} pts</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.05em;">
+            <th style="padding:8px 16px;text-align:left;font-weight:600;">Task</th>
+            <th style="padding:8px 12px;text-align:left;font-weight:600;">Project</th>
+            <th style="padding:8px 12px;text-align:center;font-weight:600;">Moved</th>
+            <th style="padding:8px 12px;text-align:center;font-weight:600;">State</th>
+            <th style="padding:8px 16px;text-align:right;font-weight:600;">Pts</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    ptasks.forEach((t, i) => {
+      const stateColor = STATE_COLORS[t.state] || "var(--muted)";
+      const bg = i % 2 === 1 ? "background:var(--panel-2);" : "";
+      html += `<tr style="${bg}border-top:1px solid var(--border);">
+        <td style="padding:10px 16px;color:var(--text);max-width:300px;">${t.title}</td>
+        <td style="padding:10px 12px;color:var(--muted);font-size:12px;">${t.project || "—"}</td>
+        <td style="padding:10px 12px;text-align:center;">
+          <span style="font-size:11px;background:rgba(245,158,11,0.12);color:#fcd34d;border:1px solid rgba(245,158,11,0.3);border-radius:999px;padding:2px 8px;white-space:nowrap;">
+            S${t.movedFromSprint} → S${t.movedToSprint}
+          </span>
+        </td>
+        <td style="padding:10px 12px;text-align:center;">
+          <span style="font-size:11px;color:${stateColor};background:rgba(0,0,0,0.15);border-radius:6px;padding:2px 8px;white-space:nowrap;">${t.state}</span>
+        </td>
+        <td style="padding:10px 16px;text-align:right;font-weight:600;color:var(--accent-text);">${t.points || 0}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+  }
+  html += `</div>`;
+
+  el.innerHTML = html;
+
+  document.getElementById("carriedSprintFilter")?.addEventListener("change", e => {
+    S.carriedSprint = parseInt(e.target.value);
+    buildCarriedTab();
+  });
 }
 
 function wireUp(){
