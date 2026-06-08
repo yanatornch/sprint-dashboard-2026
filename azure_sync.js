@@ -224,14 +224,20 @@ async function runSync() {
     console.log(`⚠ ${movedTasks.length} task(s) detected as carried over to a new sprint.`);
   }
 
-  // Recalculate stats for the synced sprint
+  // Recalculate stats — keyed by sprint so multi-sprint batches are handled correctly
   console.log("Recalculating Sprint Stats...");
-  const userStats = {};
-  const projStats = {};
+  // { sprintNum: { person: { points, tasks } } }
+  const userStatsBySprint = {};
+  // { sprintNum: { project: pts } }
+  const projStatsBySprint = {};
   const uniqueProjects = new Set();
-  
+
   for (const item of batchData.value) {
     const fields = item.fields;
+    const iteration = fields["System.IterationPath"] || "";
+    const sprintMatch = iteration.match(/\\(\d+)$/);
+    const itemSprint = sprintMatch ? parseInt(sprintMatch[1], 10) : currentSprint;
+
     const person = mapAzureUserToShortName(fields["System.AssignedTo"]);
     let project = fields["System.AreaPath"] || "General";
     if (project.startsWith(`${AZURE_PROJECT}\\`)) {
@@ -240,38 +246,46 @@ async function runSync() {
       project = "General";
     }
     const pts = parseFloat(fields["Custom.Points"] || 0);
-    
+
     uniqueProjects.add(project);
 
-    if (!userStats[person]) userStats[person] = { points: 0, tasks: 0 };
-    userStats[person].points += pts;
-    userStats[person].tasks += 1;
-    
-    if (!projStats[project]) projStats[project] = 0;
-    projStats[project] += pts;
+    if (!userStatsBySprint[itemSprint]) userStatsBySprint[itemSprint] = {};
+    if (!userStatsBySprint[itemSprint][person]) userStatsBySprint[itemSprint][person] = { points: 0, tasks: 0 };
+    userStatsBySprint[itemSprint][person].points += pts;
+    userStatsBySprint[itemSprint][person].tasks += 1;
+
+    if (!projStatsBySprint[itemSprint]) projStatsBySprint[itemSprint] = {};
+    if (!projStatsBySprint[itemSprint][project]) projStatsBySprint[itemSprint][project] = 0;
+    projStatsBySprint[itemSprint][project] += pts;
   }
-  
+
   let statsBatch = writeBatch(db);
-  
-  for (const [person, stats] of Object.entries(userStats)) {
-    const docRef = doc(db, "sprintUserStats", `sprint_${targetSprintIndex + 1}_${person}`);
-    statsBatch.set(docRef, {
-      sprintIndex: targetSprintIndex,
-      userId: person,
-      points: stats.points,
-      tasks: stats.tasks
-    }, { merge: true });
+
+  for (const [sprintNum, userStats] of Object.entries(userStatsBySprint)) {
+    const sprintIdx = parseInt(sprintNum) - 1;
+    for (const [person, stats] of Object.entries(userStats)) {
+      const docRef = doc(db, "sprintUserStats", `sprint_${sprintNum}_${person}`);
+      statsBatch.set(docRef, {
+        sprintIndex: sprintIdx,
+        userId: person,
+        points: stats.points,
+        tasks: stats.tasks
+      }, { merge: true });
+    }
   }
-  
-  for (const [project, pts] of Object.entries(projStats)) {
-    const docRef = doc(db, "sprintProjectStats", `sprint_${targetSprintIndex + 1}_${project.replace(/\\/g, "_")}`);
-    statsBatch.set(docRef, {
-      sprintIndex: targetSprintIndex,
-      projectId: project.replace(/\\/g, "_"),
-      points: pts
-    }, { merge: true });
+
+  for (const [sprintNum, projStats] of Object.entries(projStatsBySprint)) {
+    const sprintIdx = parseInt(sprintNum) - 1;
+    for (const [project, pts] of Object.entries(projStats)) {
+      const docRef = doc(db, "sprintProjectStats", `sprint_${sprintNum}_${project.replace(/\\/g, "_")}`);
+      statsBatch.set(docRef, {
+        sprintIndex: sprintIdx,
+        projectId: project.replace(/\\/g, "_"),
+        points: pts
+      }, { merge: true });
+    }
   }
-  
+
   await statsBatch.commit();
   console.log("Sprint stats successfully updated in Firestore!");
 
