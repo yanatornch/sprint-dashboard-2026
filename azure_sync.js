@@ -312,8 +312,8 @@ async function runSync() {
   }, { merge: true });
   console.log("Last sync timestamp saved.");
 
-  // 6. Notify managers via webhook (MANAGER_NOTIFY_URL)
-  const managerWebhookUrl = process.env.MANAGER_NOTIFY_URL;
+  // 6. Notify via webhook
+  const managerWebhookUrl = process.env.WEBHOOK_URL;
   if (managerWebhookUrl) {
     console.log(`Sending manager notification to ${managerWebhookUrl}...`);
     try {
