@@ -52,13 +52,22 @@ async function computeDailyDelta(date) {
   // Compute per-person daily delta
   const byPerson = {};
 
+  // Determine current sprint from today's date
+  const SPRINT_START_MS = new Date("2026-01-05").getTime();
+  const todayMs = new Date(date).getTime();
+  const currentSprint = Math.max(1, Math.floor((todayMs - SPRINT_START_MS) / (14 * 24 * 60 * 60 * 1000)) + 1);
+
   for (const [taskId, task] of Object.entries(todayTasks)) {
+    // Only process current sprint tasks
+    if (task.sprint !== currentSprint) continue;
+
     const prev = yesterdayTasks[taskId];
     const person = task.person;
     if (!byPerson[person]) byPerson[person] = { pointsToday: 0, tasksToday: 0, tasks: [] };
 
     const stateChanged = prev && prev.state !== task.state;
-    const isNewTask = !prev;
+    // Only mark as new if no yesterday snapshot exists at all (first run), skip isNew logic
+    const isNewTask = yesterdaySnap.exists() && !prev;
     const completedToday = isDone(task.state) && prev && !isDone(prev.state);
 
     if (completedToday || isNewTask || stateChanged) {
