@@ -66,11 +66,11 @@ async function computeDailyDelta(date) {
       if (completedToday) byPerson[person].pointsToday += task.points;
       byPerson[person].tasks.push({
         title: task.title,
-        points: task.points,
-        state: task.state,
-        prevState: prev?.state || null,
-        completedToday,
-        isNew: isNewTask
+        points: task.points || 0,
+        state: task.state || "Unknown",
+        prevState: prev ? (prev.state || "Unknown") : null,
+        completedToday: completedToday || false,
+        isNew: isNewTask || false
       });
     }
   }
@@ -118,12 +118,16 @@ export default async function handler(request, response) {
   }
 
   const today = new Date().toISOString().slice(0, 10);
+  const { only } = request.body || {}; // optional: { only: ["No"] } to filter
   const errors = [];
 
   // Compute daily delta from snapshots
   let byPerson;
   try {
     byPerson = await computeDailyDelta(today);
+    if (byPerson && only && Array.isArray(only)) {
+      Object.keys(byPerson).forEach(p => { if (!only.includes(p)) delete byPerson[p]; });
+    }
     if (!byPerson) {
       return response.status(400).json({ error: `No snapshot found for ${today}. Run daily_snapshot.js first.` });
     }
