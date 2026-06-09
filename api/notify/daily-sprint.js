@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, doc, getDoc, getDocs } from "firebase/firestore";
 
 const firebaseConfig = {
   projectId: "morestudio-sprint-2026",
@@ -12,22 +12,95 @@ const firebaseConfig = {
 
 const db = getFirestore(initializeApp(firebaseConfig));
 
+const DONE_STATES = ["done", "closed", "removed", "canceled", "cancelled"];
+function isDone(state) { return DONE_STATES.some(s => (state || "").toLowerCase().includes(s)); }
+
+function prevDate(dateStr) {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+async function computeDailyDelta(date) {
+  const yesterday = prevDate(date);
+
+  // Load today's and yesterday's snapshots
+  const [todaySnap, yesterdaySnap, statsSnap] = await Promise.all([
+    getDoc(doc(db, "taskSnapshots", date)),
+    getDoc(doc(db, "taskSnapshots", yesterday)),
+    getDocs(collection(db, "sprintUserStats"))
+  ]);
+
+  if (!todaySnap.exists()) return null;
+
+  const todayTasks = todaySnap.data().tasks || {};
+  const yesterdayTasks = yesterdaySnap.exists() ? yesterdaySnap.data().tasks || {} : {};
+
+  // Overall sprint points per person
+  const overallPoints = {};
+  const sprintPoints = {};
+  statsSnap.forEach(d => {
+    const s = d.data();
+    if (!overallPoints[s.userId]) overallPoints[s.userId] = 0;
+    overallPoints[s.userId] += s.points || 0;
+    // Current sprint = highest sprintIndex available
+    if (!sprintPoints[s.userId] || s.sprintIndex > (sprintPoints[s.userId].idx || 0)) {
+      sprintPoints[s.userId] = { pts: s.points || 0, idx: s.sprintIndex };
+    }
+  });
+
+  // Compute per-person daily delta
+  const byPerson = {};
+
+  for (const [taskId, task] of Object.entries(todayTasks)) {
+    const prev = yesterdayTasks[taskId];
+    const person = task.person;
+    if (!byPerson[person]) byPerson[person] = { pointsToday: 0, tasksToday: 0, tasks: [] };
+
+    const stateChanged = prev && prev.state !== task.state;
+    const isNewTask = !prev;
+    const completedToday = isDone(task.state) && prev && !isDone(prev.state);
+
+    if (completedToday || isNewTask || stateChanged) {
+      byPerson[person].tasksToday += 1;
+      if (completedToday) byPerson[person].pointsToday += task.points;
+      byPerson[person].tasks.push({
+        title: task.title,
+        points: task.points,
+        state: task.state,
+        prevState: prev?.state || null,
+        completedToday,
+        isNew: isNewTask
+      });
+    }
+  }
+
+  // Attach sprint + overall totals
+  for (const person of Object.keys(byPerson)) {
+    byPerson[person].totalSprintPoints = sprintPoints[person]?.pts || 0;
+    byPerson[person].totalOverallPoints = Math.round((overallPoints[person] || 0) * 10) / 10;
+  }
+
+  return byPerson;
+}
+
 function buildMessage(byPerson, date) {
   const totalPts = Object.values(byPerson).reduce((a, p) => a + (p.pointsToday || 0), 0);
   const totalTasks = Object.values(byPerson).reduce((a, p) => a + (p.tasksToday || 0), 0);
 
+  if (totalTasks === 0) return `📅 Daily Sprint Update — ${date}\n✅ No task changes today.`;
+
   let msg = `📅 Daily Sprint Update — ${date}\n`;
-  msg += `📊 Team today: ${totalTasks} tasks · ${totalPts} pts\n\n`;
+  msg += `📊 Team today: ${totalTasks} task changes · ${totalPts.toFixed(1)} pts completed\n\n`;
 
   for (const [person, data] of Object.entries(byPerson).sort()) {
-    if (!data.tasksToday && !data.pointsToday) continue;
-    msg += `👤 ${person} — ${data.tasksToday} tasks · ${data.pointsToday}pts today`;
-    msg += ` (sprint total: ${data.totalSprintPoints}pts)\n`;
-    if (Array.isArray(data.tasks)) {
-      data.tasks.forEach(t => {
-        msg += `  • ${t.title} (${t.points}pt)\n`;
-      });
-    }
+    if (!data.tasksToday) continue;
+    msg += `👤 ${person} — ${data.pointsToday.toFixed(1)}pts done today (sprint total: ${data.totalSprintPoints}pts)\n`;
+    data.tasks.forEach(t => {
+      const tag = t.completedToday ? "✅" : t.isNew ? "🆕" : "🔄";
+      const prev = t.prevState ? ` (${t.prevState} → ${t.state})` : "";
+      msg += `  ${tag} ${t.title} (${t.points}pt)${prev}\n`;
+    });
     msg += "\n";
   }
 
@@ -44,39 +117,46 @@ export default async function handler(request, response) {
     return response.status(401).json({ error: "Unauthorized" });
   }
 
-  const { byPerson, date, timestamp } = request.body;
-
-  if (!byPerson || !date) {
-    return response.status(400).json({ error: "Missing required fields: byPerson, date" });
-  }
-
+  const today = new Date().toISOString().slice(0, 10);
   const errors = [];
 
-  // 1. Save to Firestore
+  // Compute daily delta from snapshots
+  let byPerson;
+  try {
+    byPerson = await computeDailyDelta(today);
+    if (!byPerson) {
+      return response.status(400).json({ error: `No snapshot found for ${today}. Run daily_snapshot.js first.` });
+    }
+  } catch (err) {
+    return response.status(500).json({ error: `Delta computation failed: ${err.message}` });
+  }
+
+  const timestamp = new Date().toISOString();
+
+  // 1. Save to Firestore dailyStats
   try {
     await addDoc(collection(db, "dailyStats"), {
       byPerson,
-      date,
-      timestamp: timestamp || new Date().toISOString(),
-      createdAt: new Date().toISOString()
+      date: today,
+      timestamp,
+      createdAt: timestamp
     });
   } catch (err) {
     errors.push(`Firestore: ${err.message}`);
   }
 
-  // 2. Forward to webhook
+  // 2. Forward to external webhook
   const webhookUrl = process.env.WEBHOOK_URL;
-  const webhookSecret = process.env.WEBHOOK_SECRET;
-  if (webhookUrl && webhookSecret) {
+  if (webhookUrl) {
     try {
-      const message = buildMessage(byPerson, date);
+      const message = buildMessage(byPerson, today);
       const res = await fetch(webhookUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${webhookSecret}`
+          "Authorization": `Bearer ${process.env.WEBHOOK_SECRET}`
         },
-        body: JSON.stringify({ status: "daily_sprint", message, byPerson, date, timestamp })
+        body: JSON.stringify({ status: "daily_sprint", message, byPerson, date: today, timestamp })
       });
       if (!res.ok) errors.push(`Webhook: ${res.status} ${res.statusText}`);
     } catch (err) {
@@ -85,8 +165,8 @@ export default async function handler(request, response) {
   }
 
   if (errors.length > 0) {
-    return response.status(207).json({ success: false, errors });
+    return response.status(207).json({ success: false, errors, byPerson, date: today });
   }
 
-  return response.status(200).json({ success: true, date });
+  return response.status(200).json({ success: true, date: today, byPerson });
 }

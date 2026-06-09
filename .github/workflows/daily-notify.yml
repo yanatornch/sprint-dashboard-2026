@@ -1,0 +1,31 @@
+name: Daily Sprint Snapshot & Notify
+
+on:
+  schedule:
+    # Every day at 17:55 ICT (10:55 UTC) — snapshot, then notify at 18:00 (11:00 UTC)
+    - cron: '55 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - name: Take daily task snapshot
+        env:
+          AZURE_PAT: ${{ secrets.AZURE_PAT || secrets.ADO_PAT }}
+        run: node daily_snapshot.js
+
+  notify:
+    needs: snapshot
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger daily-sprint notification
+        run: |
+          curl -s -X POST "${{ secrets.SPRINT_DASHBOARD_URL }}/api/notify/daily-sprint" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.WEBHOOK_SECRET }}"

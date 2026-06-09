@@ -85,4 +85,11 @@ Push to `main` → Vercel auto-builds and deploys. No CLI needed. Vercel config 
 
 ## GitHub Secrets
 
-`AZURE_ORG`, `AZURE_PROJECT`, `AZURE_PAT`, `WEBHOOK_URL`, `WEBHOOK_SECRET`, `SPRINT_NOTIFY_URL`
+`AZURE_ORG`, `AZURE_PROJECT`, `AZURE_PAT`, `WEBHOOK_URL`, `WEBHOOK_SECRET`, `SPRINT_NOTIFY_URL`, `SPRINT_DASHBOARD_URL`
+
+## Firestore Collections (additional)
+
+| Collection | Description |
+|---|---|
+| `taskSnapshots` | Daily snapshots of all task states. Doc ID: `YYYY-MM-DD`. Used to compute daily deltas for notifications. |
+| `dailyStats` | Daily sprint notification records saved by `api/notify/daily-sprint.js`. |
