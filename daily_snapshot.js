@@ -22,10 +22,16 @@ async function run() {
   const today = new Date().toISOString().slice(0, 10);
   console.log(`Taking snapshot for ${today}...`);
 
+  // Only snapshot current sprint tasks
+  const SPRINT_START_MS = new Date("2026-01-05").getTime();
+  const todayMs = new Date(today).getTime();
+  const currentSprint = Math.max(1, Math.floor((todayMs - SPRINT_START_MS) / (14 * 24 * 60 * 60 * 1000)) + 1);
+
   const snap = await getDocs(collection(db, "tasks"));
   const tasks = {};
   snap.forEach(d => {
     const t = d.data();
+    if (t.sprint !== currentSprint) return;
     tasks[t.id] = {
       state: t.state || "Unknown",
       points: parseFloat(t.points) || 0,
