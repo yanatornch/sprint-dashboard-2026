@@ -173,8 +173,9 @@ export default async function handler(request, response) {
   }
 
   // 2. Forward to external webhook (skip if nothing to report)
-  // Strip stray whitespace/newlines that can sneak in when pasting the URL into env vars
-  const webhookUrl = (process.env.WEBHOOK_URL || "").replace(/\s+/g, "");
+  // Hardcoded marketplace endpoint (not a secret). The Vercel WEBHOOK_URL env var
+  // kept getting a line break pasted into it, mangling the path → 404s.
+  const webhookUrl = "https://marketplace-morestudio-40751858881.asia-southeast1.run.app/api/notify/daily-sprint";
   if (webhookUrl && byPerson && Object.keys(byPerson).length > 0) {
     try {
       const message = buildMessage(byPerson, today);
