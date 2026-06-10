@@ -146,15 +146,16 @@ export default async function handler(request, response) {
     byPerson = mockup;
   } else {
     try {
-    byPerson = await computeDailyDelta(today);
-    if (byPerson && only && Array.isArray(only)) {
-      Object.keys(byPerson).forEach(p => { if (!only.includes(p)) delete byPerson[p]; });
+      byPerson = await computeDailyDelta(today);
+      if (!byPerson) {
+        return response.status(400).json({ error: `No snapshot found for ${today}. Run daily_snapshot.js first.` });
+      }
+      if (only && Array.isArray(only)) {
+        Object.keys(byPerson).forEach(p => { if (!only.includes(p)) delete byPerson[p]; });
+      }
+    } catch (err) {
+      return response.status(500).json({ error: `Delta computation failed: ${err.message}` });
     }
-    if (!byPerson) {
-      return response.status(400).json({ error: `No snapshot found for ${today}. Run daily_snapshot.js first.` });
-    }
-  } catch (err) {
-    return response.status(500).json({ error: `Delta computation failed: ${err.message}` });
   }
 
   const timestamp = new Date().toISOString();
