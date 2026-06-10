@@ -127,12 +127,15 @@ export default async function handler(request, response) {
   }
 
   const today = new Date().toISOString().slice(0, 10);
-  const { only } = request.body || {}; // optional: { only: ["No"] } to filter
+  const { only, mockup } = request.body || {};
   const errors = [];
 
-  // Compute daily delta from snapshots
+  // Use mockup data if provided, otherwise compute from snapshots
   let byPerson;
-  try {
+  if (mockup) {
+    byPerson = mockup;
+  } else {
+    try {
     byPerson = await computeDailyDelta(today);
     if (byPerson && only && Array.isArray(only)) {
       Object.keys(byPerson).forEach(p => { if (!only.includes(p)) delete byPerson[p]; });
@@ -158,9 +161,9 @@ export default async function handler(request, response) {
     errors.push(`Firestore: ${err.message}`);
   }
 
-  // 2. Forward to external webhook
+  // 2. Forward to external webhook (skip if nothing to report)
   const webhookUrl = process.env.WEBHOOK_URL;
-  if (webhookUrl) {
+  if (webhookUrl && byPerson && Object.keys(byPerson).length > 0) {
     try {
       const message = buildMessage(byPerson, today);
       const res = await fetch(webhookUrl, {

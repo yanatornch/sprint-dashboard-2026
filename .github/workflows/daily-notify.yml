@@ -44,4 +44,4 @@ jobs:
         run: |
           curl -s -X POST "${{ secrets.SPRINT_DASHBOARD_URL }}/api/notify/daily-sprint" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.WEBHOOK_SECRET }}"
+            -H "Authorization: Bearer ${{ secrets.WEBHOOK_SECRET }}" || true
