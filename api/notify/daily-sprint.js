@@ -57,8 +57,18 @@ async function computeDailyDelta(date) {
   const todayMs = new Date(date).getTime();
   const currentSprint = Math.max(1, Math.floor((todayMs - SPRINT_START_MS) / (14 * 24 * 60 * 60 * 1000)) + 1);
 
+  // First pass: build stateBreakdown for all current sprint tasks per person
+  const stateBreakdowns = {};
+  for (const task of Object.values(todayTasks)) {
+    if (task.sprint !== currentSprint) continue;
+    const person = task.person;
+    if (!stateBreakdowns[person]) stateBreakdowns[person] = {};
+    const state = task.state || "Unknown";
+    stateBreakdowns[person][state] = (stateBreakdowns[person][state] || 0) + 1;
+  }
+
+  // Second pass: compute daily deltas
   for (const [taskId, task] of Object.entries(todayTasks)) {
-    // Only process current sprint tasks
     if (task.sprint !== currentSprint) continue;
 
     const prev = yesterdayTasks[taskId];
@@ -66,7 +76,6 @@ async function computeDailyDelta(date) {
     if (!byPerson[person]) byPerson[person] = { pointsToday: 0, tasksToday: 0, tasks: [] };
 
     const stateChanged = prev && prev.state !== task.state;
-    // Only mark as new if no yesterday snapshot exists at all (first run), skip isNew logic
     const isNewTask = yesterdaySnap.exists() && !prev;
     const completedToday = isDone(task.state) && prev && !isDone(prev.state);
 
@@ -84,10 +93,11 @@ async function computeDailyDelta(date) {
     }
   }
 
-  // Attach sprint + overall totals
+  // Attach sprint totals + stateBreakdown
   for (const person of Object.keys(byPerson)) {
     byPerson[person].totalSprintPoints = sprintPoints[person]?.pts || 0;
     byPerson[person].totalOverallPoints = Math.round((overallPoints[person] || 0) * 10) / 10;
+    byPerson[person].stateBreakdown = stateBreakdowns[person] || {};
   }
 
   return byPerson;
