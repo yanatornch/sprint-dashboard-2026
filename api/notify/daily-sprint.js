@@ -173,7 +173,8 @@ export default async function handler(request, response) {
   }
 
   // 2. Forward to external webhook (skip if nothing to report)
-  const webhookUrl = process.env.WEBHOOK_URL;
+  // Strip stray whitespace/newlines that can sneak in when pasting the URL into env vars
+  const webhookUrl = (process.env.WEBHOOK_URL || "").replace(/\s+/g, "");
   if (webhookUrl && byPerson && Object.keys(byPerson).length > 0) {
     try {
       const message = buildMessage(byPerson, today);
