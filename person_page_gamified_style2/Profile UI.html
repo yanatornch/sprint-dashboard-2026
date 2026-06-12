@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ohm · Profile</title>
+<style>
+  /* ============================================================
+     DUAL THEME TOKENS — Sun (marigold) ↔ Night (indigo)
+     ============================================================ */
+  :root {
+    --display: "Fredoka", system-ui, sans-serif;
+    --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+    /* accent dials / highlights — shared across themes */
+    --good: #2fce6e;
+    --warn: #f6a623;
+    --bad:  #f0467e;
+    --info: #2ad4e5;
+  }
+
+  /* ---------- SUN (default, the reference look) ---------- */
+  .stage[data-theme="sun"] {
+    --bg:        #ffc62e;
+    --bg-2:      #ffce4a;
+    --card:      #ffd24f;
+    --card-edge: #15110a;
+    --card-dark: #574510;
+    --dark-edge: #2c2206;
+    --ink:       #15110a;
+    --ink-soft:  #6a560f;
+    --label:     #8a6e16;
+    --on-dark:   #fff4d2;
+    --on-dark-label: #d9b94e;
+    --ol:        #15110a;       /* outline buttons */
+    --olW:       2.5px;
+    --strokeW:   2.5px;
+    --radius:    24px;
+    --shadow:    0 10px 24px rgba(120,82,0,.22);
+    --cta-bg:    #15110a;
+    --cta-ink:   #ffd24f;
+    --pill-bg:   #ffe48a;
+    --pill-ink:  #15110a;
+    --track:     #161106;       /* dark inner track (competency) */
+    --track-ink: #ffd24f;
+    --spectrum:  linear-gradient(90deg,#f7607f,#ffb38c);
+    --spectrum-track: #f4b9c4;
+    --bar:       #15110a;
+    --bar-soft:  #b98c12;
+    --line:      #f0467e;
+    --ring-bg:   rgba(21,17,10,.14);
+    --watermark: rgba(21,17,10,.10);
+  }
+
+  /* ---------- NIGHT (the existing app palette) ---------- */
+  .stage[data-theme="night"] {
+    --bg:        #0a0f1c;
+    --bg-2:      #0d1424;
+    --card:      #141d31;
+    --card-edge: rgba(255,255,255,.09);
+    --card-dark: #0e1525;
+    --dark-edge: rgba(255,255,255,.07);
+    --ink:       #e9edf6;
+    --ink-soft:  #aeb6c8;
+    --label:     #828ca2;
+    --on-dark:   #e9edf6;
+    --on-dark-label: #8a93a8;
+    --ol:        rgba(255,255,255,.18);
+    --olW:       1.5px;
+    --strokeW:   1.5px;
+    --radius:    22px;
+    --shadow:    0 14px 34px rgba(0,0,0,.45);
+    --cta-bg:    linear-gradient(120deg,#7c7ff5,#6366f1);
+    --cta-ink:   #ffffff;
+    --pill-bg:   #1d2740;
+    --pill-ink:  #cfd6e6;
+    --track:     #070b15;
+    --track-ink: #ffd24f;
+    --spectrum:  linear-gradient(90deg,#7c7ff5,#2ad4e5);
+    --spectrum-track: #232c44;
+    --bar:       #7c7ff5;
+    --bar-soft:  #2a3656;
+    --line:      #2ad4e5;
+    --ring-bg:   rgba(255,255,255,.10);
+    --watermark: rgba(255,255,255,.05);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { -webkit-font-smoothing: antialiased; }
+
+  .stage {
+    min-height: 100vh;
+    width: 100%;
+    background:
+      radial-gradient(1100px 520px at 15% -10%, color-mix(in srgb, var(--bg-2) 80%, #fff 0%), transparent 60%),
+      var(--bg);
+    font-family: var(--font);
+    color: var(--ink);
+    transition: background .35s ease, color .35s ease;
+    padding: 28px 18px 90px;
+    line-height: 1.45;
+  }
+
+  .feed {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  /* wide screens → roomy two-column bento */
+  @media (min-width: 880px) {
+    .feed { max-width: 920px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .span-2 { grid-column: 1 / -1; }
+  }
+
+  /* ---------- shared card shell ---------- */
+  .card {
+    background: var(--card);
+    border: var(--strokeW) solid var(--card-edge);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    min-width: 0;
+    transition: background .35s ease, border-color .35s ease;
+  }
+  .feed > * { min-width: 0; }
+  .card.dark {
+    background: var(--card-dark);
+    border-color: var(--dark-edge);
+    color: var(--on-dark);
+    position: relative;
+    overflow: hidden;
+  }
+  .pad { padding: 20px 22px; }
+
+  .klabel {
+    font: 700 12.5px/1 var(--font);
+    letter-spacing: 1.6px; text-transform: uppercase;
+    color: var(--label);
+  }
+  .klabel.on-dark { color: var(--on-dark-label); }
+
+  /* outline icon / pill buttons */
+  .obtn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border: var(--olW) solid var(--ol); background: transparent; color: var(--ink);
+    border-radius: 999px; cursor: pointer; font: 800 13px/1 var(--display);
+    letter-spacing: .3px; transition: transform .12s ease, background .2s ease;
+  }
+  .obtn:hover { transform: translateY(-1px); }
+  .obtn.round { width: 46px; height: 46px; padding: 0; border-radius: 50%; }
+  .obtn.pill  { padding: 11px 16px; }
+
+  .cta {
+    border: none; border-radius: 999px; cursor: pointer;
+    background: var(--cta-bg); color: var(--cta-ink);
+    font: 800 14px/1 var(--display); letter-spacing: .4px;
+    padding: 13px 20px; transition: transform .12s ease, filter .2s ease;
+  }
+  .cta:hover { transform: translateY(-1px); filter: brightness(1.05); }
+
+  .dpill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--pill-bg); color: var(--pill-ink);
+    border-radius: 999px; padding: 7px 13px;
+    font: 800 12.5px/1 var(--display); letter-spacing: .4px;
+  }
+
+  /* big chunky numerals */
+  .figure { font-family: var(--display); font-weight: 700; letter-spacing: -.5px; line-height: .95; }
+
+  /* entrance — animate transform only so content is never hidden */
+  @keyframes rise { from { transform: translateY(12px); } to { transform: none; } }
+  @media (prefers-reduced-motion: no-preference) {
+    .rise { animation: rise .5s cubic-bezier(.2,.8,.2,1) both; }
+  }
+  @keyframes burst { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; } }
+
+  button { font-family: var(--font); }
+  ::selection { background: rgba(0,0,0,.18); }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script src="data.js"></script>
+  <script type="text/babel" src="profile-components.jsx"></script>
+  <script type="text/babel" src="profile-components2.jsx"></script>
+  <script type="text/babel" src="profile-components3.jsx"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="profile-app.jsx"></script>
+</body>
+</html>

@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Person · Sprint Dashboard 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --bg: #0a0f1c; --bg-2: #0d1424;
+    --panel: #131b2e; --panel-2: #0f1626; --panel-hi: #1a2338;
+    --border: rgba(255,255,255,.07); --border-hi: rgba(255,255,255,.12);
+    --text: #e9edf6; --muted: #8b94a8; --faint: #5a6379;
+    --indigo: #7c7ff5; --indigo-deep: #6366f1;
+    --cyan: #2ad4e5; --teal: #34d399; --green: #2fd39b;
+    --orange: #f5a524; --red: #f0556a; --yellow: #f5c518;
+    --gold: #f5c518; --pink: #f43f6e;
+    --r: 16px; --r-lg: 22px;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font);
+    background:
+      radial-gradient(1200px 600px at 18% -8%, rgba(124,127,245,.10), transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, rgba(42,212,229,.06), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.45;
+    min-height: 100vh;
+  }
+  ::selection { background: rgba(124,127,245,.35); }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 26px 28px 80px; }
+
+  /* Header */
+  .topbar { display: flex; align-items: center; gap: 18px; padding: 8px 2px 22px; flex-wrap: wrap; }
+  .btn-back {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--panel); border: 1px solid var(--border);
+    color: var(--text); padding: 11px 16px; border-radius: 999px;
+    font: 600 14px/1 var(--font); cursor: pointer; transition: .18s;
+    text-decoration: none;
+  }
+  .btn-back:hover { background: var(--panel-hi); border-color: var(--border-hi); }
+  .avatar {
+    width: 60px; height: 60px; border-radius: 50%;
+    display: grid; place-items: center; flex: none;
+    font: 800 21px/1 var(--font); color: #fff; letter-spacing: .5px;
+    box-shadow: 0 8px 22px rgba(99,102,241,.45);
+  }
+  .who { display: flex; flex-direction: column; gap: 3px; }
+  .who-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .who-top h1 { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -.5px; }
+  .role-badge {
+    font: 700 12px/1 var(--font); padding: 5px 10px; border-radius: 999px;
+  }
+  .who-sub { color: var(--muted); font-size: 14.5px; font-weight: 500; }
+  .who-sub b { color: var(--text); font-weight: 700; }
+  .spacer { flex: 1; min-width: 0; }
+
+  /* Generic panel */
+  .panel {
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid var(--border); border-radius: var(--r-lg);
+    box-shadow: var(--shadow);
+  }
+  .panel-pad { padding: 22px 24px; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+  .panel-head h2 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -.2px; }
+  .pill {
+    font: 600 12.5px/1 var(--font); color: var(--muted);
+    background: var(--panel-hi); border: 1px solid var(--border);
+    padding: 8px 12px; border-radius: 999px;
+  }
+  .section-label {
+    font: 700 12px/1 var(--font); letter-spacing: 2px; text-transform: uppercase;
+    color: var(--faint); margin: 30px 2px 14px;
+  }
+  .grid { display: grid; gap: 16px; }
+
+  @keyframes rise { from { transform: translateY(10px); opacity: .7; } to { transform: none; opacity: 1; } }
+  .rise { animation: rise .45s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes burst {
+    0% { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; }
+  }
+
+  /* Task list */
+  .task-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .task-filter-select {
+    background: var(--panel-hi); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 12px; font: 600 13px/1 var(--font); outline: none; cursor: pointer;
+  }
+  .task-filter-select:focus { border-color: var(--indigo); }
+  .task-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 14px;
+    transition: border-color .12s;
+  }
+  .task-item:hover { border-color: rgba(124,127,245,.35); }
+  .task-title { font-weight: 700; font-size: 13px; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .task-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; align-items: center; }
+  .task-state { padding: 3px 9px; border-radius: 5px; font-size: 11px; font-weight: 700; }
+  .task-pts { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .task-sprint { font-size: 11px; background: var(--panel); border: 1px solid var(--border); padding: 2px 8px; border-radius: 999px; color: var(--muted); font-weight: 600; }
+  .task-project { font-size: 11px; color: var(--faint); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+
+  /* Loading */
+  #root:empty::after {
+    content: "Loading…";
+    display: flex; align-items: center; justify-content: center;
+    min-height: 80vh; font-size: 16px; color: var(--muted);
+    position: fixed; inset: 0;
+  }
+
+  /* Tweaks panel light override (panel has light background) */
+  button { font-family: var(--font); }
+
+  @media (max-width: 900px) {
+    .wrap { padding: 16px 16px 60px; }
+    .who-top h1 { font-size: 22px; }
+    .avatar { width: 46px; height: 46px; font-size: 16px; }
+  }
+  @media (max-width: 600px) {
+    .wrap { padding: 12px 12px 48px; }
+    .who-top h1 { font-size: 18px; }
+  }
+</style>
+  <script type="module" crossorigin src="/assets/person-DdGOvy2r.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/firebase-B0syS2_n.js">
+</head>
+<body>
+<div id="root"></div>
+
+<!-- Firebase data loader — runs first, sets window.DATA, then signals React -->
+
+<!-- ── Tweaks panel ──────────────────────────────────────────────────────── -->
+<script type="text/babel">
+const __TWEAKS_STYLE = `
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom right;
+    background:rgba(250,249,247,.88);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:default}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-chips{display:flex;gap:6px}
+  .twk-chip{position:relative;appearance:none;flex:1;min-width:0;height:40px;
+    padding:0;border:0;border-radius:6px;overflow:hidden;cursor:default;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);transition:transform .12s}
+  .twk-chip:hover{transform:translateY(-1px)}
+  .twk-chip[data-on="1"]{box-shadow:0 0 0 1.5px rgba(0,0,0,.85),0 2px 6px rgba(0,0,0,.15)}
+  .twk-chip>span{position:absolute;top:0;bottom:0;right:0;width:34%;
+    display:flex;flex-direction:column;box-shadow:-1px 0 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i{flex:1}
+  .twk-chip svg{position:absolute;top:6px;left:6px;width:13px;height:13px;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+`;
+
+function __twkIsLight(hex) {
+  const h = String(hex).replace('#','');
+  const x = h.length===3 ? h.replace(/./g,(c)=>c+c) : h.padEnd(6,'0');
+  const n = parseInt(x.slice(0,6),16);
+  if (Number.isNaN(n)) return true;
+  const r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  return r*299+g*587+b*114>148000;
+}
+
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits==='object'&&keyOrEdits!==null ? keyOrEdits : {[keyOrEdits]:val};
+    setValues(prev => ({...prev,...edits}));
+    window.parent.postMessage({type:'__edit_mode_set_keys',edits},'*');
+    window.dispatchEvent(new CustomEvent('tweakchange',{detail:edits}));
+  },[]);
+  return [values, setTweak];
+}
+
+function TweaksPanel({title='Tweaks',children}) {
+  const [open,setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  const offsetRef = React.useRef({x:16,y:16});
+  const clamp = React.useCallback(()=>{
+    const p=dragRef.current; if(!p) return;
+    const w=p.offsetWidth,h=p.offsetHeight,PAD=16;
+    offsetRef.current={
+      x:Math.min(Math.max(PAD,window.innerWidth-w-PAD),Math.max(PAD,offsetRef.current.x)),
+      y:Math.min(Math.max(PAD,window.innerHeight-h-PAD),Math.max(PAD,offsetRef.current.y)),
+    };
+    p.style.right=offsetRef.current.x+'px'; p.style.bottom=offsetRef.current.y+'px';
+  },[]);
+  React.useEffect(()=>{
+    const onMsg=(e)=>{
+      if(e?.data?.type==='__activate_edit_mode') setOpen(true);
+      else if(e?.data?.type==='__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message',onMsg);
+    window.parent.postMessage({type:'__edit_mode_available'},'*');
+    return ()=>window.removeEventListener('message',onMsg);
+  },[]);
+  React.useEffect(()=>{ if(open) clamp(); },[open,clamp]);
+  const dismiss=()=>{ setOpen(false); window.parent.postMessage({type:'__edit_mode_dismissed'},'*'); };
+  const onDragStart=(e)=>{
+    const p=dragRef.current; if(!p) return;
+    const r=p.getBoundingClientRect(),sx=e.clientX,sy=e.clientY;
+    const sr=window.innerWidth-r.right,sb=window.innerHeight-r.bottom;
+    const move=(ev)=>{ offsetRef.current={x:sr-(ev.clientX-sx),y:sb-(ev.clientY-sy)}; clamp(); };
+    const up=()=>{ window.removeEventListener('mousemove',move); window.removeEventListener('mouseup',up); };
+    window.addEventListener('mousemove',move); window.addEventListener('mouseup',up);
+  };
+  if (!open) return null;
+  return (<>
+    <style>{__TWEAKS_STYLE}</style>
+    <div ref={dragRef} className="twk-panel" style={{right:offsetRef.current.x,bottom:offsetRef.current.y}}>
+      <div className="twk-hd" onMouseDown={onDragStart}>
+        <b>{title}</b>
+        <button className="twk-x" onMouseDown={e=>e.stopPropagation()} onClick={dismiss}>✕</button>
+      </div>
+      <div className="twk-body">{children}</div>
+    </div>
+  </>);
+}
+function TweakSection({label}) { return <div className="twk-sect">{label}</div>; }
+function TweakToggle({label,value,onChange}) {
+  return <div className="twk-row twk-row-h">
+    <div className="twk-lbl"><span>{label}</span></div>
+    <button type="button" className="twk-toggle" data-on={value?'1':'0'} onClick={()=>onChange(!value)}><i /></button>
+  </div>;
+}
+function TweakButton({label,onClick}) {
+  return <button type="button" className="twk-btn" onClick={onClick}>{label}</button>;
+}
+function TweakColor({label,value,options,onChange}) {
+  const key=(o)=>String(JSON.stringify(o)).toLowerCase();
+  const cur=key(value);
+  return <div className="twk-row">
+    <div className="twk-lbl"><span>{label}</span></div>
+    <div className="twk-chips">
+      {options.map((o,i)=>{
+        const colors=Array.isArray(o)?o:[o];
+        const [hero,...rest]=colors; const sup=rest.slice(0,4); const on=key(o)===cur;
+        return <button key={i} type="button" className="twk-chip" data-on={on?'1':'0'}
+          style={{background:hero}} onClick={()=>onChange(o)}>
+          {sup.length>0&&<span>{sup.map((c,j)=><i key={j} style={{background:c}}/>)}</span>}
+          {on&&<svg viewBox="0 0 14 14"><path d="M3 7.2 5.8 10 11 4.2" fill="none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" stroke={__twkIsLight(hero)?'rgba(0,0,0,.78)':'#fff'}/></svg>}
+        </button>;
+      })}
+    </div>
+  </div>;
+}
+window.__TweakExports = {useTweaks,TweaksPanel,TweakSection,TweakToggle,TweakButton,TweakColor};
+</script>
+
+<!-- ── Components ────────────────────────────────────────────────────────── -->
+<script type="text/babel">
+const {useState,useEffect,useRef} = React;
+
+function StatCard({label,value,sub,accent,delay=0}) {
+  return <div className="panel rise" style={{padding:"18px 20px",animationDelay:delay+"ms"}}>
+    <div style={{font:"700 11px/1 var(--font)",letterSpacing:"1.5px",textTransform:"uppercase",color:"var(--faint)"}}>{label}</div>
+    <div style={{fontSize:34,fontWeight:800,marginTop:10,color:accent||"var(--text)",letterSpacing:"-1px"}}>{value}</div>
+    <div style={{color:"var(--muted)",fontSize:13,fontWeight:500,marginTop:4}}>{sub}</div>
+  </div>;
+}
+
+function StatusHeroCard({s,delay=0}) {
+  return <div className="panel rise" style={{padding:"20px 22px",position:"relative",overflow:"hidden",animationDelay:delay+"ms"}}>
+    <div style={{position:"absolute",inset:0,background:`linear-gradient(135deg, ${s.color}22, transparent 60%)`,pointerEvents:"none"}}/>
+    <div style={{position:"relative"}}>
+      <div style={{display:"flex",alignItems:"center",gap:9}}>
+        <span style={{width:9,height:9,borderRadius:"50%",background:s.color,boxShadow:`0 0 10px ${s.color}`}}/>
+        <span style={{fontSize:14.5,fontWeight:700}}>{s.emoji} {s.label}</span>
+      </div>
+      <div style={{display:"flex",alignItems:"baseline",gap:8,marginTop:12}}>
+        <span style={{fontSize:42,fontWeight:800,lineHeight:1,color:s.color,letterSpacing:"-1.5px"}}>{s.tasks}</span>
+        <span style={{color:"var(--muted)",fontSize:14,fontWeight:600}}>tasks</span>
+      </div>
+      <div style={{color:"var(--muted)",fontSize:12.5,fontWeight:600,marginTop:8}}>{s.pts} pts</div>
+    </div>
+  </div>;
+}
+
+function StatusChip({s}) {
+  return <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,background:"var(--panel-2)",border:"1px solid var(--border)",borderRadius:12,padding:"11px 14px"}}>
+    <span style={{display:"flex",alignItems:"center",gap:8,fontSize:13,fontWeight:600,color:"var(--text)"}}>
+      <span style={{width:8,height:8,borderRadius:"50%",background:s.color}}/>{s.label}
+    </span>
+    <span style={{fontSize:14,fontWeight:800,color:s.tasks?"var(--text)":"var(--faint)"}}>{s.tasks}</span>
+  </div>;
+}
+
+function InsightCard({it,delay=0}) {
+  return <div className="panel rise" style={{padding:"16px 18px",animationDelay:delay+"ms"}}>
+    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:9}}>
+      <span style={{width:8,height:8,borderRadius:"50%",background:it.dot}}/>
+      <span style={{fontSize:13.5,fontWeight:700}}>{it.emoji} {it.title}</span>
+    </div>
+    <div style={{fontSize:18,fontWeight:800,letterSpacing:"-.3px"}}>{it.value}</div>
+    <div style={{color:"var(--muted)",fontSize:12.5,fontWeight:500,marginTop:6,lineHeight:1.4}}>{it.sub}</div>
+  </div>;
+}
+
+window.__ComponentExports = {StatCard,StatusHeroCard,StatusChip,InsightCard};
+</script>
+
+<!-- ── Charts ─────────────────────────────────────────────────────────────── -->
+<script type="text/babel">
+function smoothPath(pts) {
+  if (pts.length < 2) return "";
+  let d = `M ${pts[0].x} ${pts[0].y}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+    const c1x=p1.x+(p2.x-p0.x)/6,c1y=p1.y+(p2.y-p0.y)/6;
+    const c2x=p2.x-(p3.x-p1.x)/6,c2y=p2.y-(p3.y-p1.y)/6;
+    d+=` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y}`;
+  }
+  return d;
+}
+
+function SprintTrendChart({data,ptsMax,taskMax}) {
+  const W=1000,H=360,padL=44,padR=44,padT=22,padB=40;
+  const iW=W-padL-padR,iH=H-padT-padB,n=data.length,band=iW/n;
+  const x=(i)=>padL+band*(i+0.5);
+  const yP=(v)=>padT+iH*(1-v/ptsMax);
+  const yT=(v)=>padT+iH*(1-v/taskMax);
+  const linePts=data.map((d,i)=>({x:x(i),y:yT(d.tasks)}));
+  const path=smoothPath(linePts);
+  const ptsSteps=5;
+  const ptsGrid=Array.from({length:ptsSteps+1},(_,i)=>Math.round((ptsMax/ptsSteps)*i));
+  const taskSteps=4;
+  const taskGrid=Array.from({length:taskSteps+1},(_,i)=>Math.round((taskMax/taskSteps)*i));
+  return <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",height:"auto",display:"block"}}>
+    <defs>
+      <linearGradient id="barFill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="var(--indigo)"/>
+        <stop offset="100%" stopColor="var(--indigo-deep)"/>
+      </linearGradient>
+      <linearGradient id="lineGlow" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="rgba(42,212,229,.25)"/>
+        <stop offset="100%" stopColor="rgba(42,212,229,0)"/>
+      </linearGradient>
+    </defs>
+    {ptsGrid.map(v=><g key={v}>
+      <line x1={padL} y1={yP(v)} x2={W-padR} y2={yP(v)} stroke="rgba(255,255,255,.06)"/>
+      <text x={padL-10} y={yP(v)+4} textAnchor="end" fontSize="12" fill="var(--faint)">{v}</text>
+    </g>)}
+    {taskGrid.map(v=><text key={v} x={W-padR+10} y={yT(v)+4} textAnchor="start" fontSize="12" fill="var(--faint)">{v}</text>)}
+    {data.map((d,i)=>{
+      const bw=band*0.5,h=iH*(d.pts/ptsMax);
+      return <g key={i}>
+        <rect x={x(i)-bw/2} y={yP(d.pts)} width={bw} height={Math.max(h,0)} rx="5" fill="url(#barFill)" opacity={d.pts?0.95:0.15}/>
+        <text x={x(i)} y={H-14} textAnchor="middle" fontSize="12" fontWeight="600" fill="var(--muted)">Sp {d.sprint}</text>
+        {d.pts>0&&<text x={x(i)} y={yP(d.pts)-6} textAnchor="middle" fontSize="10.5" fontWeight="700" fill="var(--indigo)">{d.pts}</text>}
+      </g>;
+    })}
+    <path d={`${path} L ${x(n-1)} ${padT+iH} L ${x(0)} ${padT+iH} Z`} fill="url(#lineGlow)" opacity="0.6"/>
+    <path d={path} fill="none" stroke="#2ad4e5" strokeWidth="3" strokeLinecap="round"/>
+    {linePts.map((p,i)=><circle key={i} cx={p.x} cy={p.y} r="4.5" fill="var(--bg)" stroke="#2ad4e5" strokeWidth="2.5"/>)}
+  </svg>;
+}
+
+function ChartLegend() {
+  const item=(color,label,hollow)=><span style={{display:"inline-flex",alignItems:"center",gap:7,fontSize:13,fontWeight:600,color:"var(--muted)"}}>
+    <span style={{width:12,height:12,borderRadius:3,background:hollow?"transparent":color,border:hollow?`2px solid ${color}`:"none"}}/>
+    {label}
+  </span>;
+  return <div style={{display:"flex",gap:22,justifyContent:"center",marginBottom:4}}>
+    {item("#7c7ff5","Story Points")}
+    {item("#2ad4e5","Tasks (count)",true)}
+  </div>;
+}
+
+window.__ChartExports = {SprintTrendChart,ChartLegend};
+</script>
+
+<!-- ── Gamification ────────────────────────────────────────────────────────── -->
+<script type="text/babel">
+function tierFor(points,tiers) {
+  let cur=tiers[0];
+  for (const t of tiers) if (points>=t.min) cur=t;
+  const idx=tiers.indexOf(cur),next=tiers[idx+1]||null;
+  return {cur,next};
+}
+function nextMilestone(points) { return Math.floor(points/50)*50+50; }
+
+function RewardHero({points,rewards,claimed,tiers,onScrollToRewards}) {
+  const {cur,next}=tierFor(points,tiers);
+  const reached=rewards.filter(r=>r.pts<=points);
+  const claimable=reached.filter(r=>!claimed.includes(r.pts)).length;
+  const level=reached.length;
+  const nm=nextMilestone(points),bandStart=nm-50;
+  const pct=Math.min(100,Math.round(((points-bandStart)/50)*100));
+  const toNext=nm-points;
+  return <div className="panel rise" style={{padding:0,overflow:"hidden",position:"relative"}}>
+    <div style={{position:"absolute",inset:0,pointerEvents:"none",background:`radial-gradient(700px 300px at 12% -20%, ${cur.color}33, transparent 60%), radial-gradient(600px 300px at 90% 120%, rgba(124,127,245,.18), transparent 60%)`}}/>
+    <div style={{position:"relative",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:28,alignItems:"center",padding:"26px 30px"}}>
+      {/* medallion */}
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
+        <div style={{width:96,height:96,borderRadius:"50%",display:"grid",placeItems:"center",background:`conic-gradient(${cur.color} ${pct}%, rgba(255,255,255,.08) ${pct}%)`,position:"relative"}}>
+          <div style={{position:"absolute",inset:7,borderRadius:"50%",background:"var(--panel)",display:"grid",placeItems:"center",border:`1px solid ${cur.color}55`}}>
+            <div style={{textAlign:"center",lineHeight:1}}>
+              <div style={{fontSize:11,fontWeight:700,color:"var(--faint)",letterSpacing:1}}>LVL</div>
+              <div style={{fontSize:30,fontWeight:800,color:cur.color}}>{level}</div>
+            </div>
+          </div>
+        </div>
+        <span style={{font:"800 12px/1 var(--font)",letterSpacing:1.5,textTransform:"uppercase",color:cur.color,padding:"6px 12px",borderRadius:999,background:`${cur.color}1f`,border:`1px solid ${cur.color}55`}}>{cur.name}</span>
+      </div>
+      {/* progress */}
+      <div>
+        <div style={{font:"700 12px/1 var(--font)",letterSpacing:2,textTransform:"uppercase",color:"var(--faint)"}}>Reward Points</div>
+        <div style={{display:"flex",alignItems:"baseline",gap:10,marginTop:6}}>
+          <span style={{fontSize:54,fontWeight:800,letterSpacing:"-2px",lineHeight:1,background:"linear-gradient(120deg, #fff, var(--indigo))",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{points.toLocaleString()}</span>
+          <span style={{color:"var(--muted)",fontWeight:700,fontSize:16}}>pts</span>
+        </div>
+        <div style={{marginTop:16,maxWidth:520}}>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:12.5,fontWeight:600,color:"var(--muted)",marginBottom:7}}>
+            <span>Next reward at <b style={{color:"var(--text)"}}>{nm} pts</b></span>
+            <span>{toNext} pts to go</span>
+          </div>
+          <div style={{height:12,borderRadius:999,background:"rgba(255,255,255,.07)",overflow:"hidden",border:"1px solid var(--border)"}}>
+            <div style={{height:"100%",width:pct+"%",borderRadius:999,background:`linear-gradient(90deg, ${cur.color}, var(--indigo))`,boxShadow:`0 0 16px ${cur.color}aa`,transition:"width .8s cubic-bezier(.2,.8,.2,1)"}}/>
+          </div>
+          {next&&<div style={{fontSize:12,color:"var(--faint)",fontWeight:600,marginTop:8}}>{next.min-points} pts to reach <b style={{color:next.color}}>{next.name}</b> tier</div>}
+        </div>
+      </div>
+      {/* claimable CTA */}
+      <div style={{textAlign:"center"}}>
+        <div style={{width:150,padding:"18px 14px",borderRadius:18,background:claimable?"linear-gradient(160deg, rgba(245,197,24,.18), rgba(245,165,36,.06))":"var(--panel-2)",border:`1px solid ${claimable?"rgba(245,197,24,.4)":"var(--border)"}`}}>
+          <div style={{fontSize:40,fontWeight:800,color:claimable?"var(--gold)":"var(--faint)",lineHeight:1}}>{claimable}</div>
+          <div style={{fontSize:12.5,fontWeight:700,color:"var(--muted)",marginTop:4}}>rewards ready</div>
+          <button onClick={onScrollToRewards} disabled={!claimable} style={{marginTop:14,width:"100%",padding:"10px 0",borderRadius:999,cursor:claimable?"pointer":"default",border:"none",font:"700 13px/1 var(--font)",background:claimable?"linear-gradient(120deg, var(--gold), var(--orange))":"rgba(255,255,255,.06)",color:claimable?"#1a1206":"var(--faint)"}}>{claimable?"Claim now →":"All claimed"}</button>
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+function MilestoneTrack({points,rewards,claimed}) {
+  const railRef=useRef(null);
+  useEffect(()=>{
+    const el=railRef.current; if(!el) return;
+    const idx=rewards.findIndex(r=>r.pts>points);
+    const node=el.children[Math.max(0,idx-1)];
+    if(node) el.scrollLeft=node.offsetLeft-40;
+  },[]);
+  return <div className="panel panel-pad rise">
+    <div className="panel-head"><h2>🏁 Reward Journey</h2><span className="pill">+50 pts = 1 reward</span></div>
+    <div ref={railRef} style={{display:"flex",gap:0,overflowX:"auto",paddingBottom:8}}>
+      {rewards.map((r,i)=>{
+        const reached=r.pts<=points,isClaimed=claimed.includes(r.pts);
+        const state=isClaimed?"claimed":reached?"ready":"locked";
+        const color=state==="ready"?"var(--gold)":state==="claimed"?"var(--green)":"var(--faint)";
+        return <div key={r.pts} style={{minWidth:96,display:"flex",flexDirection:"column",alignItems:"center",position:"relative"}}>
+          {i>0&&<div style={{position:"absolute",top:28,left:"-50%",width:"100%",height:3,background:r.pts<=points?"linear-gradient(90deg, var(--green), var(--gold))":"rgba(255,255,255,.08)"}}/>}
+          <div style={{width:56,height:56,borderRadius:"50%",display:"grid",placeItems:"center",position:"relative",zIndex:1,background:state==="locked"?"var(--panel-2)":`${color}1f`,border:`2px solid ${state==="ready"?"var(--gold)":state==="claimed"?"var(--green)":"var(--border)"}`,fontSize:24,filter:state==="locked"?"grayscale(1) opacity(.55)":"none",boxShadow:state==="ready"?"0 0 18px rgba(245,197,24,.5)":"none"}}>
+            {state==="locked"?"🔒":r.emoji}
+            {state==="claimed"&&<span style={{position:"absolute",bottom:-4,right:-4,width:20,height:20,borderRadius:"50%",background:"var(--green)",color:"#08130d",display:"grid",placeItems:"center",fontSize:12,fontWeight:900}}>✓</span>}
+          </div>
+          <div style={{fontSize:12.5,fontWeight:800,marginTop:8,color:state==="locked"?"var(--faint)":"var(--text)"}}>{r.pts}</div>
+          <div style={{fontSize:10.5,fontWeight:600,color:"var(--faint)",textTransform:"uppercase",letterSpacing:.5}}>{state==="ready"?"Ready":state==="claimed"?"Claimed":"Locked"}</div>
+        </div>;
+      })}
+    </div>
+  </div>;
+}
+
+function RewardCard({r,state,onClaim,confetti=true}) {
+  const [burst,setBurst]=useState(false);
+  const colors=["#f5c518","#2fd39b","#7c7ff5","#2ad4e5","#f0556a"];
+  function claim(){
+    if(confetti){setBurst(true);setTimeout(()=>setBurst(false),800);}
+    onClaim(r.pts);
+  }
+  const ready=state==="ready",claimed=state==="claimed";
+  return <div className="panel" style={{padding:"18px",position:"relative",overflow:"hidden",opacity:state==="locked"?.55:1,borderColor:ready?"rgba(245,197,24,.4)":"var(--border)"}}>
+    {ready&&<div style={{position:"absolute",inset:0,background:"linear-gradient(160deg, rgba(245,197,24,.12), transparent 55%)",pointerEvents:"none"}}/>}
+    <div style={{position:"relative",display:"flex",gap:14,alignItems:"flex-start"}}>
+      <div style={{width:50,height:50,borderRadius:14,display:"grid",placeItems:"center",fontSize:26,flex:"none",background:"var(--panel-2)",border:"1px solid var(--border)",filter:state==="locked"?"grayscale(1)":"none"}}>{state==="locked"?"🔒":r.emoji}</div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:15,fontWeight:800}}>{r.name}</span>
+          <span style={{fontSize:10.5,fontWeight:700,color:"var(--muted)",background:"var(--panel-hi)",border:"1px solid var(--border)",padding:"3px 7px",borderRadius:999}}>{r.tag}</span>
+        </div>
+        <div style={{color:"var(--muted)",fontSize:12.5,fontWeight:500,marginTop:4,lineHeight:1.4}}>{r.desc}</div>
+      </div>
+    </div>
+    <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:16}}>
+      <span style={{fontSize:13,fontWeight:800,color:"var(--gold)"}}>★ {r.pts} pts</span>
+      {ready&&<button onClick={claim} style={{padding:"9px 18px",borderRadius:999,border:"none",cursor:"pointer",font:"700 13px/1 var(--font)",background:"linear-gradient(120deg, var(--gold), var(--orange))",color:"#1a1206"}}>Redeem</button>}
+      {claimed&&<span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,fontWeight:700,color:"var(--green)"}}>✓ Claimed</span>}
+      {state==="locked"&&<span style={{fontSize:12.5,fontWeight:700,color:"var(--faint)"}}>Locked</span>}
+    </div>
+    {burst&&<div style={{position:"absolute",top:"55%",right:50,pointerEvents:"none"}}>
+      {Array.from({length:14}).map((_,i)=><span key={i} style={{position:"absolute",width:8,height:8,borderRadius:2,background:colors[i%colors.length],"--dx":(Math.cos((i/14)*6.28)*(40+Math.random()*40))+"px","--dy":(Math.sin((i/14)*6.28)*(40+Math.random()*40))+"px",animation:"burst .8s ease-out forwards"}}/>)}
+    </div>}
+  </div>;
+}
+
+function RewardsSection({points,claimed,onClaim,anchorRef,confetti}) {
+  const [tab,setTab]=useState("ready");
+  const stateOf=(r)=>claimed.includes(r.pts)?"claimed":(r.pts<=points?"ready":"locked");
+  const D=window.DATA;
+  const groups={ready:D.rewards.filter(r=>stateOf(r)==="ready"),claimed:D.rewards.filter(r=>stateOf(r)==="claimed"),locked:D.rewards.filter(r=>stateOf(r)==="locked")};
+  const tabs=[{k:"ready",label:`Ready (${groups.ready.length})`},{k:"claimed",label:`Claimed (${groups.claimed.length})`},{k:"locked",label:`Locked (${groups.locked.length})`}];
+  return <div ref={anchorRef} className="panel panel-pad rise">
+    <div className="panel-head" style={{flexWrap:"wrap",gap:12}}>
+      <h2>🎁 Rewards Store</h2>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        {tabs.map(t=><button key={t.k} onClick={()=>setTab(t.k)} style={{padding:"8px 14px",borderRadius:999,cursor:"pointer",font:"600 12.5px/1 var(--font)",border:`1px solid ${tab===t.k?"var(--border-hi)":"var(--border)"}`,background:tab===t.k?"var(--panel-hi)":"transparent",color:tab===t.k?"var(--text)":"var(--muted)"}}>{t.label}</button>)}
+      </div>
+    </div>
+    {groups[tab].length===0
+      ?<div style={{color:"var(--faint)",fontSize:14,fontWeight:600,padding:"26px 0",textAlign:"center"}}>{tab==="ready"?"🎉 All caught up — keep earning points!":"Nothing here yet."}</div>
+      :<div className="grid" style={{gridTemplateColumns:"repeat(auto-fill, minmax(290px, 1fr))"}}>
+        {groups[tab].map(r=><RewardCard key={r.pts} r={r} state={stateOf(r)} onClaim={onClaim} confetti={confetti}/>)}
+      </div>
+    }
+  </div>;
+}
+
+window.__GameExports = {RewardHero,MilestoneTrack,RewardCard,RewardsSection};
+</script>
+
+<!-- ── Leaderboard ────────────────────────────────────────────────────────── -->
+<script type="text/babel">
+const RANK_MEDAL = ["🥇","🥈","🥉"];
+
+function Leaderboard() {
+  const D = window.DATA;
+  const [metric, setMetric] = useState("pts"); // pts | tasks | doneRate
+  const rows = [...D.leaderboard].sort((a,b) => {
+    if (metric === "tasks")    return b.tasks    - a.tasks;
+    if (metric === "doneRate") return b.doneRate - a.doneRate;
+    return b.pts - a.pts;
+  });
+  // Re-rank for the selected metric
+  let cr = 1;
+  rows.forEach((row, i) => {
+    const val = row[metric];
+    if (i > 0 && val === rows[i-1][metric]) row._rank = rows[i-1]._rank;
+    else row._rank = cr;
+    cr = row._rank + 1;
+  });
+  const myRow = rows.find(r => r.name === D.person.name);
+  const myPos = rows.indexOf(myRow) + 1;
+
+  const tabStyle = (k) => ({
+    padding:"7px 14px", borderRadius:999, cursor:"pointer",
+    font:"600 12.5px/1 var(--font)",
+    border:`1px solid ${metric===k?"var(--border-hi)":"var(--border)"}`,
+    background: metric===k ? "var(--panel-hi)" : "transparent",
+    color: metric===k ? "var(--text)" : "var(--muted)",
+  });
+
+  return <div className="panel panel-pad rise">
+    <div className="panel-head">
+      <h2>🏆 Leaderboard</h2>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+        <button style={tabStyle("pts")}      onClick={()=>setMetric("pts")}>Points</button>
+        <button style={tabStyle("tasks")}    onClick={()=>setMetric("tasks")}>Tasks</button>
+        <button style={tabStyle("doneRate")} onClick={()=>setMetric("doneRate")}>Done %</button>
+        <span style={{fontSize:12.5,fontWeight:700,color:"var(--faint)",marginLeft:4}}>
+          {D.stats.teamSize} members
+        </span>
+      </div>
+    </div>
+
+    {/* current person rank summary */}
+    <div style={{display:"flex",alignItems:"center",gap:14,padding:"12px 16px",borderRadius:14,marginBottom:18,
+      background:`linear-gradient(135deg, ${D.person.roleColor}18, transparent 70%)`,
+      border:`1px solid ${D.person.roleColor}35`}}>
+      <div style={{fontSize:28,fontWeight:900,color:"var(--gold)",minWidth:36,textAlign:"center",letterSpacing:"-1px"}}>
+        {myRow && myRow._rank <= 3 ? RANK_MEDAL[myRow._rank-1] : `#${myRow?._rank||"—"}`}
+      </div>
+      <div>
+        <div style={{fontWeight:800,fontSize:15}}>{D.person.name} · your rank</div>
+        <div style={{color:"var(--muted)",fontSize:13,marginTop:2}}>
+          {metric==="pts"    && `${D.person.totalPoints.toLocaleString(undefined,{maximumFractionDigits:1})} pts`}
+          {metric==="tasks"  && `${D.person.totalTasks} tasks`}
+          {metric==="doneRate" && `${(myRow?.doneRate*100||0).toFixed(1)}% done rate`}
+          {" · "}position {myPos} of {rows.length}
+        </div>
+      </div>
+    </div>
+
+    {/* table */}
+    <div style={{overflowX:"auto"}}>
+      <table style={{width:"100%",borderCollapse:"collapse",fontSize:13.5}}>
+        <thead>
+          <tr style={{borderBottom:"1px solid var(--border)"}}>
+            <th style={{textAlign:"left",padding:"8px 10px",fontSize:11,fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:"var(--faint)"}}>Rank</th>
+            <th style={{textAlign:"left",padding:"8px 10px",fontSize:11,fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:"var(--faint)"}}>Member</th>
+            <th style={{textAlign:"right",padding:"8px 10px",fontSize:11,fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:metric==="pts"?"var(--indigo)":"var(--faint)"}}>Points</th>
+            <th style={{textAlign:"right",padding:"8px 10px",fontSize:11,fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:metric==="tasks"?"var(--indigo)":"var(--faint)"}}>Tasks</th>
+            <th style={{textAlign:"right",padding:"8px 10px",fontSize:11,fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:metric==="doneRate"?"var(--indigo)":"var(--faint)"}}>Done %</th>
+            <th style={{textAlign:"right",padding:"8px 10px",fontSize:11,fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:"var(--faint)"}}>Tier</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => {
+            const isMe = row.name === D.person.name;
+            const medal = row._rank <= 3 ? RANK_MEDAL[row._rank-1] : null;
+            const barW  = metric==="pts"      ? (rows[0].pts      ? row.pts/rows[0].pts           : 0)
+                        : metric==="tasks"    ? (rows[0].tasks    ? row.tasks/rows[0].tasks       : 0)
+                        :                       (rows[0].doneRate ? row.doneRate/rows[0].doneRate : 0);
+            return <tr key={row.name} style={{
+              borderBottom:"1px solid var(--border)",
+              background: isMe ? `${D.person.roleColor}14` : i%2===0?"transparent":"rgba(255,255,255,.015)",
+              transition:".12s",
+            }}>
+              {/* rank */}
+              <td style={{padding:"11px 10px",fontWeight:800,fontSize:medal?18:14,color:medal?"inherit":"var(--faint)",minWidth:44}}>
+                {medal || `#${row._rank}`}
+              </td>
+              {/* name */}
+              <td style={{padding:"11px 10px",minWidth:160}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <div style={{width:30,height:30,borderRadius:"50%",display:"grid",placeItems:"center",
+                    background:`linear-gradient(150deg, ${row.roleColor}cc, ${row.roleColor}88)`,
+                    fontSize:11,fontWeight:800,color:"#fff",flexShrink:0,
+                    boxShadow: isMe ? `0 0 0 2px ${row.roleColor}` : "none",
+                  }}>{row.initials}</div>
+                  <div>
+                    {isMe
+                      ? <span style={{fontWeight:800,color:"var(--text)"}}>{row.name}</span>
+                      : <a href={`/person.html?name=${encodeURIComponent(row.name)}`}
+                           style={{fontWeight:700,color:"var(--text)",textDecoration:"none",borderBottom:"1px dotted var(--faint)"}}>
+                          {row.name}
+                        </a>
+                    }
+                    <div style={{fontSize:11,color:row.roleColor,fontWeight:700,marginTop:1}}>{row.role}</div>
+                  </div>
+                  {isMe && <span style={{fontSize:10,fontWeight:800,padding:"3px 8px",borderRadius:999,
+                    background:`${D.person.roleColor}28`,color:D.person.roleColor,border:`1px solid ${D.person.roleColor}44`,
+                    marginLeft:2,whiteSpace:"nowrap"}}>You</span>}
+                </div>
+              </td>
+              {/* points */}
+              <td style={{padding:"11px 10px",textAlign:"right"}}>
+                <div style={{fontWeight:metric==="pts"?800:600,fontSize:metric==="pts"?15:13.5,
+                  color:metric==="pts"?"var(--text)":"var(--muted)"}}>
+                  {row.pts.toLocaleString(undefined,{maximumFractionDigits:1})}
+                </div>
+                {metric==="pts"&&<div style={{marginTop:5,height:3,borderRadius:999,background:"rgba(255,255,255,.07)"}}>
+                  <div style={{height:"100%",width:(barW*100).toFixed(1)+"%",borderRadius:999,
+                    background:isMe?`linear-gradient(90deg,${D.person.roleColor},var(--indigo))`:"rgba(124,127,245,.55)",
+                    transition:"width .6s cubic-bezier(.2,.8,.2,1)"}}/>
+                </div>}
+              </td>
+              {/* tasks */}
+              <td style={{padding:"11px 10px",textAlign:"right"}}>
+                <div style={{fontWeight:metric==="tasks"?800:600,fontSize:metric==="tasks"?15:13.5,
+                  color:metric==="tasks"?"var(--text)":"var(--muted)"}}>
+                  {row.tasks}
+                </div>
+                {metric==="tasks"&&<div style={{marginTop:5,height:3,borderRadius:999,background:"rgba(255,255,255,.07)"}}>
+                  <div style={{height:"100%",width:(barW*100).toFixed(1)+"%",borderRadius:999,
+                    background:isMe?`linear-gradient(90deg,${D.person.roleColor},var(--cyan))`:"rgba(42,212,229,.55)",
+                    transition:"width .6s cubic-bezier(.2,.8,.2,1)"}}/>
+                </div>}
+              </td>
+              {/* done rate */}
+              <td style={{padding:"11px 10px",textAlign:"right"}}>
+                <div style={{fontWeight:metric==="doneRate"?800:600,fontSize:metric==="doneRate"?15:13.5,
+                  color:metric==="doneRate"?(row.doneRate>=.7?"var(--green)":row.doneRate>=.4?"var(--cyan)":"var(--orange)"):"var(--muted)"}}>
+                  {(row.doneRate*100).toFixed(0)}%
+                </div>
+                {metric==="doneRate"&&<div style={{marginTop:5,height:3,borderRadius:999,background:"rgba(255,255,255,.07)"}}>
+                  <div style={{height:"100%",width:(barW*100).toFixed(1)+"%",borderRadius:999,
+                    background:isMe?`linear-gradient(90deg,${D.person.roleColor},var(--green))`:"rgba(47,211,155,.55)",
+                    transition:"width .6s cubic-bezier(.2,.8,.2,1)"}}/>
+                </div>}
+              </td>
+              {/* tier */}
+              <td style={{padding:"11px 10px",textAlign:"right",whiteSpace:"nowrap"}}>
+                <span style={{fontSize:11,fontWeight:800,padding:"4px 9px",borderRadius:999,
+                  color:row.tier.color,background:`${row.tier.color}1a`,border:`1px solid ${row.tier.color}44`}}>
+                  {row.tier.name}
+                </span>
+              </td>
+            </tr>;
+          })}
+        </tbody>
+      </table>
+    </div>
+  </div>;
+}
+window.__LeaderboardExport = Leaderboard;
+</script>
+
+<!-- ── Task list component ────────────────────────────────────────────────── -->
+<script type="text/babel">
+const STATE_STYLE_MAP = {
+  "Done":                    {bg:"rgba(47,211,155,.18)",  color:"#6ee7b7"},
+  "In Progress":             {bg:"rgba(42,212,229,.18)",  color:"#67e8f9"},
+  "Ready for review":        {bg:"rgba(124,127,245,.18)", color:"#c4b5fd"},
+  "Ready for test":          {bg:"rgba(52,211,153,.18)",  color:"#6ee7b7"},
+  "Waiting to INT deploy":   {bg:"rgba(245,165,36,.18)",  color:"#fcd34d"},
+  "Waiting to PRD deploy":   {bg:"rgba(245,165,36,.18)",  color:"#fcd34d"},
+  "To Do":                   {bg:"rgba(90,99,121,.25)",   color:"#94a3b8"},
+  "Blocked":                 {bg:"rgba(240,85,106,.18)",  color:"#fca5a5"},
+  "Bugged":                  {bg:"rgba(240,85,106,.18)",  color:"#fda4af"},
+  "Removed/Canceled":        {bg:"rgba(90,99,121,.18)",   color:"#5a6379"},
+};
+
+function TaskList() {
+  const D = window.DATA;
+  const sprintOptions = D.sprints.map((s,i)=>({label:s,value:String(i+1)}));
+  const projOptions   = D.projEntries.map(([k])=>k);
+  const [sprintF,setSprintF] = useState("all");
+  const [statusF,setStatusF] = useState("all");
+  const [projF,  setProjF  ] = useState("all");
+
+  const STATUS_LABELS_ALL = ["Done","In Progress","Ready for review","Ready for test","Waiting to INT deploy","Waiting to PRD deploy","To Do","Blocked","Bugged","Removed/Canceled"];
+
+  function normState(raw) {
+    const s = (raw||"").toLowerCase();
+    if (s.includes("done")||s==="closed") return "Done";
+    if (s.includes("progress")||s==="active") return "In Progress";
+    if (s.includes("ready for review")) return "Ready for review";
+    if (s.includes("ready for test"))   return "Ready for test";
+    if (s.includes("waiting to int"))   return "Waiting to INT deploy";
+    if (s.includes("waiting to prd"))   return "Waiting to PRD deploy";
+    if (s.includes("block")) return "Blocked";
+    if (s.includes("bug"))   return "Bugged";
+    if (s.includes("cancel")||s.includes("remov")) return "Removed/Canceled";
+    return "To Do";
+  }
+
+  const statePri = s => {const l=(s||"").toLowerCase();if(l.includes("block")||l.includes("bug"))return 0;if(l.includes("progress")||l.includes("review")||l.includes("test")||l.includes("waiting"))return 1;if(l.includes("done")||l.includes("closed")||l.includes("cancel")||l.includes("remov"))return 3;return 2;};
+
+  let filtered = D.personTasks.filter(t => {
+    if (sprintF!=="all" && String(t.sprint)!==sprintF) return false;
+    if (statusF!=="all" && normState(t.state)!==statusF) return false;
+    if (projF!=="all"   && t.project!==projF) return false;
+    return true;
+  });
+  filtered.sort((a,b) => { const sd=(b.sprint||0)-(a.sprint||0); return sd!==0?sd:statePri(a.state)-statePri(b.state); });
+
+  const sel = {background:"var(--panel-hi)",color:"var(--text)",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",font:"600 13px/1 var(--font)",outline:"none",cursor:"pointer"};
+  return <div>
+    <div className="task-filters">
+      <select style={sel} value={sprintF} onChange={e=>setSprintF(e.target.value)}>
+        <option value="all">All Sprints</option>
+        {sprintOptions.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+      <select style={sel} value={statusF} onChange={e=>setStatusF(e.target.value)}>
+        <option value="all">All Statuses</option>
+        {STATUS_LABELS_ALL.map(s=><option key={s} value={s}>{s}</option>)}
+      </select>
+      <select style={sel} value={projF} onChange={e=>setProjF(e.target.value)}>
+        <option value="all">All Projects</option>
+        {projOptions.map(p=><option key={p} value={p}>{p}</option>)}
+      </select>
+      <span style={{fontSize:13,fontWeight:700,color:"var(--faint)",alignSelf:"center"}}>{filtered.length} tasks</span>
+    </div>
+    {filtered.length===0
+      ?<div style={{textAlign:"center",color:"var(--faint)",padding:"32px 0",fontSize:14,fontWeight:600}}>No tasks match filters.</div>
+      :<div style={{display:"flex",flexDirection:"column",gap:6}}>
+        {filtered.map((t,i)=>{
+          const pts=parseFloat(t.points)||0;
+          const bucket=normState(t.state);
+          const style=STATE_STYLE_MAP[bucket]||{bg:"rgba(90,99,121,.18)",color:"#94a3b8"};
+          return <div key={i} className="task-item">
+            <div style={{flex:1,minWidth:0}}>
+              <div className="task-title" title={t.title}>{t.title||"(untitled)"}</div>
+              <div className="task-meta">
+                <span className="task-state" style={{background:style.bg,color:style.color}}>{t.state||"—"}</span>
+                {pts>0&&<span className="task-pts">{pts}pt{pts!==1?"s":""}</span>}
+                <span className="task-sprint">Sprint {t.sprint||"—"}</span>
+                {t.project&&<span className="task-project" title={t.project}>{t.project}</span>}
+              </div>
+            </div>
+          </div>;
+        })}
+      </div>
+    }
+  </div>;
+}
+window.__TaskListExport = TaskList;
+</script>
+
+<!-- ── App (root) ──────────────────────────────────────────────────────────── -->
+<script type="text/babel">
+const CLAIM_KEY_PREFIX = "sprint_claimed_v1_";
+
+function loadClaimed(name) {
+  try { const r=localStorage.getItem(CLAIM_KEY_PREFIX+name); if(r) return JSON.parse(r); } catch(e){}
+  return [];
+}
+
+function App() {
+  const D = window.DATA;
+  const {useTweaks,TweaksPanel,TweakSection,TweakToggle,TweakButton,TweakColor} = window.__TweakExports;
+  const {StatCard,StatusHeroCard,StatusChip,InsightCard} = window.__ComponentExports;
+  const {SprintTrendChart,ChartLegend} = window.__ChartExports;
+  const {RewardHero,MilestoneTrack,RewardsSection} = window.__GameExports;
+  const TaskList = window.__TaskListExport;
+  const Leaderboard = window.__LeaderboardExport;
+
+  const TWEAK_DEFAULTS = {
+    accent: ["#7c7ff5","#6366f1"],
+    rewardColor: "#f5c518",
+    confetti: true,
+    showJourney: true,
+  };
+
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [claimed, setClaimed] = useState(() => loadClaimed(D.person.name));
+  const rewardsRef = useRef(null);
+  const points = D.stats.totalPoints;
+
+  useEffect(() => {
+    try { localStorage.setItem(CLAIM_KEY_PREFIX+D.person.name, JSON.stringify(claimed)); } catch(e){}
+  }, [claimed]);
+
+  function claim(pts) { setClaimed(c => c.includes(pts)?c:[...c,pts]); }
+  function scrollToRewards() {
+    const el=rewardsRef.current;
+    if(el) window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-20,behavior:"smooth"});
+  }
+
+  const accentVars = {"--indigo":t.accent[0],"--indigo-deep":t.accent[1],"--gold":t.rewardColor};
+
+  return <div className="wrap" style={accentVars}>
+    {/* Header */}
+    <div className="topbar">
+      <a className="btn-back" href="/">← Back</a>
+      <div className="avatar" style={{background:`linear-gradient(150deg, ${t.accent[0]}, ${t.accent[1]})`,boxShadow:`0 8px 22px ${t.accent[1]}66`}}>{D.person.initials}</div>
+      <div className="who">
+        <div className="who-top">
+          <h1>{D.person.name}</h1>
+          <span className="role-badge" style={{color:t.accent[0],border:`1px solid ${t.accent[0]}55`,background:`${t.accent[0]}18`}}>{D.person.role}</span>
+        </div>
+        <div className="who-sub">{D.person.sprintsActive}/{D.person.sprintsTotal} sprints active · <b>{D.person.totalPoints.toLocaleString(undefined,{maximumFractionDigits:1})} pts</b> · {D.person.totalTasks} tasks · <b>#{D.stats.myRank}</b> of {D.stats.teamSize}</div>
+      </div>
+      <div className="spacer"/>
+    </div>
+
+    {/* Gamification hero */}
+    <RewardHero points={points} rewards={D.rewards} claimed={claimed} tiers={D.tiers} onScrollToRewards={scrollToRewards}/>
+
+    {/* Status */}
+    <div className="section-label">Task Status</div>
+    <div className="grid" style={{gridTemplateColumns:"repeat(3,1fr)"}}>
+      {D.statusHero.map((s,i)=><StatusHeroCard key={s.key} s={s} delay={i*60}/>)}
+    </div>
+    {D.statusRest.length>0&&<div className="grid" style={{gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",marginTop:14}}>
+      {D.statusRest.map((s,i)=><StatusChip key={i} s={s}/>)}
+    </div>}
+
+    {/* Milestone journey */}
+    {t.showJourney&&<div style={{marginTop:26}}>
+      <MilestoneTrack points={points} rewards={D.rewards} claimed={claimed}/>
+    </div>}
+
+    {/* Rewards store */}
+    <div style={{marginTop:16}}>
+      <RewardsSection points={points} claimed={claimed} onClaim={claim} anchorRef={rewardsRef} confetti={t.confetti}/>
+    </div>
+
+    {/* Stats strip */}
+    <div className="section-label">Overview</div>
+    <div className="grid" style={{gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))"}}>
+      <StatCard label="Total Points"  value={D.stats.totalPoints.toLocaleString(undefined,{maximumFractionDigits:1})} sub="all sprints" delay={0}/>
+      <StatCard label="Total Tasks"   value={D.stats.totalTasks}       sub="done tasks" delay={40}/>
+      <StatCard label="Done Rate"     value={D.stats.doneRatePct+"%"}  sub={`${D.stats.donePts} / ${D.stats.targetPts} pts`} accent="var(--green)" delay={80}/>
+      <StatCard label="Avg Pts/Task"  value={D.stats.avgPtsPerTask}    sub="done tasks" delay={120}/>
+      <StatCard label="Active Sprints"value={D.stats.activeSprints}    sub={`of ${D.stats.sprintsTotal} total`} delay={160}/>
+      <StatCard label="Projects"      value={D.stats.projects}         sub="contributed to" delay={200}/>
+    </div>
+
+    {/* Leaderboard */}
+    <div className="section-label">Leaderboard</div>
+    <Leaderboard/>
+
+    {/* Insights */}
+    <div className="section-label">Insights</div>
+    <div className="grid" style={{gridTemplateColumns:"repeat(auto-fill,minmax(250px,1fr))"}}>
+      {D.insights.map((it,i)=><InsightCard key={i} it={it} delay={i*50}/>)}
+    </div>
+
+    {/* Sprint trend */}
+    <div style={{marginTop:26}}>
+      <div className="panel panel-pad rise">
+        <div className="panel-head"><h2>Sprint Trend</h2><span className="pill">Story Points + Tasks</span></div>
+        <ChartLegend/>
+        <SprintTrendChart data={D.sprintTrend} ptsMax={D.ptsMax} taskMax={D.taskMax}/>
+      </div>
+    </div>
+
+    {/* Leave */}
+    {D.leave.length>0&&<>
+      <div className="section-label">Leave History</div>
+      <div className="panel" style={{padding:"16px 20px",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+        <span style={{fontSize:18}}>🗓</span>
+        <span style={{fontWeight:700}}>Leave &amp; Holidays</span>
+        {D.leave.map((l,i)=><span key={i} style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--panel-2)",border:"1px solid var(--border)",borderRadius:999,padding:"8px 14px",fontSize:13,fontWeight:600,color:"var(--muted)"}}>
+          {l.icon} Sprint {l.sprint} · {l.kind} {l.days}d · {l.range}
+        </span>)}
+      </div>
+    </>}
+
+    {/* All tasks */}
+    <div className="section-label">All Tasks</div>
+    <div className="panel panel-pad">
+      <TaskList/>
+    </div>
+
+    <div style={{color:"var(--faint)",fontSize:12,textAlign:"center",marginTop:32,fontWeight:500}}>
+      More Studio.Co.,Ltd · <a href="/" style={{color:"var(--indigo)",textDecoration:"none"}}>Dashboard</a>
+    </div>
+
+    <TweaksPanel>
+      <TweakSection label="Theme"/>
+      <TweakColor label="Accent" value={t.accent}
+        options={[["#7c7ff5","#6366f1"],["#34e3a8","#10b981"],["#b06cff","#8b5cf6"],["#3ad8e8","#06b6d4"],["#fb9e5a","#f5733a"]]}
+        onChange={v=>setTweak('accent',v)}/>
+      <TweakColor label="Reward color" value={t.rewardColor}
+        options={["#f5c518","#f43f6e","#2ad4e5","#2fd39b"]}
+        onChange={v=>setTweak('rewardColor',v)}/>
+      <TweakSection label="Gamification"/>
+      <TweakToggle label="Show reward journey" value={t.showJourney} onChange={v=>setTweak('showJourney',v)}/>
+      <TweakToggle label="Confetti on redeem"  value={t.confetti}    onChange={v=>setTweak('confetti',v)}/>
+      <TweakButton label="Reset claimed rewards" onClick={()=>setClaimed([])}/>
+    </TweaksPanel>
+  </div>;
+}
+
+// Wait for Firebase data then mount
+function mountWhenReady() {
+  if (window.__dataReady) {
+    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+  } else {
+    window.addEventListener("dataReady", () => ReactDOM.createRoot(document.getElementById("root")).render(<App/>), {once:true});
+  }
+}
+mountWhenReady();
+</script>
+</body>
+</html>

@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ohm · Profile</title>
+<style>
+  :root {
+    --display: "Fredoka", system-ui, sans-serif;
+    --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --good: #2fce6e;
+    --warn: #f6a623;
+    --bad:  #f0467e;
+    --info: #2ad4e5;
+  }
+
+  .stage[data-theme="sun"] {
+    --bg:        #ffc62e;
+    --bg-2:      #ffce4a;
+    --card:      #ffd24f;
+    --card-edge: #15110a;
+    --card-dark: #574510;
+    --dark-edge: #2c2206;
+    --ink:       #15110a;
+    --ink-soft:  #6a560f;
+    --label:     #8a6e16;
+    --on-dark:   #fff4d2;
+    --on-dark-label: #d9b94e;
+    --ol:        #15110a;
+    --olW:       2.5px;
+    --strokeW:   2.5px;
+    --radius:    24px;
+    --shadow:    0 10px 24px rgba(120,82,0,.22);
+    --cta-bg:    #15110a;
+    --cta-ink:   #ffd24f;
+    --pill-bg:   #ffe48a;
+    --pill-ink:  #15110a;
+    --track:     #161106;
+    --track-ink: #ffd24f;
+    --spectrum:  linear-gradient(90deg,#f7607f,#ffb38c);
+    --spectrum-track: #f4b9c4;
+    --bar:       #15110a;
+    --bar-soft:  #b98c12;
+    --line:      #f0467e;
+    --ring-bg:   rgba(21,17,10,.14);
+    --watermark: rgba(21,17,10,.10);
+    --green:     #15110a;
+    --cyan:      #15110a;
+    --indigo:    #15110a;
+    --teal:      #15110a;
+    --orange:    #c85c00;
+    --red:       #c0003c;
+    --faint:     rgba(21,17,10,.35);
+  }
+
+  .stage[data-theme="night"] {
+    --bg:        #0a0f1c;
+    --bg-2:      #0d1424;
+    --card:      #141d31;
+    --card-edge: rgba(255,255,255,.09);
+    --card-dark: #0e1525;
+    --dark-edge: rgba(255,255,255,.07);
+    --ink:       #e9edf6;
+    --ink-soft:  #aeb6c8;
+    --label:     #828ca2;
+    --on-dark:   #e9edf6;
+    --on-dark-label: #8a93a8;
+    --ol:        rgba(255,255,255,.18);
+    --olW:       1.5px;
+    --strokeW:   1.5px;
+    --radius:    22px;
+    --shadow:    0 14px 34px rgba(0,0,0,.45);
+    --cta-bg:    linear-gradient(120deg,#7c7ff5,#6366f1);
+    --cta-ink:   #ffffff;
+    --pill-bg:   #1d2740;
+    --pill-ink:  #cfd6e6;
+    --track:     #070b15;
+    --track-ink: #ffd24f;
+    --spectrum:  linear-gradient(90deg,#7c7ff5,#2ad4e5);
+    --spectrum-track: #232c44;
+    --bar:       #7c7ff5;
+    --bar-soft:  #2a3656;
+    --line:      #2ad4e5;
+    --ring-bg:   rgba(255,255,255,.10);
+    --watermark: rgba(255,255,255,.05);
+    --green:     #2fce6e;
+    --cyan:      #2ad4e5;
+    --indigo:    #7c7ff5;
+    --teal:      #3be8c8;
+    --orange:    #f6a623;
+    --red:       #f0467e;
+    --faint:     rgba(233,237,246,.25);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { -webkit-font-smoothing: antialiased; }
+
+  .stage {
+    min-height: 100vh;
+    width: 100%;
+    background:
+      radial-gradient(1100px 520px at 15% -10%, color-mix(in srgb, var(--bg-2) 80%, #fff 0%), transparent 60%),
+      var(--bg);
+    font-family: var(--font);
+    color: var(--ink);
+    transition: background .35s ease, color .35s ease;
+    padding: 28px 18px 90px;
+    line-height: 1.45;
+  }
+
+  .feed {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  @media (min-width: 880px) {
+    .feed { max-width: 920px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .span-2 { grid-column: 1 / -1; }
+  }
+
+  .card {
+    background: var(--card);
+    border: var(--strokeW) solid var(--card-edge);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    min-width: 0;
+    transition: background .35s ease, border-color .35s ease;
+  }
+  .feed > * { min-width: 0; }
+  .card.dark {
+    background: var(--card-dark);
+    border-color: var(--dark-edge);
+    color: var(--on-dark);
+    position: relative;
+    overflow: hidden;
+  }
+  .pad { padding: 20px 22px; }
+
+  .klabel {
+    font: 700 12.5px/1 var(--font);
+    letter-spacing: 1.6px; text-transform: uppercase;
+    color: var(--label);
+  }
+  .klabel.on-dark { color: var(--on-dark-label); }
+
+  .obtn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border: var(--olW) solid var(--ol); background: transparent; color: var(--ink);
+    border-radius: 999px; cursor: pointer; font: 800 13px/1 var(--display);
+    letter-spacing: .3px; transition: transform .12s ease, background .2s ease;
+  }
+  .obtn:hover { transform: translateY(-1px); }
+  .obtn.round { width: 46px; height: 46px; padding: 0; border-radius: 50%; }
+  .obtn.pill  { padding: 11px 16px; }
+
+  .cta {
+    border: none; border-radius: 999px; cursor: pointer;
+    background: var(--cta-bg); color: var(--cta-ink);
+    font: 800 14px/1 var(--display); letter-spacing: .4px;
+    padding: 13px 20px; transition: transform .12s ease, filter .2s ease;
+  }
+  .cta:hover { transform: translateY(-1px); filter: brightness(1.05); }
+
+  .dpill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--pill-bg); color: var(--pill-ink);
+    border-radius: 999px; padding: 7px 13px;
+    font: 800 12.5px/1 var(--display); letter-spacing: .4px;
+  }
+
+  .figure { font-family: var(--display); font-weight: 700; letter-spacing: -.5px; line-height: .95; }
+
+  @keyframes rise { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: no-preference) {
+    .rise { animation: rise .5s cubic-bezier(.2,.8,.2,1) both; }
+  }
+
+  button { font-family: var(--font); }
+  ::selection { background: rgba(0,0,0,.18); }
+
+  /* ── tweaks panel ─────────────────────────────────────────────────── */
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    background:rgba(250,249,247,.88);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-fab{position:fixed;right:16px;bottom:16px;z-index:2147483645;
+    width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;
+    background:rgba(250,249,247,.88);backdrop-filter:blur(12px);
+    box-shadow:0 4px 16px rgba(0,0,0,.22);font-size:18px;
+    display:flex;align-items:center;justify-content:center;transition:transform .12s}
+  .twk-fab:hover{transform:scale(1.08)}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:pointer;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;min-height:0;scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-val{color:rgba(41,38,27,.5)}
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-sect:first-child{padding-top:0}
+  .twk-field{appearance:none;width:100%;height:26px;padding:0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;
+    background:rgba(255,255,255,.6);color:inherit;font:inherit;outline:none}
+  .twk-field:focus{border-color:rgba(0,0,0,.25)}
+  .twk-slider{appearance:none;width:100%;height:4px;margin:6px 0;
+    border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+  .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+    border-radius:50%;background:#fff;border:.5px solid rgba(0,0,0,.12);
+    box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:pointer}
+  .twk-seg{position:relative;display:flex;padding:2px;border-radius:8px;
+    background:rgba(0,0,0,.06);user-select:none}
+  .twk-seg-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;
+    background:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.12);
+    transition:left .15s,width .15s}
+  .twk-seg button{appearance:none;position:relative;z-index:1;flex:1;border:0;
+    background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;
+    border-radius:6px;cursor:pointer;padding:4px 6px;line-height:1.2}
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:pointer;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s;font-style:normal}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:pointer}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-chips{display:flex;gap:6px}
+  .twk-chip{position:relative;appearance:none;flex:1;height:36px;padding:0;border:0;
+    border-radius:6px;overflow:hidden;cursor:pointer;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.12);transition:transform .12s}
+  .twk-chip:hover{transform:translateY(-1px)}
+  .twk-chip[data-on="1"]{box-shadow:0 0 0 2px rgba(0,0,0,.85)}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ── DATA (mirrors window.DATA shape from person.html) ────────────────────────
+const DATA = {
+  person: {
+    name: "Ohm", initials: "OH", role: "Dev", roleColor: "#6366f1",
+    sprintsActive: 11, sprintsTotal: 12, totalPoints: 718, totalTasks: 247,
+  },
+  stats: {
+    totalPoints: 718, totalTasks: 247, doneRatePct: "92.4",
+    donePts: "678.0", targetPts: "734.0", avgPtsPerTask: "2.91",
+    activeSprints: 11, sprintsTotal: 12, projects: 7,
+    myRank: 2, teamSize: 17,
+  },
+  statusHero: [
+    { key: "done",       label: "Done",              tasks: 211, pts: 678, color: "var(--green)", emoji: "✅"  },
+    { key: "inprogress", label: "In Progress",        tasks: 23,  pts: 41,  color: "var(--cyan)",  emoji: "🛠️" },
+    { key: "review",     label: "Ready for Review",   tasks: 10,  pts: 13,  color: "var(--indigo)",emoji: "👀" },
+  ],
+  statusRest: [
+    { label: "Ready for test",        tasks: 3,  pts: 0,  color: "var(--teal)"   },
+    { label: "Waiting to PRD deploy", tasks: 10, pts: 0,  color: "var(--orange)" },
+    { label: "To Do",                 tasks: 15, pts: 30, color: "var(--faint)"  },
+    { label: "Blocked",               tasks: 1,  pts: 5,  color: "var(--red)"    },
+    { label: "Removed/Canceled",      tasks: 1,  pts: 8,  color: "var(--faint)"  },
+  ],
+  insights: [
+    { emoji:"📦", title:"Workload",     value:"718 pts · 247 tasks",          sub:"Active in 11/12 sprints · avg 2.91 pts/task",             dot:"var(--green)"  },
+    { emoji:"✅", title:"Done Rate",    value:"92.4% ของ points",              sub:"678.0 / 734.0 pts",                                       dot:"var(--green)"  },
+    { emoji:"📉", title:"Recent Trend", value:"📉 ชะลอลง (−54%)",             sub:"เทียบ 3 sprints ล่าสุด vs 3 ก่อนหน้า",                   dot:"var(--orange)" },
+    { emoji:"🚀", title:"Peak Sprint",  value:"Sprint 7 — 161 pts",            sub:"สูงสุดของปี",                                             dot:"var(--cyan)"   },
+    { emoji:"🎯", title:"Top Projects", value:"NCSWT (647) · InsureTech (29)", sub:"7 projects contributed",                                  dot:"var(--cyan)"   },
+    { emoji:"⚠️", title:"Risk Flags",  value:"1 Blocked · 0 Bugged",          sub:"ต้องติดตามปลดล็อกและแก้ไข",                             dot:"var(--red)"    },
+    { emoji:"🔄", title:"WIP",          value:"36 tasks",                      sub:"In Progress + Review/Test + Waiting",                     dot:"var(--cyan)"   },
+  ],
+  sprintTrend: [
+    { sprint:1,  pts:8,   tasks:10 }, { sprint:2,  pts:15,  tasks:3  },
+    { sprint:3,  pts:131, tasks:19 }, { sprint:4,  pts:93,  tasks:21 },
+    { sprint:5,  pts:104, tasks:19 }, { sprint:6,  pts:58,  tasks:11 },
+    { sprint:7,  pts:161, tasks:40 }, { sprint:8,  pts:30,  tasks:5  },
+    { sprint:9,  pts:35,  tasks:22 }, { sprint:10, pts:47,  tasks:55 },
+    { sprint:11, pts:36,  tasks:42 }, { sprint:12, pts:0,   tasks:0  },
+  ],
+  ptsMax: 161,
+  taskMax: 55,
+  rewards: [
+    { pts:50,  emoji:"☕",  name:"Coffee Voucher",        desc:"ฟรีกาแฟ 1 แก้ว ที่ร้านในตึก",         tag:"Café"     },
+    { pts:100, emoji:"🍜",  name:"Restaurant 10% Off",    desc:"ส่วนลด 10% ร้านอาหารพาร์ทเนอร์",      tag:"Dining"   },
+    { pts:150, emoji:"🎬",  name:"Movie Ticket ×1",       desc:"ตั๋วหนัง 1 ใบ รอบปกติ",               tag:"Leisure"  },
+    { pts:200, emoji:"🍱",  name:"Free Team Lunch",       desc:"ข้าวกล่องพรีเมียม 1 มื้อ",            tag:"Dining"   },
+    { pts:250, emoji:"🎧",  name:"฿500 Gadget Credit",    desc:"เครดิตซื้ออุปกรณ์ทำงาน",              tag:"Gear"     },
+    { pts:300, emoji:"🛒",  name:"฿500 Shopping Voucher", desc:"บัตรกำนัลห้างสรรพสินค้า",             tag:"Voucher"  },
+    { pts:350, emoji:"🚗",  name:"Grab Credit ฿300",      desc:"เครดิตเดินทาง 1 เดือน",               tag:"Travel"   },
+    { pts:400, emoji:"🍰",  name:"Dessert Party",         desc:"ขนมหวานเลี้ยงทีม",                    tag:"Dining"   },
+    { pts:450, emoji:"📚",  name:"฿1,000 Learning Budget",desc:"คอร์ส/หนังสือพัฒนาตัวเอง",           tag:"Growth"   },
+    { pts:500, emoji:"🏖️", name:"Half Day Off",           desc:"ลาครึ่งวันแบบไม่หักวันลา",           tag:"Time off" },
+    { pts:550, emoji:"💆",  name:"Spa & Massage",         desc:"นวดผ่อนคลาย 60 นาที",                 tag:"Wellness" },
+    { pts:600, emoji:"🎁",  name:"Mystery Box",           desc:"กล่องสุ่มของรางวัลพิเศษ",             tag:"Surprise" },
+    { pts:650, emoji:"🍽️", name:"Dinner for Two",         desc:"ดินเนอร์ 2 ที่ ร้านพรีเมียม",        tag:"Dining"   },
+    { pts:700, emoji:"🏨",  name:"Hotel Staycation",      desc:"เข้าพักโรงแรม 1 คืน",                 tag:"Travel"   },
+    { pts:750, emoji:"🎮",  name:"Game Console Raffle",   desc:"สิทธิ์ลุ้นเครื่องเกม",               tag:"Surprise" },
+    { pts:800, emoji:"✈️",  name:"Full Day Off",          desc:"วันหยุดพิเศษ 1 วันเต็ม",             tag:"Time off" },
+  ],
+  tiers: [
+    { name:"Bronze",   min:0,   color:"#c98a4b" },
+    { name:"Silver",   min:200, color:"#aab4c6" },
+    { name:"Gold",     min:400, color:"#f5c518" },
+    { name:"Platinum", min:600, color:"#6ee7e0" },
+    { name:"Diamond",  min:800, color:"#8b9cff" },
+  ],
+  // leave is now an array (matches person.html leaveEntries)
+  leave: [
+    { sprint:11, kind:"vacation", days:5, range:"2026-06-01 – 2026-06-05", icon:"🏖️" },
+  ],
+  projEntries: [
+    ["NCSWT", 647], ["InsureTech", 29], ["Internal", 18], ["Backlog", 12], ["Research", 7], ["Infra", 3], ["Other", 2],
+  ],
+  leaderboard: [
+    { name:"Nust",  initials:"NU", pts:892,  tasks:310, doneRate:0.95, role:"Dev",      roleColor:"#6366f1", tier:{name:"Diamond", min:800, color:"#8b9cff"}, rank:1 },
+    { name:"Ohm",   initials:"OH", pts:718,  tasks:247, doneRate:0.924,role:"Dev",      roleColor:"#6366f1", tier:{name:"Platinum",min:600, color:"#6ee7e0"}, rank:2 },
+    { name:"Unn",   initials:"UN", pts:654,  tasks:229, doneRate:0.88, role:"Dev",      roleColor:"#6366f1", tier:{name:"Platinum",min:600, color:"#6ee7e0"}, rank:3 },
+    { name:"Praew", initials:"PR", pts:581,  tasks:195, doneRate:0.91, role:"Dev",      roleColor:"#6366f1", tier:{name:"Gold",    min:400, color:"#f5c518"}, rank:4 },
+    { name:"P",     initials:"P",  pts:520,  tasks:178, doneRate:0.86, role:"Dev",      roleColor:"#6366f1", tier:{name:"Gold",    min:400, color:"#f5c518"}, rank:5 },
+    { name:"No",    initials:"NO", pts:487,  tasks:165, doneRate:0.89, role:"Dev",      roleColor:"#6366f1", tier:{name:"Gold",    min:400, color:"#f5c518"}, rank:6 },
+    { name:"Tum",   initials:"TU", pts:443,  tasks:152, doneRate:0.82, role:"Dev",      roleColor:"#6366f1", tier:{name:"Gold",    min:400, color:"#f5c518"}, rank:7 },
+    { name:"Ploy",  initials:"PL", pts:388,  tasks:134, doneRate:0.87, role:"Designer", roleColor:"#ec4899", tier:{name:"Silver",  min:200, color:"#aab4c6"}, rank:8 },
+    { name:"Gib",   initials:"GI", pts:342,  tasks:119, doneRate:0.79, role:"Designer", roleColor:"#ec4899", tier:{name:"Silver",  min:200, color:"#aab4c6"}, rank:9 },
+    { name:"Nine",  initials:"NI", pts:295,  tasks:98,  doneRate:0.83, role:"Designer", roleColor:"#ec4899", tier:{name:"Silver",  min:200, color:"#aab4c6"}, rank:10 },
+    { name:"Waew",  initials:"WA", pts:261,  tasks:89,  doneRate:0.85, role:"BA",       roleColor:"#a855f7", tier:{name:"Silver",  min:200, color:"#aab4c6"}, rank:11 },
+    { name:"Torfah",initials:"TO", pts:238,  tasks:82,  doneRate:0.76, role:"BA",       roleColor:"#a855f7", tier:{name:"Silver",  min:200, color:"#aab4c6"}, rank:12 },
+    { name:"Tae",   initials:"TA", pts:201,  tasks:71,  doneRate:0.80, role:"BA",       roleColor:"#a855f7", tier:{name:"Silver",  min:200, color:"#aab4c6"}, rank:13 },
+    { name:"Ping",  initials:"PI", pts:176,  tasks:62,  doneRate:0.88, role:"Tester",   roleColor:"#06b6d4", tier:{name:"Bronze",  min:0,   color:"#c98a4b"}, rank:14 },
+    { name:"Dream", initials:"DR", pts:134,  tasks:48,  doneRate:0.72, role:"PC",       roleColor:"#f59e0b", tier:{name:"Bronze",  min:0,   color:"#c98a4b"}, rank:15 },
+    { name:"Karn",  initials:"KA", pts:98,   tasks:35,  doneRate:0.69, role:"CEO",      roleColor:"#10b981", tier:{name:"Bronze",  min:0,   color:"#c98a4b"}, rank:16 },
+    { name:"X",     initials:"X",  pts:42,   tasks:18,  doneRate:0.60, role:"Dev",      roleColor:"#6366f1", tier:{name:"Bronze",  min:0,   color:"#c98a4b"}, rank:17 },
+  ],
+};
+
+// ── ICONS ─────────────────────────────────────────────────────────────────────
+function Glyph({ name, size = 20 }) {
+  const s = { width: size, height: size, display: "block" };
+  const c = { fill: "none", stroke: "currentColor", strokeWidth: 2.1, strokeLinecap: "round", strokeLinejoin: "round" };
+  switch (name) {
+    case "gear": return <svg viewBox="0 0 24 24" style={s}><g {...c}><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 13a1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 6.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 2.6h.05A1.7 1.7 0 0 0 10 1.05V1a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 21.4 9v.05A1.7 1.7 0 0 0 22.95 10H23a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></g></svg>;
+    case "share": return <svg viewBox="0 0 24 24" style={s}><g {...c}><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="m8.3 10.7 7.4-4.3M8.3 13.3l7.4 4.3"/></g></svg>;
+    case "logout": return <svg viewBox="0 0 24 24" style={s}><g {...c}><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H3"/></g></svg>;
+    case "edit": return <svg viewBox="0 0 24 24" style={{ width: size, height: size }}><g {...c}><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></g></svg>;
+    case "info": return <svg viewBox="0 0 24 24" style={s}><g {...c}><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></g></svg>;
+    case "lock": return <svg viewBox="0 0 24 24" style={{ width: size, height: size }}><g {...c}><rect x="4.5" y="10.5" width="15" height="10" rx="2.4"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></g></svg>;
+    default: return null;
+  }
+}
+
+// ── COMPONENTS ────────────────────────────────────────────────────────────────
+
+function ProfileHeader({ name, sub, mascots }) {
+  return (
+    <div className="span-2 rise" style={{ display:"flex", flexDirection:"column", gap:18, padding:"2px 4px 4px" }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <button className="obtn round" aria-label="Settings"><Glyph name="gear" /></button>
+        <div style={{ display:"flex", gap:12 }}>
+          <button className="obtn round" aria-label="Share"><Glyph name="share" /></button>
+          <button className="obtn round" aria-label="Sign out"><Glyph name="logout" /></button>
+        </div>
+      </div>
+      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:14 }}>
+        <div style={{ minWidth:0 }}>
+          <h1 className="figure" style={{ margin:0, fontSize:"clamp(34px,7vw,52px)", color:"var(--ink)" }}>
+            {mascots && <span style={{ marginRight:8 }}>👋</span>}{name}
+          </h1>
+          <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:8, flexWrap:"wrap" }}>
+            {sub.map((s, i) => (
+              <React.Fragment key={i}>
+                {i > 0 && <span style={{ width:2, height:15, background:"var(--ink)", opacity:.35, borderRadius:2 }} />}
+                <span style={{ font:"800 13.5px/1 var(--display)", letterSpacing:".6px", color:"var(--ink)" }}>{s}</span>
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+        <button className="obtn pill" style={{ flex:"none", marginTop:6 }}><Glyph name="edit" size={15} /> EDIT</button>
+      </div>
+    </div>
+  );
+}
+
+function StreakCard({ value, mascots, delay = 0 }) {
+  return (
+    <div className="card pad rise" style={{ position:"relative", overflow:"hidden", animationDelay: delay+"ms" }}>
+      <div className="klabel">Total Points</div>
+      <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginTop:6 }}>
+        <div className="figure" style={{ fontSize:52, color:"var(--ink)" }}>{value}</div>
+        {mascots && <div aria-hidden="true" style={{ fontSize:46, lineHeight:1, filter:"drop-shadow(0 4px 6px rgba(0,0,0,.18))", transform:"rotate(6deg)" }}>⭐</div>}
+      </div>
+      <div style={{ marginTop:8, font:"800 12.5px/1 var(--display)", letterSpacing:".4px", color:"var(--ink-soft)" }}>
+        {mascots ? "🚀 " : ""}all sprints combined
+      </div>
+    </div>
+  );
+}
+
+function MiniStat({ icon, value, label }) {
+  return (
+    <div className="card" style={{ padding:"13px 14px", display:"flex", flexDirection:"column", gap:8 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+        <span aria-hidden="true" style={{ fontSize:18, lineHeight:1 }}>{icon}</span>
+        <span className="figure" style={{ fontSize:24, color:"var(--ink)" }}>{value}</span>
+      </div>
+      <div className="klabel" style={{ fontSize:10.5, letterSpacing:1.2 }}>{label}</div>
+    </div>
+  );
+}
+
+function TribeCard({ name, pts, projectCount, rank, teamSize, mascots, delay = 0 }) {
+  return (
+    <div className="card dark pad rise" style={{ display:"flex", flexDirection:"column", justifyContent:"center", minHeight:150, animationDelay: delay+"ms" }}>
+      {mascots && <div aria-hidden="true" style={{ position:"absolute", right:-10, bottom:-22, fontSize:130, lineHeight:1, color:"var(--watermark)", filter:"saturate(0)", opacity:.9, pointerEvents:"none" }}>👻</div>}
+      <div className="klabel on-dark" style={{ position:"relative" }}>Top Project</div>
+      <div className="figure" style={{ position:"relative", fontSize:32, color:"var(--on-dark)", marginTop:8 }}>{name}</div>
+      <div style={{ position:"relative", marginTop:8, font:"700 12.5px/1.3 var(--font)", color:"var(--on-dark-label)" }}>
+        {pts} pts · {projectCount} projects total · #{rank} of {teamSize}
+      </div>
+    </div>
+  );
+}
+
+function WorkStyleCard({ type, pct, leftEmoji, rightEmoji, leftLabel, rightLabel, caption, mascots, delay = 0 }) {
+  return (
+    <div className="card dark pad rise span-2" style={{ animationDelay: delay+"ms" }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div className="klabel on-dark">Work Style</div>
+        <span style={{ color:"var(--on-dark-label)", display:"grid", placeItems:"center" }} title="Based on velocity & delivery patterns"><Glyph name="info" size={20} /></span>
+      </div>
+      <div className="figure" style={{ fontSize:40, color:"var(--on-dark)", margin:"8px 0 4px" }}>{type}</div>
+      <div style={{ font:"700 13px/1.4 var(--font)", color:"var(--on-dark-label)", marginBottom:18, maxWidth:460 }}>{caption}</div>
+      <div style={{ position:"relative", height:56 }}>
+        <div style={{ position:"absolute", top:12, left:0, right:0, height:32, borderRadius:999, background:"var(--spectrum-track)", overflow:"hidden" }}>
+          <div style={{ position:"absolute", inset:0, width: pct+"%", background:"var(--spectrum)", borderRadius:999 }} />
+        </div>
+        {mascots && (
+          <>
+            <div aria-hidden="true" style={{ position:"absolute", top:6, left:8, fontSize:30, lineHeight:1, zIndex:2 }}>{leftEmoji}</div>
+            <div aria-hidden="true" style={{ position:"absolute", top:6, right:8, fontSize:30, lineHeight:1, zIndex:2 }}>{rightEmoji}</div>
+          </>
+        )}
+        <div style={{ position:"absolute", top:4, left:`calc(${pct}% - 24px)`, width:48, height:48, borderRadius:"50%", background:"#fff", border:"3px solid var(--card-dark)", boxShadow:"0 4px 12px rgba(0,0,0,.35)", display:"grid", placeItems:"center", zIndex:3 }}>
+          <span style={{ font:"800 13px/1 var(--display)", color:"#15110a" }}>{pct}</span>
+        </div>
+      </div>
+      <div style={{ display:"flex", justifyContent:"space-between", marginTop:6, font:"800 11px/1 var(--display)", letterSpacing:1, textTransform:"uppercase", color:"var(--on-dark-label)" }}>
+        <span>{leftLabel}</span><span>{rightLabel}</span>
+      </div>
+    </div>
+  );
+}
+
+function Dial({ value, label, color }) {
+  const R = 22, C = 2 * Math.PI * R;
+  return (
+    <div className="card" style={{ padding:"14px 15px", display:"flex", alignItems:"center", gap:13 }}>
+      <div style={{ position:"relative", width:54, height:54, flex:"none" }}>
+        <svg viewBox="0 0 54 54" style={{ width:54, height:54, transform:"rotate(-90deg)" }}>
+          <circle cx="27" cy="27" r={R} fill="none" stroke="var(--ring-bg)" strokeWidth="6" />
+          <circle cx="27" cy="27" r={R} fill="none" stroke={color} strokeWidth="6" strokeLinecap="round"
+            strokeDasharray={C} strokeDashoffset={C - (C * value) / 100}
+            style={{ transition:"stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)" }} />
+        </svg>
+        <span className="figure" style={{ position:"absolute", inset:0, display:"grid", placeItems:"center", fontSize:16, color:"var(--ink)" }}>{value}</span>
+      </div>
+      <span className="figure" style={{ fontSize:18, color:"var(--ink)" }}>{label}</span>
+    </div>
+  );
+}
+
+function DevScoreCard({ levelIndex, levels, levelLabel, dials, mascots, delay = 0 }) {
+  const n = levels.length;
+  return (
+    <div className="card pad rise span-2" style={{ animationDelay: delay+"ms" }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:18 }}>
+        <div className="klabel">Dev Score</div>
+        <button className="obtn pill" style={{ padding:"9px 14px" }}><Glyph name="lock" size={14} /> IMPROVE</button>
+      </div>
+      <div style={{ background:"var(--track)", borderRadius:20, padding:"26px 22px 18px" }}>
+        <div style={{ display:"flex", justifyContent:"center", marginBottom:16 }}>
+          <span className="dpill" style={{ background:"var(--track-ink)", color:"#15110a", fontSize:13, padding:"8px 16px" }}>{levelLabel}</span>
+        </div>
+        <div style={{ position:"relative", height:26, margin:"0 6px" }}>
+          <div style={{ position:"absolute", top:11, left:0, right:0, height:4, background:"rgba(255,255,255,.14)", borderRadius:999 }} />
+          <div style={{ position:"absolute", top:11, left:0, height:4, width:`${(levelIndex / (n-1)) * 100}%`, background:"var(--track-ink)", borderRadius:999 }} />
+          {levels.map((_, i) => {
+            const left = `${(i / (n-1)) * 100}%`;
+            const done = i < levelIndex, cur = i === levelIndex;
+            return (
+              <div key={i} style={{ position:"absolute", top: cur?3:5, left, transform:"translateX(-50%)",
+                width: cur?20:16, height: cur?20:16, borderRadius:"50%",
+                background: cur?"var(--track)" : done?"var(--track-ink)" : "#3a3220",
+                border: cur?"3px solid var(--track-ink)":"none", zIndex:2 }} />
+            );
+          })}
+          {mascots && <div aria-hidden="true" style={{ position:"absolute", top:-8, right:-10, fontSize:26, lineHeight:1, zIndex:3 }}>🏆</div>}
+        </div>
+        <div style={{ display:"flex", justifyContent:"space-between", marginTop:12, font:"800 11px/1 var(--display)", letterSpacing:1, textTransform:"uppercase", color:"rgba(255,255,255,.5)" }}>
+          <span>{levels[0]}</span><span>{levels[n-1]}</span>
+        </div>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginTop:16 }}>
+        {dials.map(d => <Dial key={d.label} {...d} />)}
+      </div>
+    </div>
+  );
+}
+
+function StatusBreakdown({ hero, rest, totalTasks, delay = 0 }) {
+  const all = [...hero, ...rest].filter(s => s.tasks > 0);
+  return (
+    <div className="card pad rise span-2" style={{ animationDelay: delay+"ms" }}>
+      <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", marginBottom:16 }}>
+        <div className="klabel">Task Status</div>
+        <span className="figure" style={{ fontSize:18, color:"var(--ink)" }}>{totalTasks} <span style={{ fontSize:12, fontWeight:600, color:"var(--label)" }}>tasks</span></span>
+      </div>
+      <div style={{ display:"flex", height:16, borderRadius:999, overflow:"hidden", border:"2px solid var(--card-edge)", background:"var(--ring-bg)" }}>
+        {all.map((s, i) => (
+          <div key={i} title={`${s.label}: ${s.tasks}`} style={{ width:`${(s.tasks/totalTasks)*100}%`, background:s.color, borderRight: i < all.length-1 ? "1.5px solid var(--card)" : "none" }} />
+        ))}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(150px,1fr))", gap:9, marginTop:16 }}>
+        {all.map((s, i) => (
+          <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8,
+            border:"var(--strokeW) solid var(--card-edge)", borderRadius:13, padding:"9px 12px",
+            background:"color-mix(in srgb, var(--card) 88%, #000 0%)" }}>
+            <span style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
+              <span style={{ width:9, height:9, borderRadius:"50%", background:s.color, flex:"none" }} />
+              <span style={{ font:"700 12.5px/1.2 var(--font)", color:"var(--ink)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{s.label}</span>
+            </span>
+            <span className="figure" style={{ fontSize:16, color:"var(--ink)" }}>{s.tasks}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TrendCard({ data, delay = 0 }) {
+  const W = 720, H = 300, padL = 12, padR = 12, padT = 18, padB = 34;
+  const iW = W - padL - padR, iH = H - padT - padB;
+  const n = data.length, band = iW / n;
+  const ptsMax = 180, taskMax = 60;
+  const x = (i) => padL + band * (i + 0.5);
+  const yP = (v) => padT + iH * (1 - v / ptsMax);
+  const yT = (v) => padT + iH * (1 - v / taskMax);
+
+  const lp = data.map((d, i) => ({ x: x(i), y: yT(d.tasks) }));
+  let path = `M ${lp[0].x} ${lp[0].y}`;
+  for (let i = 0; i < lp.length - 1; i++) {
+    const p0 = lp[i-1] || lp[i], p1 = lp[i], p2 = lp[i+1], p3 = lp[i+2] || p2;
+    path += ` C ${p1.x+(p2.x-p0.x)/6} ${p1.y+(p2.y-p0.y)/6}, ${p2.x-(p3.x-p1.x)/6} ${p2.y-(p3.y-p1.y)/6}, ${p2.x} ${p2.y}`;
+  }
+
+  return (
+    <div className="card pad rise span-2" style={{ animationDelay: delay+"ms" }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8, flexWrap:"wrap", gap:8 }}>
+        <div className="klabel">Sprint Trend</div>
+        <div style={{ display:"flex", gap:16 }}>
+          <span style={{ display:"inline-flex", alignItems:"center", gap:7, font:"700 12px/1 var(--font)", color:"var(--label)" }}>
+            <span style={{ width:12, height:12, borderRadius:3, background:"var(--bar)" }} /> Story points
+          </span>
+          <span style={{ display:"inline-flex", alignItems:"center", gap:7, font:"700 12px/1 var(--font)", color:"var(--label)" }}>
+            <span style={{ width:14, height:3, borderRadius:2, background:"var(--line)" }} /> Tasks
+          </span>
+        </div>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width:"100%", height:"auto", display:"block" }}>
+        {[0,60,120,180].map(v => (
+          <line key={v} x1={padL} y1={yP(v)} x2={W-padR} y2={yP(v)} stroke="var(--ring-bg)" strokeWidth="1" />
+        ))}
+        {data.map((d, i) => {
+          const bw = band * 0.46, h = iH * (d.pts / ptsMax);
+          return (
+            <g key={i}>
+              <rect x={x(i)-bw/2} y={yP(d.pts)} width={bw} height={Math.max(h,0)} rx="4" fill="var(--bar)" opacity={d.pts ? 0.95 : 0.25} />
+              <text x={x(i)} y={H-12} textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--label)" fontFamily="var(--font)">S{d.sprint}</text>
+            </g>
+          );
+        })}
+        <path d={path} fill="none" stroke="var(--line)" strokeWidth="3" strokeLinecap="round" />
+        {lp.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="4" fill="var(--card)" stroke="var(--line)" strokeWidth="2.5" />)}
+      </svg>
+    </div>
+  );
+}
+
+function RewardsJourney({ rewards, points, claimed, setClaimed, mascots, delay = 0 }) {
+  const maxPts = rewards[rewards.length - 1].pts;
+  const pct = Math.min(100, Math.round((points / maxPts) * 100));
+  const stateOf = (r) => claimed.includes(r.pts) ? "claimed" : (r.pts <= points ? "ready" : "locked");
+  const readyCount = rewards.filter(r => stateOf(r) === "ready").length;
+  const unlockedRewards = rewards.filter(r => r.pts <= points);
+  const nextReward = rewards.find(r => r.pts > points);
+
+  return (
+    <div className="card dark pad rise span-2" style={{ animationDelay: delay+"ms" }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div className="klabel on-dark">{mascots ? "🎁 " : ""}Rewards Journey</div>
+        <span className="dpill" style={{ background:"var(--ring-bg)", color:"var(--on-dark)" }}>{readyCount} ready to redeem</span>
+      </div>
+
+      <div className="figure" style={{ fontSize:40, color:"var(--on-dark)", margin:"8px 0 4px" }}>
+        {unlockedRewards.length} / {rewards.length} unlocked
+      </div>
+      <div style={{ font:"700 13px/1.4 var(--font)", color:"var(--on-dark-label)", marginBottom:18 }}>
+        {nextReward
+          ? `${nextReward.pts - points} pts to unlock ${nextReward.emoji} ${nextReward.name}`
+          : mascots ? "🏆 All rewards unlocked!" : "All rewards unlocked!"}
+      </div>
+
+      {/* spectrum bar with knob */}
+      <div style={{ position:"relative", height:56 }}>
+        <div style={{ position:"absolute", top:12, left:0, right:0, height:32, borderRadius:999, background:"var(--spectrum-track)", overflow:"hidden" }}>
+          <div style={{ position:"absolute", inset:0, width: pct+"%", background:"var(--spectrum)", borderRadius:999 }} />
+        </div>
+        {mascots && (
+          <>
+            <div aria-hidden="true" style={{ position:"absolute", top:6, left:8, fontSize:30, lineHeight:1, zIndex:2 }}>🌱</div>
+            <div aria-hidden="true" style={{ position:"absolute", top:6, right:8, fontSize:30, lineHeight:1, zIndex:2 }}>✈️</div>
+          </>
+        )}
+        <div style={{ position:"absolute", top:4, left:`calc(${pct}% - 24px)`, width:48, height:48, borderRadius:"50%", background:"#fff", border:"3px solid var(--card-dark)", boxShadow:"0 4px 12px rgba(0,0,0,.35)", display:"grid", placeItems:"center", zIndex:3 }}>
+          <span style={{ font:"800 11px/1 var(--display)", color:"#15110a" }}>{points}</span>
+        </div>
+      </div>
+      <div style={{ display:"flex", justifyContent:"space-between", marginTop:6, font:"800 11px/1 var(--display)", letterSpacing:1, textTransform:"uppercase", color:"var(--on-dark-label)" }}>
+        <span>0 pts</span><span>{maxPts} pts</span>
+      </div>
+
+      {/* unlocked reward emojis row */}
+      {unlockedRewards.length > 0 && (
+        <div style={{ marginTop:18, display:"flex", flexWrap:"wrap", gap:8 }}>
+          {unlockedRewards.map(r => {
+            const st = stateOf(r);
+            return (
+              <div key={r.pts} title={`${r.name} — ${r.desc}`}
+                onClick={() => { if (st === "ready") setClaimed(prev => [...prev, r.pts]); }}
+                style={{ width:44, height:44, borderRadius:12, display:"grid", placeItems:"center", fontSize:22,
+                  cursor: st==="ready" ? "pointer" : "default", position:"relative",
+                  background: st==="claimed" ? "rgba(47,206,110,.2)" : "rgba(255,255,255,.12)",
+                  border: `2px solid ${st==="claimed" ? "var(--good)" : st==="ready" ? "var(--warn)" : "rgba(255,255,255,.15)"}`,
+                  boxShadow: st==="ready" ? "0 0 12px rgba(246,166,35,.5)" : "none" }}>
+                {r.emoji}
+                {st === "claimed" && (
+                  <span style={{ position:"absolute", top:-5, right:-5, width:16, height:16, borderRadius:"50%", background:"var(--good)", color:"#06250f", display:"grid", placeItems:"center", fontSize:9, fontWeight:900 }}>✓</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── INSIGHT CARD ─────────────────────────────────────────────────────────────
+function InsightCard({ it, delay = 0 }) {
+  return (
+    <div className="card rise" style={{ padding:"16px 18px", animationDelay: delay+"ms" }}>
+      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:9 }}>
+        <span style={{ width:8, height:8, borderRadius:"50%", background:it.dot, flexShrink:0 }} />
+        <span style={{ fontSize:13.5, fontWeight:700 }}>{it.emoji} {it.title}</span>
+      </div>
+      <div style={{ fontSize:18, fontWeight:800, letterSpacing:"-.3px" }}>{it.value}</div>
+      <div style={{ color:"var(--label)", fontSize:12.5, fontWeight:500, marginTop:6, lineHeight:1.4 }}>{it.sub}</div>
+    </div>
+  );
+}
+
+// ── STATS STRIP ───────────────────────────────────────────────────────────────
+function StatCard({ label, value, sub, accentColor, delay = 0 }) {
+  return (
+    <div className="card rise" style={{ padding:"18px 20px", animationDelay: delay+"ms" }}>
+      <div style={{ font:"700 11px/1 var(--font)", letterSpacing:"1.5px", textTransform:"uppercase", color:"var(--label)" }}>{label}</div>
+      <div style={{ fontSize:32, fontWeight:800, marginTop:10, color: accentColor || "var(--ink)", letterSpacing:"-1px" }}>{value}</div>
+      <div style={{ color:"var(--label)", fontSize:13, fontWeight:500, marginTop:4 }}>{sub}</div>
+    </div>
+  );
+}
+
+// ── LEADERBOARD ───────────────────────────────────────────────────────────────
+const RANK_MEDAL = ["🥇","🥈","🥉"];
+function LeaderboardTable({ leaderboard, myName, myRoleColor, delay = 0 }) {
+  const [metric, setMetric] = useState("pts");
+
+  const rows = [...leaderboard].sort((a,b) => {
+    if (metric === "tasks")    return b.tasks    - a.tasks;
+    if (metric === "doneRate") return b.doneRate - a.doneRate;
+    return b.pts - a.pts;
+  });
+  let cr = 1;
+  rows.forEach((row, i) => {
+    const val = row[metric];
+    if (i > 0 && val === rows[i-1][metric]) row._rank = rows[i-1]._rank;
+    else row._rank = cr;
+    cr = row._rank + 1;
+  });
+
+  const maxVal = metric === "pts"      ? rows[0].pts
+               : metric === "tasks"    ? rows[0].tasks
+               : rows[0].doneRate;
+
+  const getValue  = (row) => metric === "pts"      ? row.pts
+                           : metric === "tasks"    ? row.tasks
+                           : row.doneRate;
+  const formatVal = (row) => metric === "pts"      ? row.pts.toLocaleString() + " pts"
+                           : metric === "tasks"    ? row.tasks + " tasks"
+                           : (row.doneRate * 100).toFixed(0) + "%";
+
+  const tabStyle = (k) => ({
+    padding:"8px 16px", borderRadius:999, cursor:"pointer",
+    font:"700 12px/1 var(--display)", letterSpacing:".3px",
+    border:`var(--strokeW) solid ${metric===k ? "var(--card-edge)" : "var(--ring-bg)"}`,
+    background: metric===k ? "var(--ring-bg)" : "transparent",
+    color: metric===k ? "var(--ink)" : "var(--label)",
+    transition:"all .15s",
+  });
+
+  return (
+    <div className="card pad rise span-2" style={{ animationDelay: delay+"ms" }}>
+
+      {/* header */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:18, flexWrap:"wrap", gap:10 }}>
+        <div className="klabel">🏆 Leaderboard</div>
+        <div style={{ display:"flex", gap:6 }}>
+          <button style={tabStyle("pts")}      onClick={() => setMetric("pts")}>Points</button>
+          <button style={tabStyle("tasks")}    onClick={() => setMetric("tasks")}>Tasks</button>
+          <button style={tabStyle("doneRate")} onClick={() => setMetric("doneRate")}>Done %</button>
+        </div>
+      </div>
+
+      {/* rows */}
+      <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+        {rows.map((row) => {
+          const isMe   = row.name === myName;
+          const medal  = row._rank <= 3 ? RANK_MEDAL[row._rank - 1] : null;
+          const val    = getValue(row);
+          const barPct = maxVal ? (val / maxVal) * 100 : 0;
+          const barColor = isMe
+            ? `linear-gradient(90deg, ${myRoleColor}, var(--bar))`
+            : "var(--bar-soft)";
+          const doneColor = row.doneRate >= .8 ? "var(--good)"
+                          : row.doneRate >= .6 ? "var(--info)"
+                          : "var(--warn)";
+
+          return (
+            <div key={row.name} style={{
+              display:"grid",
+              gridTemplateColumns:"40px 1fr auto",
+              alignItems:"center",
+              gap:12,
+              padding:"12px 14px",
+              borderRadius:16,
+              border:`var(--strokeW) solid ${isMe ? `color-mix(in srgb, ${myRoleColor} 45%, var(--card-edge))` : "var(--card-edge)"}`,
+              background: isMe ? `color-mix(in srgb, ${myRoleColor} 10%, var(--card))` : "var(--card)",
+              boxShadow: isMe ? `0 0 0 2px color-mix(in srgb, ${myRoleColor} 30%, transparent)` : "none",
+            }}>
+
+              {/* rank */}
+              <div style={{ textAlign:"center" }}>
+                {medal
+                  ? <span style={{ fontSize:22, lineHeight:1 }}>{medal}</span>
+                  : <span className="figure" style={{ fontSize:15, color:"var(--label)" }}>#{row._rank}</span>
+                }
+              </div>
+
+              {/* avatar + name + bar */}
+              <div style={{ minWidth:0 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:7 }}>
+                  <div style={{
+                    width:34, height:34, borderRadius:"50%", flexShrink:0,
+                    display:"grid", placeItems:"center",
+                    background:`linear-gradient(135deg, ${row.roleColor}cc, ${row.roleColor}77)`,
+                    fontSize:12, fontWeight:800, color:"#fff",
+                    boxShadow: isMe ? `0 0 0 2.5px ${myRoleColor}, 0 0 12px ${myRoleColor}66` : "none",
+                  }}>{row.initials}</div>
+                  <div style={{ minWidth:0 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+                      <span className="figure" style={{ fontSize:15, color:"var(--ink)" }}>{row.name}</span>
+                      {isMe && <span style={{
+                        fontSize:10, fontWeight:800, padding:"2px 8px", borderRadius:999,
+                        background:`color-mix(in srgb, ${myRoleColor} 20%, transparent)`,
+                        color:myRoleColor,
+                        border:`1px solid color-mix(in srgb, ${myRoleColor} 40%, transparent)`,
+                      }}>You</span>}
+                      <span style={{
+                        fontSize:10.5, fontWeight:700, padding:"2px 8px", borderRadius:999,
+                        color:row.tier.color,
+                        background:`color-mix(in srgb, ${row.tier.color} 15%, transparent)`,
+                        border:`1px solid color-mix(in srgb, ${row.tier.color} 30%, transparent)`,
+                      }}>{row.tier.name}</span>
+                    </div>
+                    <div style={{ fontSize:11, color:row.roleColor, fontWeight:700, marginTop:1 }}>{row.role}</div>
+                  </div>
+                </div>
+
+                {/* progress bar */}
+                <div style={{ height:6, borderRadius:999, background:"var(--ring-bg)", overflow:"hidden" }}>
+                  <div style={{
+                    height:"100%", width: barPct.toFixed(1) + "%",
+                    borderRadius:999,
+                    background: barColor,
+                    transition:"width .8s cubic-bezier(.2,.8,.2,1)",
+                  }} />
+                </div>
+              </div>
+
+              {/* value */}
+              <div style={{ textAlign:"right", flexShrink:0 }}>
+                <div className="figure" style={{
+                  fontSize:20,
+                  color: metric === "doneRate" ? doneColor : "var(--ink)",
+                }}>{formatVal(row)}</div>
+                {metric === "pts" && (
+                  <div style={{ fontSize:11, color:"var(--label)", fontWeight:600, marginTop:2 }}>
+                    {row.tasks} tasks
+                  </div>
+                )}
+                {metric === "tasks" && (
+                  <div style={{ fontSize:11, color:"var(--label)", fontWeight:600, marginTop:2 }}>
+                    {row.pts.toLocaleString()} pts
+                  </div>
+                )}
+                {metric === "doneRate" && (
+                  <div style={{ fontSize:11, color:"var(--label)", fontWeight:600, marginTop:2 }}>
+                    {row.pts.toLocaleString()} pts
+                  </div>
+                )}
+              </div>
+
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── TWEAKS PANEL ──────────────────────────────────────────────────────────────
+function TweaksPanel({ open, onClose, children }) {
+  if (!open) return null;
+  return (
+    <div className="twk-panel">
+      <div className="twk-hd">
+        <b>Tweaks</b>
+        <button className="twk-x" onClick={onClose}>✕</button>
+      </div>
+      <div className="twk-body">{children}</div>
+    </div>
+  );
+}
+
+function TweakSection({ label }) {
+  return <div className="twk-sect">{label}</div>;
+}
+
+function TweakRadio({ label, value, options, onChange }) {
+  const opts = options.map(o => typeof o === "object" ? o : { value: o, label: o });
+  const idx = Math.max(0, opts.findIndex(o => o.value === value));
+  const n = opts.length;
+  return (
+    <div className="twk-row">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <div className="twk-seg" style={{ position:"relative" }}>
+        <div className="twk-seg-thumb" style={{ left:`calc(2px + ${idx} * (100% - 4px) / ${n})`, width:`calc((100% - 4px) / ${n})` }} />
+        {opts.map(o => (
+          <button key={o.value} type="button" style={{ zIndex:1, flex:1, border:0, background:"transparent", color:"inherit", font:"inherit", fontWeight:500, minHeight:22, borderRadius:6, cursor:"pointer", padding:"4px 6px" }}
+            onClick={() => onChange(o.value)}>{o.label}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TweakToggle({ label, value, onChange }) {
+  return (
+    <div className="twk-row twk-row-h">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <button type="button" className="twk-toggle" data-on={value?"1":"0"} onClick={() => onChange(!value)}><i /></button>
+    </div>
+  );
+}
+
+function TweakSlider({ label, value, min=0, max=100, unit="", onChange }) {
+  return (
+    <div className="twk-row">
+      <div className="twk-lbl"><span>{label}</span><span className="twk-val">{value}{unit}</span></div>
+      <input type="range" className="twk-slider" min={min} max={max} value={value} onChange={e => onChange(Number(e.target.value))} />
+    </div>
+  );
+}
+
+function TweakText({ label, value, onChange }) {
+  return (
+    <div className="twk-row">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <input className="twk-field" type="text" value={value} onChange={e => onChange(e.target.value)} />
+    </div>
+  );
+}
+
+function TweakColor({ label, value, options, onChange }) {
+  return (
+    <div className="twk-row">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <div className="twk-chips">
+        {options.map((c, i) => (
+          <button key={i} className="twk-chip" data-on={value===c?"1":"0"} style={{ background:c }} onClick={() => onChange(c)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TweakButton({ label, onClick }) {
+  return <button type="button" className="twk-btn" onClick={onClick}>{label}</button>;
+}
+
+// ── APP ───────────────────────────────────────────────────────────────────────
+const CLAIM_KEY = "profile_claimed_v2";
+function loadClaimed() {
+  try { const r = localStorage.getItem(CLAIM_KEY); if (r) return JSON.parse(r); } catch(e) {}
+  return [50, 100, 150, 200];
+}
+
+function tierIndex(points, tiers) {
+  let idx = 0;
+  tiers.forEach((t, i) => { if (points >= t.min) idx = i; });
+  return idx;
+}
+
+function App() {
+  const [theme, setTheme] = useState("sun");
+  const [accent, setAccent] = useState("#f0467e");
+  const [mascots, setMascots] = useState(true);
+  const [name, setName] = useState("Ohm");
+  const [tribe, setTribe] = useState("NCSWT");
+  const [streak, setStreak] = useState(128);
+  const [balance, setBalance] = useState(78);
+  const [claimed, setClaimed] = useState(loadClaimed);
+  const [tweakOpen, setTweakOpen] = useState(false);
+
+  useEffect(() => { try { localStorage.setItem(CLAIM_KEY, JSON.stringify(claimed)); } catch(e) {} }, [claimed]);
+
+  const points = DATA.stats.totalPoints;
+  const tIdx = tierIndex(points, DATA.tiers);
+  const levelNames = DATA.tiers.map(x => x.name);
+
+  const dials = [
+    { label: "Delivery",    value: Math.round(DATA.stats.doneRatePct), color: "var(--good)" },
+    { label: "Velocity",    value: 78,  color: "var(--warn)" },
+    { label: "Consistency", value: 64,  color: "var(--bad)"  },
+    { label: "Focus",       value: 88,  color: "var(--info)" },
+  ];
+
+  const themeVars = {
+    "--line":     accent,
+    "--spectrum": `linear-gradient(90deg, ${accent}, color-mix(in srgb, ${accent} 42%, #fff))`,
+  };
+
+  const sectionLabel = (text) => (
+    <div style={{ font:"700 12px/1 var(--font)", letterSpacing:"2px", textTransform:"uppercase",
+      color:"var(--label)", margin:"28px 2px 14px" }} className="span-2">{text}</div>
+  );
+
+  return (
+    <div className="stage" data-theme={theme} style={themeVars}>
+      <div className="feed">
+
+        {/* ── Header ── */}
+        <ProfileHeader
+          name={name}
+          sub={[DATA.person.role.toUpperCase(), `${DATA.person.sprintsActive}/${DATA.person.sprintsTotal} SPRINTS`, `${DATA.person.totalTasks} TASKS`, `#${DATA.stats.myRank} of ${DATA.stats.teamSize}`]}
+          mascots={mascots}
+        />
+
+        {/* ── Total points + mini stats ── */}
+        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+          <StreakCard value={points} mascots={mascots} delay={40} />
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+            <MiniStat icon="📋" value={DATA.stats.totalTasks} label="Total tasks" />
+            <MiniStat icon="🎯" value={Math.round(parseFloat(DATA.stats.doneRatePct)) + "%"} label="Done rate" />
+          </div>
+        </div>
+
+        {/* ── Top project card ── */}
+        <TribeCard
+          name={DATA.projEntries[0][0]}
+          pts={DATA.projEntries[0][1]}
+          projectCount={DATA.stats.projects}
+          rank={DATA.stats.myRank}
+          teamSize={DATA.stats.teamSize}
+          mascots={mascots}
+          delay={80}
+        />
+
+        {/* ── Rewards journey (work style slot) ── */}
+        <RewardsJourney rewards={DATA.rewards} points={points} claimed={claimed} setClaimed={setClaimed} mascots={mascots} delay={120} />
+
+        {/* ── Dev score + dials ── */}
+        <DevScoreCard
+          levelIndex={tIdx}
+          levels={levelNames}
+          levelLabel={`${DATA.tiers[tIdx].name.toUpperCase()} TIER`}
+          dials={dials}
+          mascots={mascots}
+          delay={160}
+        />
+
+        {/* ── Status breakdown ── */}
+        {sectionLabel("Task Status")}
+        <StatusBreakdown hero={DATA.statusHero} rest={DATA.statusRest} totalTasks={DATA.person.totalTasks} delay={200} />
+
+        {/* ── Stats strip ── */}
+        {sectionLabel("Overview")}
+        <StatCard label="Total Points"   value={parseFloat(DATA.stats.totalPoints).toLocaleString()} sub="all sprints"                                        accentColor="var(--bar)"  delay={0}   />
+        <StatCard label="Done Rate"      value={DATA.stats.doneRatePct + "%"}                        sub={`${DATA.stats.donePts} / ${DATA.stats.targetPts} pts`} accentColor="var(--good)" delay={40}  />
+        <StatCard label="Total Tasks"    value={DATA.stats.totalTasks}                               sub="across all sprints"                                  delay={80}  />
+        <StatCard label="Avg Pts / Task" value={DATA.stats.avgPtsPerTask}                            sub="efficiency ratio"                                    delay={120} />
+        <StatCard label="Active Sprints" value={DATA.stats.activeSprints}                            sub={`of ${DATA.stats.sprintsTotal} total`}               delay={160} />
+        <StatCard label="Projects"       value={DATA.stats.projects}                                 sub="contributed to"                                      delay={200} />
+
+        {/* ── Leaderboard ── */}
+        {sectionLabel("Leaderboard")}
+        <LeaderboardTable
+          leaderboard={DATA.leaderboard}
+          myName={DATA.person.name}
+          myRoleColor={DATA.person.roleColor}
+          delay={240}
+        />
+
+        {/* ── Insights ── */}
+        {sectionLabel("Insights")}
+        {DATA.insights.map((it, i) => <InsightCard key={i} it={it} delay={i*50} />)}
+
+        {/* ── Sprint trend chart ── */}
+        {sectionLabel("Sprint Trend")}
+        <TrendCard data={DATA.sprintTrend} delay={280} />
+
+        {/* ── Leave history ── */}
+        {DATA.leave.length > 0 && <>
+          {sectionLabel("Leave History")}
+          <div className="card pad span-2" style={{ display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" }}>
+            <span style={{ fontSize:18 }}>🗓</span>
+            <span style={{ fontWeight:700, color:"var(--ink)" }}>Leave &amp; Holidays</span>
+            {DATA.leave.map((l, i) => (
+              <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:8,
+                background:"var(--ring-bg)", border:`var(--strokeW) solid var(--card-edge)`,
+                borderRadius:999, padding:"8px 14px", fontSize:13, fontWeight:600, color:"var(--label)" }}>
+                {l.icon} Sprint {l.sprint} · {l.kind} {l.days}d · {l.range}
+              </span>
+            ))}
+          </div>
+        </>}
+
+      </div>
+
+      {/* floating tweaks toggle */}
+      <button className="twk-fab" onClick={() => setTweakOpen(o => !o)} title="Open Tweaks">⚙️</button>
+
+      <TweaksPanel open={tweakOpen} onClose={() => setTweakOpen(false)}>
+        <TweakSection label="Theme" />
+        <TweakRadio label="Look" value={theme} options={[{value:"sun",label:"Sun"},{value:"night",label:"Night"}]} onChange={setTheme} />
+        <TweakColor label="Accent" value={accent} options={["#f0467e","#7c7ff5","#2ad4e5","#f6a623","#2fce6e"]} onChange={setAccent} />
+
+        <TweakSection label="Profile" />
+        <TweakText label="Name" value={name} onChange={setName} />
+
+        <TweakSection label="Gamification" />
+        <TweakToggle label="Mascots & emoji" value={mascots} onChange={setMascots} />
+        <TweakSlider label="Streak" value={streak} min={0} max={365} unit="d" onChange={setStreak} />
+        <TweakSlider label="Planner ↔ Shipper" value={balance} min={0} max={100} onChange={setBalance} />
+        <TweakButton label="Reset claimed rewards" onClick={() => setClaimed([])} />
+      </TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

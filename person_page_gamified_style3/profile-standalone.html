@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ohm · Profile — Playful Light</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+<style>
+/* ============================================================
+   PLAYFUL LIGHT THEME — lavender canvas, white rounded cards,
+   purple + gold + soft green/coral. Fredoka + Plus Jakarta Sans.
+   ============================================================ */
+:root {
+  --display: "Fredoka", system-ui, sans-serif;
+  --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* ink */
+  --ink:       #2b2150;
+  --ink-soft:  #6c648c;
+  --label:     #9a92b6;
+
+  /* primary purple family (driven partly by --accent tweak) */
+  --purple:      #7c5cf2;
+  --purple-deep: #5d3fd6;
+  --purple-soft: #efeafe;
+  --purple-tint: #e6defc;
+
+  /* support accents */
+  --gold:       #f4be3f;
+  --gold-soft:  #ffe7a8;
+  --gold-deep:  #c98f12;
+  --green:      #4fc187;
+  --green-soft: #d7f2e3;
+  --coral:      #f06aa0;
+  --coral-soft: #fcdcea;
+  --cyan:       #34c4dd;
+  --cyan-soft:  #d5f1f6;
+  --red:        #f0467e;
+
+  /* surfaces */
+  --card:       #ffffff;
+  --card-edge:  rgba(124,92,242,.10);
+  --radius:     26px;
+  --radius-sm:  18px;
+  --shadow:     0 16px 36px rgba(96,67,170,.13);
+  --shadow-sm:  0 8px 20px rgba(96,67,170,.10);
+
+  /* accent (tweakable) defaults to purple */
+  --accent:      #7c5cf2;
+  --accent-soft: #efeafe;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { -webkit-font-smoothing: antialiased; }
+
+.stage {
+  min-height: 100vh;
+  width: 100%;
+  background:
+    radial-gradient(900px 520px at 88% -8%, #fde6ef 0%, transparent 55%),
+    radial-gradient(820px 480px at 6% -4%, #efe7fb 0%, transparent 52%),
+    linear-gradient(170deg, #efe9fa 0%, #e9e3f7 48%, #eee7f6 100%);
+  font-family: var(--font);
+  color: var(--ink);
+  padding: 26px 16px 120px;
+  line-height: 1.45;
+}
+
+.feed {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 15px;
+}
+@media (min-width: 900px) {
+  .feed { max-width: 940px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .span-2 { grid-column: 1 / -1; }
+}
+.feed > * { min-width: 0; }
+
+/* ---------- card shell ---------- */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  min-width: 0;
+}
+.pad { padding: 22px 22px; }
+
+.klabel {
+  font: 700 12px/1 var(--font);
+  letter-spacing: 1.4px; text-transform: uppercase;
+  color: var(--label);
+}
+
+/* soft round chrome buttons */
+.obtn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: none; background: #fff; color: var(--ink);
+  border-radius: 999px; cursor: pointer; font: 600 13px/1 var(--display);
+  box-shadow: var(--shadow-sm);
+  transition: transform .12s ease, box-shadow .2s ease, background .2s ease;
+}
+.obtn:hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(96,67,170,.16); }
+.obtn:active { transform: translateY(0); }
+.obtn.round { width: 46px; height: 46px; padding: 0; border-radius: 50%; }
+.obtn.pill  { padding: 12px 17px; }
+
+/* primary pill */
+.cta {
+  border: none; border-radius: 999px; cursor: pointer;
+  background: var(--accent); color: #fff;
+  font: 600 14px/1 var(--display); letter-spacing: .2px;
+  padding: 13px 20px; box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 40%, transparent);
+  transition: transform .12s ease, filter .2s ease;
+}
+.cta:hover { transform: translateY(-1px); filter: brightness(1.04); }
+
+.dpill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent-soft); color: var(--purple-deep);
+  border-radius: 999px; padding: 8px 13px;
+  font: 600 12.5px/1 var(--display); letter-spacing: .2px;
+}
+
+.figure { font-family: var(--display); font-weight: 600; letter-spacing: -.3px; line-height: .95; }
+
+/* entrance — animate transform only so content is never hidden */
+@keyframes rise { from { transform: translateY(14px); } to { transform: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .rise { animation: rise .55s cubic-bezier(.2,.8,.2,1) both; }
+}
+
+/* twinkle for sparkles */
+@keyframes twinkle { 0%,100% { opacity: .4; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.1); } }
+.spark { position: absolute; pointer-events: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .spark { animation: twinkle 2.6s ease-in-out infinite; }
+}
+
+button { font-family: var(--font); }
+::selection { background: color-mix(in srgb, var(--purple) 26%, transparent); }
+
+/* hide scrollbar on rails */
+.norail::-webkit-scrollbar { height: 0; }
+
+/* ── tweaks panel (from tweaks-panel.jsx) ─────────────────────────────── */
+.twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+  max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+  transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom right;
+  background:rgba(250,249,247,.88);color:#29261b;
+  -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+  border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+  box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+  font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+.twk-fab{position:fixed;right:16px;bottom:80px;z-index:2147483645;
+  width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(12px);
+  box-shadow:0 4px 16px rgba(96,67,170,.28);font-size:18px;
+  display:flex;align-items:center;justify-content:center;transition:transform .12s}
+.twk-fab:hover{transform:scale(1.08)}
+.twk-hd{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 8px 10px 14px;cursor:move;user-select:none}
+.twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+.twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+  width:22px;height:22px;border-radius:6px;cursor:pointer;font-size:13px;line-height:1}
+.twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+.twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+  overflow-y:auto;overflow-x:hidden;min-height:0;
+  scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+.twk-body::-webkit-scrollbar{width:8px}
+.twk-body::-webkit-scrollbar-track{background:transparent;margin:2px}
+.twk-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;
+  border:2px solid transparent;background-clip:content-box}
+.twk-row{display:flex;flex-direction:column;gap:5px}
+.twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+.twk-lbl{display:flex;justify-content:space-between;align-items:baseline;
+  color:rgba(41,38,27,.72)}
+.twk-lbl>span:first-child{font-weight:500}
+.twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+.twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:rgba(41,38,27,.45);padding:10px 0 0}
+.twk-sect:first-child{padding-top:0}
+.twk-field{appearance:none;box-sizing:border-box;width:100%;min-width:0;height:26px;padding:0 8px;
+  border:.5px solid rgba(0,0,0,.1);border-radius:7px;
+  background:rgba(255,255,255,.6);color:inherit;font:inherit;outline:none}
+.twk-field:focus{border-color:rgba(0,0,0,.25);background:rgba(255,255,255,.85)}
+.twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;
+  border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+.twk-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+  width:14px;height:14px;border-radius:50%;background:#fff;
+  border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:pointer}
+.twk-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+  background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:pointer}
+.twk-seg{position:relative;display:flex;padding:2px;border-radius:8px;
+  background:rgba(0,0,0,.06);user-select:none}
+.twk-seg-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;
+  background:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.12);
+  transition:left .15s cubic-bezier(.3,.7,.4,1),width .15s}
+.twk-seg button{appearance:none;position:relative;z-index:1;flex:1;border:0;
+  background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;
+  border-radius:6px;cursor:pointer;padding:4px 6px;line-height:1.2}
+.twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+  background:rgba(0,0,0,.15);transition:background .15s;cursor:pointer;padding:0}
+.twk-toggle[data-on="1"]{background:#34c759}
+.twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s;font-style:normal}
+.twk-toggle[data-on="1"] i{transform:translateX(14px)}
+.twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+  background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:pointer}
+.twk-btn:hover{background:rgba(0,0,0,.88)}
+.twk-chips{display:flex;gap:6px}
+.twk-chip{position:relative;appearance:none;flex:1;min-width:0;height:36px;
+  padding:0;border:0;border-radius:6px;overflow:hidden;cursor:pointer;
+  box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);
+  transition:transform .12s cubic-bezier(.3,.7,.4,1),box-shadow .12s}
+.twk-chip:hover{transform:translateY(-1px);
+  box-shadow:0 0 0 .5px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.12)}
+.twk-chip[data-on="1"]{box-shadow:0 0 0 2px rgba(0,0,0,.85),0 2px 6px rgba(0,0,0,.15)}
+.twk-chip svg{position:absolute;top:5px;left:5px;width:13px;height:13px;
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const DATA = {
+  person: { name:"Ohm", initials:"OH", role:"Dev", roleColor:"#7c5cf2", sprintsActive:11, sprintsTotal:12, totalPoints:718, totalTasks:247 },
+  stats: { totalPoints:718, totalTasks:247, doneRatePct:"92.4", donePts:"678.0", targetPts:"734.0", avgPtsPerTask:"2.91", activeSprints:11, sprintsTotal:12, projects:7, myRank:2, teamSize:17 },
+  statusHero: [
+    { key:"done",       label:"Done",             tasks:211, pts:678, color:"var(--green)", emoji:"✅" },
+    { key:"inprogress", label:"In Progress",       tasks:23,  pts:41,  color:"var(--cyan)",  emoji:"🛠️" },
+    { key:"review",     label:"Ready for Review",  tasks:10,  pts:13,  color:"var(--purple)",emoji:"👀" },
+  ],
+  statusRest: [
+    { label:"Ready for test",        tasks:3,  pts:0,  color:"var(--cyan-soft)" },
+    { label:"Waiting to PRD deploy", tasks:10, pts:0,  color:"var(--gold)"      },
+    { label:"To Do",                 tasks:15, pts:30, color:"var(--label)"     },
+    { label:"Blocked",               tasks:1,  pts:5,  color:"var(--coral)"     },
+    { label:"Removed/Canceled",      tasks:1,  pts:8,  color:"var(--label)"     },
+  ],
+  insights: [
+    { emoji:"📦", title:"Workload",     value:"718 pts · 247 tasks",          sub:"Active in 11/12 sprints · avg 2.91 pts/task",             dot:"var(--green)"  },
+    { emoji:"✅", title:"Done Rate",    value:"92.4% of points",               sub:"678 / 734 pts",                                           dot:"var(--green)"  },
+    { emoji:"📉", title:"Recent Trend", value:"Slowing down (−54%)",           sub:"Last 3 sprints vs previous 3",                           dot:"var(--gold)"   },
+    { emoji:"🚀", title:"Peak Sprint",  value:"Sprint 7 — 161 pts",            sub:"Highest of the year",                                    dot:"var(--cyan)"   },
+    { emoji:"🎯", title:"Top Projects", value:"NCSWT (647) · InsureTech (29)", sub:"7 projects contributed",                                 dot:"var(--cyan)"   },
+    { emoji:"⚠️", title:"Risk Flags",  value:"1 Blocked · 0 Bugged",          sub:"Monitor blocked item",                                   dot:"var(--coral)"  },
+  ],
+  sprintTrend: [
+    {sprint:1,pts:8,tasks:10},{sprint:2,pts:15,tasks:3},{sprint:3,pts:131,tasks:19},
+    {sprint:4,pts:93,tasks:21},{sprint:5,pts:104,tasks:19},{sprint:6,pts:58,tasks:11},
+    {sprint:7,pts:161,tasks:40},{sprint:8,pts:30,tasks:5},{sprint:9,pts:35,tasks:22},
+    {sprint:10,pts:47,tasks:55},{sprint:11,pts:36,tasks:42},{sprint:12,pts:0,tasks:0},
+  ],
+  rewards: [
+    {pts:50,emoji:"☕",name:"Coffee Voucher",desc:"ฟรีกาแฟ 1 แก้ว",tag:"Café"},
+    {pts:100,emoji:"🍜",name:"Restaurant 10% Off",desc:"ส่วนลด 10%",tag:"Dining"},
+    {pts:150,emoji:"🎬",name:"Movie Ticket ×1",desc:"ตั๋วหนัง 1 ใบ",tag:"Leisure"},
+    {pts:200,emoji:"🍱",name:"Free Team Lunch",desc:"ข้าวกล่องพรีเมียม",tag:"Dining"},
+    {pts:250,emoji:"🎧",name:"฿500 Gadget Credit",desc:"เครดิตซื้ออุปกรณ์",tag:"Gear"},
+    {pts:300,emoji:"🛒",name:"฿500 Shopping Voucher",desc:"บัตรกำนัล",tag:"Voucher"},
+    {pts:350,emoji:"🚗",name:"Grab Credit ฿300",desc:"เครดิตเดินทาง",tag:"Travel"},
+    {pts:400,emoji:"🍰",name:"Dessert Party",desc:"ขนมหวานเลี้ยงทีม",tag:"Dining"},
+    {pts:450,emoji:"📚",name:"฿1,000 Learning Budget",desc:"คอร์สพัฒนาตัวเอง",tag:"Growth"},
+    {pts:500,emoji:"🏖️",name:"Half Day Off",desc:"ลาครึ่งวัน",tag:"Time off"},
+    {pts:550,emoji:"💆",name:"Spa & Massage",desc:"นวดผ่อนคลาย",tag:"Wellness"},
+    {pts:600,emoji:"🎁",name:"Mystery Box",desc:"กล่องสุ่มของรางวัล",tag:"Surprise"},
+    {pts:650,emoji:"🍽️",name:"Dinner for Two",desc:"ดินเนอร์ 2 ที่",tag:"Dining"},
+    {pts:700,emoji:"🏨",name:"Hotel Staycation",desc:"เข้าพักโรงแรม 1 คืน",tag:"Travel"},
+    {pts:750,emoji:"🎮",name:"Game Console Raffle",desc:"สิทธิ์ลุ้นเครื่องเกม",tag:"Surprise"},
+    {pts:800,emoji:"✈️",name:"Full Day Off",desc:"วันหยุดพิเศษ 1 วัน",tag:"Time off"},
+  ],
+  tiers: [
+    {name:"Bronze",min:0,color:"#c98a4b"},{name:"Silver",min:200,color:"#aab4c6"},
+    {name:"Gold",min:400,color:"#f5c518"},{name:"Platinum",min:600,color:"#6ee7e0"},
+    {name:"Diamond",min:800,color:"#8b9cff"},
+  ],
+  leave: [{sprint:11,kind:"vacation",days:5,range:"2026-06-01 – 2026-06-05",icon:"🏖️"}],
+  projEntries: [["NCSWT",647],["InsureTech",29],["Internal",18],["Backlog",12],["Research",7],["Infra",3],["Other",2]],
+  leaderboard: [
+    {name:"Nust",  initials:"NU",pts:892, tasks:310,doneRate:0.95, role:"Dev",      roleColor:"#7c5cf2",tier:{name:"Diamond", color:"#8b9cff"},rank:1},
+    {name:"Ohm",   initials:"OH",pts:718, tasks:247,doneRate:0.924,role:"Dev",      roleColor:"#7c5cf2",tier:{name:"Platinum",color:"#6ee7e0"},rank:2},
+    {name:"Unn",   initials:"UN",pts:654, tasks:229,doneRate:0.88, role:"Dev",      roleColor:"#7c5cf2",tier:{name:"Platinum",color:"#6ee7e0"},rank:3},
+    {name:"Praew", initials:"PR",pts:581, tasks:195,doneRate:0.91, role:"Dev",      roleColor:"#7c5cf2",tier:{name:"Gold",    color:"#f5c518"},rank:4},
+    {name:"P",     initials:"P", pts:520, tasks:178,doneRate:0.86, role:"Dev",      roleColor:"#7c5cf2",tier:{name:"Gold",    color:"#f5c518"},rank:5},
+    {name:"No",    initials:"NO",pts:487, tasks:165,doneRate:0.89, role:"Dev",      roleColor:"#7c5cf2",tier:{name:"Gold",    color:"#f5c518"},rank:6},
+    {name:"Tum",   initials:"TU",pts:443, tasks:152,doneRate:0.82, role:"Dev",      roleColor:"#7c5cf2",tier:{name:"Gold",    color:"#f5c518"},rank:7},
+    {name:"Ploy",  initials:"PL",pts:388, tasks:134,doneRate:0.87, role:"Designer", roleColor:"#f06aa0",tier:{name:"Silver",  color:"#aab4c6"},rank:8},
+    {name:"Gib",   initials:"GI",pts:342, tasks:119,doneRate:0.79, role:"Designer", roleColor:"#f06aa0",tier:{name:"Silver",  color:"#aab4c6"},rank:9},
+    {name:"Nine",  initials:"NI",pts:295, tasks:98, doneRate:0.83, role:"Designer", roleColor:"#f06aa0",tier:{name:"Silver",  color:"#aab4c6"},rank:10},
+    {name:"Waew",  initials:"WA",pts:261, tasks:89, doneRate:0.85, role:"BA",       roleColor:"#a855f7",tier:{name:"Silver",  color:"#aab4c6"},rank:11},
+    {name:"Torfah",initials:"TO",pts:238, tasks:82, doneRate:0.76, role:"BA",       roleColor:"#a855f7",tier:{name:"Silver",  color:"#aab4c6"},rank:12},
+    {name:"Tae",   initials:"TA",pts:201, tasks:71, doneRate:0.80, role:"BA",       roleColor:"#a855f7",tier:{name:"Silver",  color:"#aab4c6"},rank:13},
+    {name:"Ping",  initials:"PI",pts:176, tasks:62, doneRate:0.88, role:"Tester",   roleColor:"#34c4dd",tier:{name:"Bronze",  color:"#c98a4b"},rank:14},
+    {name:"Dream", initials:"DR",pts:134, tasks:48, doneRate:0.72, role:"PC",       roleColor:"#f4be3f",tier:{name:"Bronze",  color:"#c98a4b"},rank:15},
+    {name:"Karn",  initials:"KA",pts:98,  tasks:35, doneRate:0.69, role:"CEO",      roleColor:"#4fc187",tier:{name:"Bronze",  color:"#c98a4b"},rank:16},
+    {name:"X",     initials:"X", pts:42,  tasks:18, doneRate:0.60, role:"Dev",      roleColor:"#7c5cf2",tier:{name:"Bronze",  color:"#c98a4b"},rank:17},
+  ],
+};
+
+// ── CLAIM KEY ─────────────────────────────────────────────────────────────────
+const CLAIM_KEY = "ohm_profile_playful_v2";
+function loadClaimed() {
+  try { const raw = localStorage.getItem(CLAIM_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+  return [50, 100, 150, 200];
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function tierIndex(points, tiers) {
+  let idx = 0;
+  tiers.forEach((t, i) => { if (points >= t.min) idx = i; });
+  return idx;
+}
+
+// ── ICONS ─────────────────────────────────────────────────────────────────────
+function Glyph({ name, size = 20 }) {
+  const s = { width: size, height: size, display: "block" };
+  const c = { fill: "none", stroke: "currentColor", strokeWidth: 2.1, strokeLinecap: "round", strokeLinejoin: "round" };
+  switch (name) {
+    case "gear": return (
+      <svg viewBox="0 0 24 24" style={s}><g {...c}><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 13a1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 6.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 2.6h.05A1.7 1.7 0 0 0 10 1.05V1a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 21.4 9v.05A1.7 1.7 0 0 0 22.95 10H23a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></g></svg>
+    );
+    case "bell": return (
+      <svg viewBox="0 0 24 24" style={s}><g {...c}><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></g></svg>
+    );
+    case "share": return (
+      <svg viewBox="0 0 24 24" style={s}><g {...c}><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="m8.3 10.7 7.4-4.3M8.3 13.3l7.4 4.3"/></g></svg>
+    );
+    case "edit": return (
+      <svg viewBox="0 0 24 24" style={s}><g {...c}><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></g></svg>
+    );
+    case "info": return (
+      <svg viewBox="0 0 24 24" style={s}><g {...c}><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></g></svg>
+    );
+    case "arrow": return (
+      <svg viewBox="0 0 24 24" style={s}><g {...c}><path d="M5 12h14M13 6l6 6-6 6"/></g></svg>
+    );
+    case "chevron": return (
+      <svg viewBox="0 0 24 24" style={s}><g {...c}><path d="m9 6 6 6-6 6"/></g></svg>
+    );
+    case "home": return (
+      <svg viewBox="0 0 24 24" style={s}><g {...c}><path d="M3 11l9-8 9 8M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/></g></svg>
+    );
+    case "compass": return (
+      <svg viewBox="0 0 24 24" style={s}><g {...c}><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></g></svg>
+    );
+    case "gift": return (
+      <svg viewBox="0 0 24 24" style={s}><g {...c}><path d="M20 12v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8M2 8h20v4H2zM12 8v13M12 8S10.5 3 8 3a2 2 0 0 0 0 5M12 8s1.5-5 4-5a2 2 0 0 1 0 5"/></g></svg>
+    );
+    case "user": return (
+      <svg viewBox="0 0 24 24" style={s}><g {...c}><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></g></svg>
+    );
+    default: return null;
+  }
+}
+
+/* tiny CSS sparkle (4-point star) */
+function Spark({ top, left, right, bottom, size = 16, color = "#fff", delay = 0, op = .9 }) {
+  return (
+    <span className="spark" style={{ top, left, right, bottom, width: size, height: size, animationDelay: delay + "ms" }}>
+      <svg viewBox="0 0 24 24" style={{ width: "100%", height: "100%", display: "block", opacity: op }}>
+        <path d="M12 0c.7 6 5.3 10.6 12 12-6.7 1.4-11.3 6-12 12-.7-6-5.3-10.6-12-12C6.7 10.6 11.3 6 12 0Z" fill={color} />
+      </svg>
+    </span>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  COMPONENTS (lo-components.jsx)
+// ══════════════════════════════════════════════════════════════════════════════
+
+function ProfileHeader({ name, mascots }) {
+  return (
+    <div className="span-2 rise" style={{ display: "flex", flexDirection: "column", gap: 18, padding: "2px 4px 2px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 13, minWidth: 0 }}>
+          {/* avatar */}
+          <div style={{ width: 52, height: 52, borderRadius: "50%", flex: "none", display: "grid", placeItems: "center",
+            background: "linear-gradient(145deg, var(--purple), var(--purple-deep))",
+            boxShadow: "0 8px 18px color-mix(in srgb, var(--purple) 45%, transparent)", fontSize: 27, position: "relative", overflow: "hidden" }}>
+            <span aria-hidden="true" style={{ filter: "drop-shadow(0 2px 2px rgba(0,0,0,.2))" }}>{mascots ? "🦉" : "🙂"}</span>
+          </div>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ font: "600 19px/1.05 var(--display)", color: "var(--ink)", whiteSpace: "nowrap" }}>
+              {`Hey ${name}!`}{mascots && <span aria-hidden="true"> 👋</span>}
+            </div>
+            <div style={{ font: "600 12.5px/1.2 var(--font)", color: "var(--ink-soft)", marginTop: 3 }}>Keep shipping — you're doing great</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 10, flex: "none" }}>
+          <button className="obtn round" aria-label="Notifications"><Glyph name="bell" /></button>
+          <button className="obtn round" aria-label="Settings"><Glyph name="gear" /></button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HeroCard({ name, role, sprintsActive, sprintsTotal, tierName, tierColor, mascots, delay = 0 }) {
+  return (
+    <div className="card rise span-2" style={{ position: "relative", overflow: "hidden", animationDelay: delay + "ms",
+      background: "linear-gradient(150deg, #b9a6f4 0%, #9f86ee 46%, #8c70ea 100%)", color: "#fff", padding: "24px 24px 22px", minHeight: 196 }}>
+
+      {/* soft decorative blobs */}
+      <div aria-hidden="true" style={{ position: "absolute", width: 260, height: 260, borderRadius: "50%", right: -70, top: -90, background: "rgba(255,255,255,.16)" }} />
+      <div aria-hidden="true" style={{ position: "absolute", width: 150, height: 150, borderRadius: "50%", left: -50, bottom: -60, background: "rgba(255,255,255,.10)" }} />
+      {mascots && <>
+        <Spark top={22} left={24} size={15} delay={0} />
+        <Spark top={64} left={150} size={11} delay={500} op={.8} />
+        <Spark top={36} right={120} size={13} delay={900} />
+        <Spark bottom={30} right={180} size={10} delay={300} op={.7} />
+      </>}
+
+      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,.22)", borderRadius: 999, padding: "6px 12px", font: "600 12px/1 var(--display)", letterSpacing: ".4px", backdropFilter: "blur(4px)" }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: tierColor, boxShadow: "0 0 0 3px rgba(255,255,255,.3)" }} />
+            {tierName} Tier
+          </div>
+          <h1 className="figure" style={{ margin: "14px 0 0", fontSize: "clamp(36px,7vw,54px)", color: "#fff", textShadow: "0 3px 10px rgba(60,40,120,.25)" }}>{name}</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 9, flexWrap: "wrap", font: "600 12.5px/1 var(--display)", letterSpacing: ".5px", color: "rgba(255,255,255,.92)" }}>
+            <span>{role.toUpperCase()}</span>
+            <span style={{ width: 4, height: 4, borderRadius: 999, background: "rgba(255,255,255,.6)" }} />
+            <span>{sprintsActive}/{sprintsTotal} SPRINTS</span>
+          </div>
+        </div>
+
+        {mascots && (
+          <div aria-hidden="true" style={{ position: "relative", flex: "none", width: 124, alignSelf: "flex-end" }}>
+            <div style={{ fontSize: 78, lineHeight: 1, filter: "drop-shadow(0 8px 12px rgba(50,30,110,.28))", transform: "rotate(-4deg)" }}>🦉</div>
+            <div style={{ position: "absolute", left: -18, bottom: -6, fontSize: 34, filter: "drop-shadow(0 4px 6px rgba(50,30,110,.22))" }}>🪴</div>
+          </div>
+        )}
+      </div>
+
+      <button className="obtn pill" style={{ position: "absolute", right: 22, top: 22, padding: "9px 14px", background: "#fff", color: "var(--purple-deep)", font: "600 12.5px/1 var(--display)" }}>
+        <Glyph name="edit" size={14} /> Edit
+      </button>
+    </div>
+  );
+}
+
+function StatTile({ label, value, sub, emoji, tone = "purple", delay = 0 }) {
+  const tones = {
+    purple: { bg: "var(--purple-soft)", ink: "var(--purple-deep)", chip: "#fff" },
+    gold:   { bg: "var(--gold-soft)",   ink: "var(--gold-deep)",   chip: "#fff" },
+    green:  { bg: "var(--green-soft)",  ink: "#1f8a5b",            chip: "#fff" },
+    cyan:   { bg: "var(--cyan-soft)",   ink: "#1597ad",            chip: "#fff" },
+  }[tone];
+  return (
+    <div className="card rise" style={{ background: tones.bg, padding: "18px 18px", animationDelay: delay + "ms" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div className="klabel" style={{ color: tones.ink, opacity: .8 }}>{label}</div>
+        <span style={{ width: 34, height: 34, borderRadius: 12, background: tones.chip, display: "grid", placeItems: "center", fontSize: 17, boxShadow: "var(--shadow-sm)" }}>{emoji}</span>
+      </div>
+      <div className="figure" style={{ fontSize: 42, color: tones.ink, marginTop: 12 }}>{value}</div>
+      <div style={{ font: "600 12px/1.2 var(--font)", color: tones.ink, opacity: .7, marginTop: 5 }}>{sub}</div>
+    </div>
+  );
+}
+
+/* TotalPointsCard — replaces StreakCard */
+function TotalPointsCard({ value, mascots, delay = 0 }) {
+  return (
+    <div className="card pad rise" style={{ position: "relative", overflow: "hidden", animationDelay: delay + "ms" }}>
+      <div className="klabel">Total Points</div>
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginTop: 8 }}>
+        <div className="figure" style={{ fontSize: 50, color: "var(--ink)" }}>{value}</div>
+        {mascots && <div aria-hidden="true" style={{ fontSize: 40, lineHeight: 1, transform: "rotate(6deg)", filter: "drop-shadow(0 4px 6px rgba(0,0,0,.12))" }}>⭐</div>}
+      </div>
+      <div style={{ marginTop: 8, font: "600 12px/1.2 var(--font)", color: "var(--ink-soft)" }}>all sprints combined</div>
+    </div>
+  );
+}
+
+function MiniStat({ icon, value, label, delay = 0 }) {
+  return (
+    <div className="card rise" style={{ padding: "14px 15px", display: "flex", flexDirection: "column", gap: 9, animationDelay: delay + "ms" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+        <span aria-hidden="true" style={{ fontSize: 17, lineHeight: 1 }}>{icon}</span>
+        <span className="figure" style={{ fontSize: 25, color: "var(--ink)" }}>{value}</span>
+      </div>
+      <div className="klabel" style={{ fontSize: 10.5, letterSpacing: 1.1 }}>{label}</div>
+    </div>
+  );
+}
+
+function TribeCard({ name, pts, projectCount, rank, teamSize, mascots, delay = 0 }) {
+  return (
+    <div className="card pad rise" style={{ position: "relative", overflow: "hidden", minHeight: 150,
+      display: "flex", flexDirection: "column", justifyContent: "center",
+      background: "linear-gradient(150deg, #4b3aa6, #6442d6)", color: "#fff", animationDelay: delay + "ms" }}>
+      <div aria-hidden="true" style={{ position: "absolute", width: 160, height: 160, borderRadius: "50%", right: -56, bottom: -64, background: "rgba(255,255,255,.10)" }} />
+      {mascots && <div aria-hidden="true" style={{ position: "absolute", right: 12, bottom: 6, fontSize: 56, lineHeight: 1, filter: "drop-shadow(0 4px 8px rgba(0,0,0,.25))" }}>🚀</div>}
+      <div className="klabel" style={{ position: "relative", color: "rgba(255,255,255,.7)" }}>Top Project</div>
+      <div className="figure" style={{ position: "relative", fontSize: 36, color: "#fff", marginTop: 8 }}>{name}</div>
+      <div style={{ position: "relative", marginTop: 8, font: "600 12px/1.3 var(--font)", color: "rgba(255,255,255,.75)", maxWidth: 200 }}>
+        {pts} pts · {projectCount} projects · #{rank} of {teamSize}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  RewardsJourneySpectrum  (replaces WorkStyleCard slot, span-2)
+// ══════════════════════════════════════════════════════════════════════════════
+function RewardsJourneySpectrum({ rewards, points, claimed, setClaimed, mascots, delay = 0 }) {
+  const maxPts = rewards[rewards.length - 1].pts;
+  const pct = Math.min(98, Math.max(2, Math.round((points / maxPts) * 100)));
+  const stateOf = (r) => claimed.includes(r.pts) ? "claimed" : (r.pts <= points ? "ready" : "locked");
+  const readyCount = rewards.filter(r => stateOf(r) === "ready").length;
+  const unlockedRewards = rewards.filter(r => r.pts <= points);
+  const nextReward = rewards.find(r => r.pts > points);
+
+  return (
+    <div className="card pad rise span-2" style={{ position: "relative", animationDelay: delay + "ms" }}>
+      {/* header row */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4, flexWrap: "wrap", gap: 10 }}>
+        <div className="klabel">{mascots ? "🎁 " : ""}Rewards Journey</div>
+        <span className="dpill" style={{ background: "var(--gold-soft)", color: "var(--gold-deep)" }}>{readyCount} ready to redeem</span>
+      </div>
+
+      {/* big figure */}
+      <div className="figure" style={{ fontSize: 40, color: "var(--ink)", margin: "10px 0 4px", lineHeight: 1 }}>
+        {unlockedRewards.length} / {rewards.length} unlocked
+      </div>
+
+      {/* caption */}
+      <div style={{ font: "600 13px/1.45 var(--font)", color: "var(--ink-soft)", marginBottom: 20, maxWidth: 460 }}>
+        {nextReward
+          ? <>{nextReward.pts - points} pts to unlock {nextReward.emoji} <b style={{ color: "var(--purple-deep)" }}>{nextReward.name}</b></>
+          : mascots ? "🏆 All rewards unlocked!" : "All rewards unlocked!"}
+      </div>
+
+      {/* spectrum bar with knob */}
+      <div style={{ position: "relative", height: 52 }}>
+        <div style={{ position: "absolute", top: 10, left: 0, right: 0, height: 30, borderRadius: 999, background: "var(--purple-soft)", overflow: "hidden" }}>
+          <div style={{ position: "absolute", inset: 0, width: pct + "%", borderRadius: 999,
+            background: "linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 40%, #fff))" }} />
+        </div>
+        {mascots && <>
+          <div aria-hidden="true" style={{ position: "absolute", top: 6, left: 9, fontSize: 26, lineHeight: 1, zIndex: 2 }}>🌱</div>
+          <div aria-hidden="true" style={{ position: "absolute", top: 6, right: 9, fontSize: 26, lineHeight: 1, zIndex: 2 }}>✈️</div>
+        </>}
+        {/* knob */}
+        <div style={{ position: "absolute", top: 1, left: `calc(${pct}% - 24px)`, width: 48, height: 48, borderRadius: "50%", background: "#fff", border: "4px solid var(--accent)", boxShadow: "0 6px 14px rgba(96,67,170,.3)", display: "grid", placeItems: "center", zIndex: 3 }}>
+          <span style={{ font: "600 11px/1 var(--display)", color: "var(--purple-deep)" }}>{points}</span>
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, font: "600 11px/1 var(--display)", letterSpacing: 1, textTransform: "uppercase", color: "var(--label)" }}>
+        <span>0 pts</span><span>{maxPts} pts</span>
+      </div>
+
+      {/* unlocked reward emoji tiles */}
+      {unlockedRewards.length > 0 && (
+        <div style={{ marginTop: 18, display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {unlockedRewards.map(r => {
+            const st = stateOf(r);
+            return (
+              <div key={r.pts} title={`${r.name} — ${r.desc}`}
+                onClick={() => { if (st === "ready") setClaimed(prev => [...prev, r.pts]); }}
+                style={{
+                  width: 44, height: 44, borderRadius: 12, display: "grid", placeItems: "center", fontSize: 22,
+                  cursor: st === "ready" ? "pointer" : "default", position: "relative",
+                  background: st === "claimed" ? "var(--green-soft)" : st === "ready" ? "var(--gold-soft)" : "var(--purple-soft)",
+                  border: `2.5px solid ${st === "claimed" ? "var(--green)" : st === "ready" ? "var(--gold)" : "rgba(124,92,242,.2)"}`,
+                  boxShadow: st === "ready" ? "0 0 16px color-mix(in srgb, var(--gold) 55%, transparent)" : "none",
+                  transition: "transform .12s ease",
+                }}>
+                {r.emoji}
+                {st === "claimed" && (
+                  <span style={{ position: "absolute", bottom: -4, right: -4, width: 18, height: 18, borderRadius: "50%", background: "var(--green)", color: "#fff", display: "grid", placeItems: "center", fontSize: 10, fontWeight: 900 }}>✓</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  COMPONENTS (lo-components2.jsx)
+// ══════════════════════════════════════════════════════════════════════════════
+
+function Dial({ value, label, color, delay = 0 }) {
+  const R = 22, C = 2 * Math.PI * R;
+  return (
+    <div className="card rise" style={{ padding: "15px 16px", display: "flex", alignItems: "center", gap: 13,
+      boxShadow: "none", border: "2px solid var(--purple-soft)", animationDelay: delay + "ms" }}>
+      <div style={{ position: "relative", width: 52, height: 52, flex: "none" }}>
+        <svg viewBox="0 0 54 54" style={{ width: 52, height: 52, transform: "rotate(-90deg)" }}>
+          <circle cx="27" cy="27" r={R} fill="none" stroke="var(--purple-soft)" strokeWidth="6.5" />
+          <circle cx="27" cy="27" r={R} fill="none" stroke={color} strokeWidth="6.5" strokeLinecap="round"
+            strokeDasharray={C} strokeDashoffset={C - (C * value) / 100}
+            style={{ transition: "stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)" }} />
+        </svg>
+        <span className="figure" style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", fontSize: 15, color: "var(--ink)" }}>{value}</span>
+      </div>
+      <span className="figure" style={{ fontSize: 17, color: "var(--ink)" }}>{label}</span>
+    </div>
+  );
+}
+
+function DevScoreCard({ levelIndex, levels, levelLabel, tierColor, dials, mascots, delay = 0 }) {
+  const n = levels.length;
+  return (
+    <div className="card pad rise span-2" style={{ animationDelay: delay + "ms" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <div className="klabel">Dev Score</div>
+        <button className="cta" style={{ padding: "10px 16px" }}>Improve</button>
+      </div>
+
+      <div style={{ background: "linear-gradient(150deg, #f3eefe, #ece4fc)", borderRadius: 20, padding: "24px 22px 18px", position: "relative", overflow: "hidden" }}>
+        {mascots && <div aria-hidden="true" style={{ position: "absolute", right: 14, top: 10, fontSize: 26, lineHeight: 1 }}>🏆</div>}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
+          <span className="dpill" style={{ background: tierColor, color: "#fff", fontSize: 13, padding: "9px 17px", boxShadow: `0 8px 18px color-mix(in srgb, ${tierColor} 45%, transparent)` }}>{levelLabel}</span>
+        </div>
+        <div style={{ position: "relative", height: 26, margin: "0 6px" }}>
+          <div style={{ position: "absolute", top: 11, left: 0, right: 0, height: 5, background: "rgba(124,92,242,.16)", borderRadius: 999 }} />
+          <div style={{ position: "absolute", top: 11, left: 0, height: 5, width: `${(levelIndex / (n - 1)) * 100}%`, background: "var(--purple)", borderRadius: 999 }} />
+          {levels.map((_, i) => {
+            const left = `${(i / (n - 1)) * 100}%`;
+            const done = i < levelIndex;
+            const cur = i === levelIndex;
+            return (
+              <div key={i} style={{ position: "absolute", top: cur ? 1 : 5, left, transform: "translateX(-50%)",
+                width: cur ? 24 : 16, height: cur ? 24 : 16, borderRadius: "50%",
+                background: cur ? "#fff" : done ? "var(--purple)" : "rgba(124,92,242,.22)",
+                border: cur ? "5px solid var(--purple)" : "none",
+                boxShadow: cur ? "0 4px 10px rgba(96,67,170,.3)" : "none", zIndex: 2 }} />
+            );
+          })}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, font: "600 11px/1 var(--display)", letterSpacing: 1, textTransform: "uppercase", color: "var(--label)" }}>
+          <span>{levels[0]}</span><span>{levels[n - 1]}</span>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
+        {dials.map((d, i) => <Dial key={d.label} {...d} delay={i * 90} />)}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  COMPONENTS (lo-components3.jsx)
+// ══════════════════════════════════════════════════════════════════════════════
+
+function StatusBreakdown({ hero, rest, totalTasks, delay = 0 }) {
+  const all = [...hero, ...rest].filter(s => s.tasks > 0);
+  const cmap = {
+    "var(--green)": "var(--green)", "var(--cyan)": "var(--cyan)", "var(--indigo)": "var(--purple)",
+    "var(--teal)": "#3fb6c4", "var(--orange)": "var(--gold)", "var(--faint)": "#c8c1e0", "var(--red)": "var(--coral)",
+    "var(--cyan-soft)": "var(--cyan)", "var(--gold)": "var(--gold)", "var(--label)": "var(--label)", "var(--coral)": "var(--coral)",
+  };
+  const col = (c) => cmap[c] || c;
+  return (
+    <div className="card pad rise span-2" style={{ animationDelay: delay + "ms" }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 16 }}>
+        <div className="klabel">Task Status</div>
+        <span className="figure" style={{ fontSize: 18, color: "var(--ink)" }}>{totalTasks} <span style={{ fontSize: 12, fontWeight: 600, color: "var(--label)", fontFamily: "var(--font)" }}>tasks</span></span>
+      </div>
+
+      <div style={{ display: "flex", height: 16, borderRadius: 999, overflow: "hidden", background: "var(--purple-soft)" }}>
+        {all.map((s, i) => (
+          <div key={i} title={`${s.label}: ${s.tasks}`} style={{ width: `${(s.tasks / totalTasks) * 100}%`, background: col(s.color), borderRight: i < all.length - 1 ? "2px solid #fff" : "none" }} />
+        ))}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px,1fr))", gap: 9, marginTop: 16 }}>
+        {all.map((s, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
+            background: "var(--purple-soft)", borderRadius: 14, padding: "10px 13px" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+              <span style={{ width: 9, height: 9, borderRadius: "50%", background: col(s.color), flex: "none" }} />
+              <span style={{ font: "600 12.5px/1.2 var(--font)", color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.label}</span>
+            </span>
+            <span className="figure" style={{ fontSize: 16, color: "var(--ink)" }}>{s.tasks}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const BAR_COLORS = ["#9d8cf0","#f4be3f","#4fc187","#c4b6f4","#f4be3f","#9d8cf0","#34c4dd","#f06aa0","#4fc187","#9d8cf0","#f4be3f","#c4b6f4"];
+
+function TrendCard({ data, delay = 0 }) {
+  const [metric, setMetric] = useState("pts");
+  const [open, setOpen] = useState(false);
+  const vals = data.map(d => metric === "pts" ? d.pts : d.tasks);
+  const max = Math.max(...vals, 1);
+  const peak = vals.indexOf(max);
+
+  return (
+    <div className="card pad rise span-2" style={{ animationDelay: delay + "ms" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6, gap: 10 }}>
+        <div>
+          <div className="figure" style={{ fontSize: 22, color: "var(--ink)" }}>Sprint Progress</div>
+          <div style={{ font: "600 12px/1.2 var(--font)", color: "var(--label)", marginTop: 4 }}>{metric === "pts" ? "Story points" : "Tasks closed"} per sprint</div>
+        </div>
+        <div style={{ position: "relative", flex: "none" }}>
+          <button className="obtn pill" onClick={() => setOpen(o => !o)} style={{ padding: "10px 14px", background: "var(--purple-soft)", boxShadow: "none", color: "var(--purple-deep)", font: "600 12.5px/1 var(--display)" }}>
+            {metric === "pts" ? "Story points" : "Tasks"} <Glyph name="chevron" size={13} />
+          </button>
+          {open && (
+            <div style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", background: "#fff", borderRadius: 14, boxShadow: "var(--shadow)", padding: 6, zIndex: 5, minWidth: 140 }}>
+              {[["pts", "Story points"], ["tasks", "Tasks"]].map(([k, lbl]) => (
+                <button key={k} onClick={() => { setMetric(k); setOpen(false); }} style={{ display: "block", width: "100%", textAlign: "left", border: "none", cursor: "pointer", borderRadius: 10, padding: "9px 11px", font: "600 12.5px/1 var(--font)",
+                  background: metric === k ? "var(--purple-soft)" : "transparent", color: metric === k ? "var(--purple-deep)" : "var(--ink-soft)" }}>{lbl}</button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "flex-end", gap: "clamp(4px,1.2vw,10px)", height: 188, marginTop: 14, paddingTop: 26 }}>
+        {data.map((d, i) => {
+          const v = vals[i];
+          const h = max ? (v / max) * 100 : 0;
+          const isPeak = i === peak && v > 0;
+          const c = BAR_COLORS[i % BAR_COLORS.length];
+          return (
+            <div key={i} style={{ flex: 1, minWidth: 0, height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}>
+              <div style={{ marginBottom: 7, font: "600 11px/1 var(--display)",
+                ...(isPeak
+                  ? { background: "var(--purple)", color: "#fff", padding: "5px 9px", borderRadius: 999, boxShadow: "0 6px 14px color-mix(in srgb, var(--purple) 50%, transparent)" }
+                  : { color: v ? "var(--ink-soft)" : "var(--label)", padding: "0 2px" }) }}>{v}</div>
+              <div style={{ width: "100%", maxWidth: 30, height: `${Math.max(h, 2)}%`, minHeight: 6, borderRadius: 999,
+                background: v ? (isPeak ? "var(--purple)" : c) : "rgba(124,92,242,.14)",
+                boxShadow: isPeak ? "0 8px 18px color-mix(in srgb, var(--purple) 40%, transparent)" : "none",
+                transition: "height .7s cubic-bezier(.2,.8,.2,1)" }} />
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", gap: "clamp(4px,1.2vw,10px)", marginTop: 9 }}>
+        {data.map((d, i) => (
+          <div key={i} style={{ flex: 1, textAlign: "center", font: "600 10.5px/1 var(--font)", color: "var(--label)" }}>{d.sprint}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TrophyCard({ title, sub, mascots, delay = 0 }) {
+  return (
+    <div className="card rise span-2" style={{ display: "flex", alignItems: "center", gap: 16, padding: "18px 20px", cursor: "pointer", animationDelay: delay + "ms" }}>
+      <div style={{ width: 56, height: 56, borderRadius: 18, flex: "none", display: "grid", placeItems: "center", fontSize: 30, background: "var(--gold-soft)" }}>{mascots ? "🏆" : "★"}</div>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div className="figure" style={{ fontSize: 21, color: "var(--ink)" }}>{title}</div>
+        <div style={{ font: "600 12.5px/1.35 var(--font)", color: "var(--ink-soft)", marginTop: 3 }}>{sub}</div>
+      </div>
+      <span style={{ flex: "none", width: 38, height: 38, borderRadius: "50%", display: "grid", placeItems: "center", background: "var(--purple-soft)", color: "var(--purple-deep)" }}><Glyph name="chevron" size={18} /></span>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  LEADERBOARD CARD (playful theme, span-2, card-per-row)
+// ══════════════════════════════════════════════════════════════════════════════
+const RANK_MEDAL = ["🥇","🥈","🥉"];
+
+function LeaderboardCard({ leaderboard, myName, delay = 0 }) {
+  const [metric, setMetric] = useState("pts");
+
+  const rows = [...leaderboard].sort((a, b) => {
+    if (metric === "tasks")    return b.tasks    - a.tasks;
+    if (metric === "doneRate") return b.doneRate - a.doneRate;
+    return b.pts - a.pts;
+  });
+  let cr = 1;
+  rows.forEach((row, i) => {
+    const val = row[metric === "doneRate" ? "doneRate" : metric];
+    if (i > 0 && val === rows[i-1][metric === "doneRate" ? "doneRate" : metric]) row._rank = rows[i-1]._rank;
+    else row._rank = cr;
+    cr = row._rank + 1;
+  });
+
+  const maxVal = metric === "pts" ? rows[0].pts : metric === "tasks" ? rows[0].tasks : rows[0].doneRate;
+  const getValue  = (row) => metric === "pts" ? row.pts : metric === "tasks" ? row.tasks : row.doneRate;
+  const formatVal = (row) => metric === "pts" ? row.pts.toLocaleString() + " pts" : metric === "tasks" ? row.tasks + " tasks" : (row.doneRate * 100).toFixed(0) + "%";
+
+  const tabSt = (k) => ({
+    padding: "8px 14px", borderRadius: 999, cursor: "pointer", border: "none",
+    font: "600 12px/1 var(--display)", letterSpacing: ".3px",
+    background: metric === k ? "var(--accent)" : "var(--purple-soft)",
+    color: metric === k ? "#fff" : "var(--purple-deep)",
+    boxShadow: metric === k ? "0 6px 14px color-mix(in srgb, var(--accent) 40%, transparent)" : "none",
+    transition: "all .15s",
+  });
+
+  return (
+    <div className="card pad rise span-2" style={{ animationDelay: delay + "ms" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, flexWrap: "wrap", gap: 10 }}>
+        <div className="klabel">🏆 Leaderboard</div>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button style={tabSt("pts")}      onClick={() => setMetric("pts")}>Points</button>
+          <button style={tabSt("tasks")}    onClick={() => setMetric("tasks")}>Tasks</button>
+          <button style={tabSt("doneRate")} onClick={() => setMetric("doneRate")}>Done %</button>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {rows.map((row) => {
+          const isMe = row.name === myName;
+          const medal = row._rank <= 3 ? RANK_MEDAL[row._rank - 1] : null;
+          const val = getValue(row);
+          const barPct = maxVal ? (val / maxVal) * 100 : 0;
+          const doneColor = row.doneRate >= .9 ? "var(--green)" : row.doneRate >= .75 ? "var(--cyan)" : "var(--gold)";
+
+          return (
+            <div key={row.name} style={{
+              display: "grid",
+              gridTemplateColumns: "44px 1fr auto",
+              alignItems: "center",
+              gap: 12,
+              padding: "12px 14px",
+              borderRadius: 18,
+              background: isMe ? "var(--purple-soft)" : "rgba(239,234,254,.4)",
+              boxShadow: isMe ? "0 0 0 2px var(--accent)" : "none",
+              transition: "box-shadow .15s",
+            }}>
+
+              {/* rank */}
+              <div style={{ textAlign: "center" }}>
+                {medal
+                  ? <span style={{ fontSize: 24, lineHeight: 1 }}>{medal}</span>
+                  : <span className="figure" style={{ fontSize: 18, color: isMe ? "var(--purple-deep)" : "var(--label)" }}>#{row._rank}</span>
+                }
+              </div>
+
+              {/* avatar + name + bar */}
+              <div style={{ minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
+                    display: "grid", placeItems: "center",
+                    background: `linear-gradient(135deg, ${row.roleColor}cc, ${row.roleColor}77)`,
+                    fontSize: 12, fontWeight: 700, color: "#fff", fontFamily: "var(--display)",
+                    boxShadow: isMe ? `0 0 0 3px var(--accent), 0 0 14px color-mix(in srgb, var(--accent) 40%, transparent)` : "none",
+                  }}>{row.initials}</div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                      <span className="figure" style={{ fontSize: 15, color: "var(--ink)" }}>{row.name}</span>
+                      {isMe && <span style={{
+                        fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 999,
+                        background: "var(--accent)", color: "#fff",
+                      }}>You</span>}
+                      <span style={{
+                        fontSize: 10.5, fontWeight: 600, padding: "2px 8px", borderRadius: 999,
+                        color: row.tier.color,
+                        background: `color-mix(in srgb, ${row.tier.color} 18%, #fff)`,
+                        border: `1.5px solid color-mix(in srgb, ${row.tier.color} 35%, transparent)`,
+                      }}>{row.tier.name}</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: row.roleColor, fontWeight: 600, marginTop: 1, fontFamily: "var(--display)" }}>{row.role}</div>
+                  </div>
+                </div>
+
+                {/* progress bar */}
+                <div style={{ height: 6, borderRadius: 999, background: "rgba(124,92,242,.12)", overflow: "hidden" }}>
+                  <div style={{
+                    height: "100%", width: barPct.toFixed(1) + "%", borderRadius: 999,
+                    background: isMe
+                      ? "linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--cyan)))"
+                      : `linear-gradient(90deg, color-mix(in srgb, ${row.roleColor} 60%, #fff), color-mix(in srgb, ${row.roleColor} 30%, #fff))`,
+                    transition: "width .8s cubic-bezier(.2,.8,.2,1)",
+                  }} />
+                </div>
+              </div>
+
+              {/* value */}
+              <div style={{ textAlign: "right", flexShrink: 0 }}>
+                <div className="figure" style={{
+                  fontSize: 20,
+                  color: metric === "doneRate" ? doneColor : isMe ? "var(--purple-deep)" : "var(--ink)",
+                }}>{formatVal(row)}</div>
+                {metric === "pts" && (
+                  <div style={{ fontSize: 11, color: "var(--label)", fontWeight: 600, marginTop: 2 }}>{row.tasks} tasks</div>
+                )}
+                {metric === "tasks" && (
+                  <div style={{ fontSize: 11, color: "var(--label)", fontWeight: 600, marginTop: 2 }}>{row.pts.toLocaleString()} pts</div>
+                )}
+                {metric === "doneRate" && (
+                  <div style={{ fontSize: 11, color: "var(--label)", fontWeight: 600, marginTop: 2 }}>{row.pts.toLocaleString()} pts</div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  INSIGHT CARDS
+// ══════════════════════════════════════════════════════════════════════════════
+function InsightCard({ it, delay = 0 }) {
+  return (
+    <div className="card rise" style={{ padding: "16px 18px", animationDelay: delay + "ms" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9 }}>
+        <span style={{ width: 8, height: 8, borderRadius: "50%", background: it.dot, flexShrink: 0 }} />
+        <span style={{ font: "600 13px/1 var(--font)" }}>{it.emoji} {it.title}</span>
+      </div>
+      <div className="figure" style={{ fontSize: 18, color: "var(--ink)" }}>{it.value}</div>
+      <div style={{ font: "500 12.5px/1.4 var(--font)", color: "var(--label)", marginTop: 6 }}>{it.sub}</div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  BOTTOM NAV (lo-components3.jsx)
+// ══════════════════════════════════════════════════════════════════════════════
+function NavItem({ icon, label, active }) {
+  return (
+    <button style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, border: "none", background: "transparent", cursor: "pointer",
+      color: active ? "var(--purple)" : "var(--label)", padding: "4px 2px" }}>
+      <Glyph name={icon} size={21} />
+      <span style={{ font: `${active ? 700 : 600} 10px/1 var(--display)`, letterSpacing: .3 }}>{label}</span>
+    </button>
+  );
+}
+
+function BottomNav({ mascots }) {
+  return (
+    <nav style={{ position: "fixed", left: "50%", bottom: 18, transform: "translateX(-50%)", zIndex: 40,
+      width: "min(440px, calc(100% - 32px))", background: "#fff", borderRadius: 28, boxShadow: "0 18px 40px rgba(96,67,170,.22)",
+      padding: "10px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <NavItem icon="home" label="Home" />
+      <NavItem icon="compass" label="Explore" />
+      <button aria-label="Create" style={{ flex: "none", width: 58, height: 58, marginTop: -28, borderRadius: "50%", border: "5px solid #fff", cursor: "pointer",
+        background: "linear-gradient(150deg, var(--purple), var(--purple-deep))", color: "#fff", display: "grid", placeItems: "center", fontSize: 26,
+        boxShadow: "0 12px 24px color-mix(in srgb, var(--purple) 50%, transparent)" }}>{mascots ? "🦉" : "+"}</button>
+      <NavItem icon="gift" label="Rewards" />
+      <NavItem icon="user" label="Profile" active />
+    </nav>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  TWEAKS PANEL (from tweaks-panel.jsx — light macOS frosted glass)
+// ══════════════════════════════════════════════════════════════════════════════
+function useTweaks(defaults) {
+  const [values, setValues] = useState(defaults);
+  const setTweak = useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null
+      ? keyOrEdits : { [keyOrEdits]: val };
+    setValues((prev) => ({ ...prev, ...edits }));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+    window.dispatchEvent(new CustomEvent('tweakchange', { detail: edits }));
+  }, []);
+  return [values, setTweak];
+}
+
+function TweakRow({ label, value, children, inline = false }) {
+  return (
+    <div className={inline ? 'twk-row twk-row-h' : 'twk-row'}>
+      <div className="twk-lbl">
+        <span>{label}</span>
+        {value != null && <span className="twk-val">{value}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function TweakSection({ label }) {
+  return <div className="twk-sect">{label}</div>;
+}
+
+function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }) {
+  return (
+    <TweakRow label={label} value={`${value}${unit}`}>
+      <input type="range" className="twk-slider" min={min} max={max} step={step}
+             value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    </TweakRow>
+  );
+}
+
+function TweakToggle({ label, value, onChange }) {
+  return (
+    <div className="twk-row twk-row-h">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <button type="button" className="twk-toggle" data-on={value ? '1' : '0'}
+              role="switch" aria-checked={!!value}
+              onClick={() => onChange(!value)}><i /></button>
+    </div>
+  );
+}
+
+function TweakText({ label, value, placeholder, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <input className="twk-field" type="text" value={value} placeholder={placeholder}
+             onChange={(e) => onChange(e.target.value)} />
+    </TweakRow>
+  );
+}
+
+function __twkIsLight(hex) {
+  const h = String(hex).replace('#', '');
+  const x = h.length === 3 ? h.replace(/./g, (c) => c + c) : h.padEnd(6, '0');
+  const n = parseInt(x.slice(0, 6), 16);
+  if (Number.isNaN(n)) return true;
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return r * 299 + g * 587 + b * 114 > 148000;
+}
+const __TwkCheck = ({ light }) => (
+  <svg viewBox="0 0 14 14" aria-hidden="true" style={{ position:"absolute", top:5, left:5, width:13, height:13, filter:"drop-shadow(0 1px 1px rgba(0,0,0,.3))" }}>
+    <path d="M3 7.2 5.8 10 11 4.2" fill="none" strokeWidth="2.2"
+          strokeLinecap="round" strokeLinejoin="round"
+          stroke={light ? 'rgba(0,0,0,.78)' : '#fff'} />
+  </svg>
+);
+
+function TweakColor({ label, value, options, onChange }) {
+  const key = (o) => String(JSON.stringify(o)).toLowerCase();
+  const cur = key(value);
+  return (
+    <TweakRow label={label}>
+      <div className="twk-chips" role="radiogroup">
+        {options.map((o, i) => {
+          const on = key(o) === cur;
+          return (
+            <button key={i} type="button" className="twk-chip" role="radio"
+                    aria-checked={on} data-on={on ? '1' : '0'}
+                    style={{ background: o }}
+                    onClick={() => onChange(o)}>
+              {on && <__TwkCheck light={__twkIsLight(o)} />}
+            </button>
+          );
+        })}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakButton({ label, onClick, secondary = false }) {
+  return (
+    <button type="button" className={secondary ? 'twk-btn secondary' : 'twk-btn'}
+            onClick={onClick}>{label}</button>
+  );
+}
+
+function TweaksPanel({ open, onClose, title = "Tweaks", children }) {
+  const dragRef = useRef(null);
+  const offsetRef = useRef({ x: 16, y: 80 });
+  const PAD = 16;
+
+  const clampToViewport = useCallback(() => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const maxRight = Math.max(PAD, window.innerWidth - w - PAD);
+    const maxBottom = Math.max(PAD, window.innerHeight - h - PAD);
+    offsetRef.current = {
+      x: Math.min(maxRight, Math.max(PAD, offsetRef.current.x)),
+      y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y)),
+    };
+    panel.style.right = offsetRef.current.x + 'px';
+    panel.style.bottom = offsetRef.current.y + 'px';
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    clampToViewport();
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(clampToViewport);
+      ro.observe(document.documentElement);
+      return () => ro.disconnect();
+    }
+  }, [open, clampToViewport]);
+
+  const onDragStart = (e) => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const r = panel.getBoundingClientRect();
+    const sx = e.clientX, sy = e.clientY;
+    const startRight  = window.innerWidth  - r.right;
+    const startBottom = window.innerHeight - r.bottom;
+    const move = (ev) => {
+      offsetRef.current = {
+        x: startRight  - (ev.clientX - sx),
+        y: startBottom - (ev.clientY - sy),
+      };
+      clampToViewport();
+    };
+    const up = () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  };
+
+  if (!open) return null;
+  return (
+    <div ref={dragRef} className="twk-panel"
+         style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}>
+      <div className="twk-hd" onMouseDown={onDragStart}>
+        <b>{title}</b>
+        <button className="twk-x" aria-label="Close tweaks"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={onClose}>✕</button>
+      </div>
+      <div className="twk-body">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  APP ASSEMBLY (lo-app.jsx)
+// ══════════════════════════════════════════════════════════════════════════════
+const TWEAK_DEFAULTS = {
+  accent: "#7c5cf2",
+  mascots: true,
+  name: "Ohm",
+};
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [claimed, setClaimed] = useState(loadClaimed);
+  const [tweakOpen, setTweakOpen] = useState(false);
+
+  useEffect(() => {
+    try { localStorage.setItem(CLAIM_KEY, JSON.stringify(claimed)); } catch (e) {}
+  }, [claimed]);
+
+  const points = DATA.stats.totalPoints;
+  const tIdx = tierIndex(points, DATA.tiers);
+  const levelNames = DATA.tiers.map(x => x.name);
+  const tierColor = DATA.tiers[tIdx].color;
+
+  const dials = [
+    { label: "Delivery",    value: Math.round(parseFloat(DATA.stats.doneRatePct)), color: "var(--green)" },
+    { label: "Velocity",    value: 78, color: "var(--gold)" },
+    { label: "Consistency", value: 64, color: "var(--coral)" },
+    { label: "Focus",       value: 88, color: "var(--cyan)" },
+  ];
+
+  const themeVars = {
+    "--accent": t.accent,
+    "--accent-soft": `color-mix(in srgb, ${t.accent} 14%, #fff)`,
+  };
+
+  return (
+    <div className="stage" style={themeVars}>
+      <div className="feed">
+
+        {/* 1. ProfileHeader */}
+        <ProfileHeader name={t.name} mascots={t.mascots} />
+
+        {/* 2. HeroCard */}
+        <HeroCard
+          name={t.name} role={DATA.person.role}
+          sprintsActive={DATA.person.sprintsActive} sprintsTotal={DATA.person.sprintsTotal}
+          tierName={DATA.tiers[tIdx].name} tierColor={tierColor}
+          mascots={t.mascots} delay={40}
+        />
+
+        {/* 3. StatTile pair */}
+        <div className="span-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 15 }}>
+          <StatTile label="Total Points" value={DATA.stats.totalPoints} sub="Across 7 projects" emoji="📦" tone="purple" delay={80} />
+          <StatTile label="Tasks"        value={DATA.stats.totalTasks}  sub="Done + in flight"  emoji="✅" tone="gold"   delay={110} />
+        </div>
+
+        {/* 4. Left column: TotalPointsCard + 2 MiniStats */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
+          <TotalPointsCard value={points} mascots={t.mascots} delay={140} />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 13 }}>
+            <MiniStat icon="📋" value={DATA.stats.totalTasks}                                    label="Total tasks" delay={170} />
+            <MiniStat icon="🎯" value={Math.round(parseFloat(DATA.stats.doneRatePct)) + "%"}     label="Done rate"   delay={190} />
+          </div>
+        </div>
+
+        {/* 5. Right column: TribeCard */}
+        <TribeCard
+          name={DATA.projEntries[0][0]}
+          pts={DATA.projEntries[0][1]}
+          projectCount={DATA.stats.projects}
+          rank={DATA.stats.myRank}
+          teamSize={DATA.stats.teamSize}
+          mascots={t.mascots} delay={150}
+        />
+
+        {/* 6. RewardsJourneySpectrum (WorkStyleCard slot, span-2) */}
+        <RewardsJourneySpectrum
+          rewards={DATA.rewards} points={points}
+          claimed={claimed} setClaimed={setClaimed}
+          mascots={t.mascots} delay={210}
+        />
+
+        {/* 7. DevScoreCard */}
+        <DevScoreCard
+          levelIndex={tIdx} levels={levelNames}
+          levelLabel={`${DATA.tiers[tIdx].name.toUpperCase()} TIER`} tierColor={tierColor}
+          dials={dials} mascots={t.mascots} delay={250}
+        />
+
+        {/* 8. StatusBreakdown */}
+        <StatusBreakdown hero={DATA.statusHero} rest={DATA.statusRest} totalTasks={DATA.person.totalTasks} delay={290} />
+
+        {/* 9. TrendCard */}
+        <TrendCard data={DATA.sprintTrend} delay={330} />
+
+        {/* 10. TrophyCard */}
+        <TrophyCard
+          title="Amazing work!"
+          sub={`You're in the top 15% of shippers — ${Math.round(parseFloat(DATA.stats.doneRatePct))}% done rate this cycle.`}
+          mascots={t.mascots} delay={370}
+        />
+
+        {/* 11. LeaderboardCard */}
+        <LeaderboardCard
+          leaderboard={DATA.leaderboard}
+          myName={t.name}
+          delay={400}
+        />
+
+        {/* 12. InsightCards grid (span-2, 2-col auto-fill) */}
+        <div className="span-2" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px,1fr))", gap: 13 }}>
+          {DATA.insights.map((it, i) => <InsightCard key={i} it={it} delay={i * 45 + 430} />)}
+        </div>
+
+        {/* 13. Leave history */}
+        {DATA.leave.length > 0 && (
+          <div className="card pad span-2" style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 18 }}>🗓</span>
+            <span style={{ font: "600 14px/1 var(--display)", color: "var(--ink)" }}>Leave &amp; Holidays</span>
+            {DATA.leave.map((l, i) => (
+              <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 8,
+                background: "var(--purple-soft)", borderRadius: 999, padding: "8px 14px",
+                font: "600 12.5px/1 var(--display)", color: "var(--ink-soft)" }}>
+                {l.icon} Sprint {l.sprint} · {l.kind} {l.days}d · {l.range}
+              </span>
+            ))}
+          </div>
+        )}
+
+      </div>
+
+      {/* 14. BottomNav */}
+      <BottomNav mascots={t.mascots} />
+
+      {/* Tweaks FAB */}
+      <button className="twk-fab" onClick={() => setTweakOpen(o => !o)} title="Open Tweaks" aria-label="Open tweaks panel">⚙️</button>
+
+      {/* Tweaks Panel */}
+      <TweaksPanel open={tweakOpen} onClose={() => setTweakOpen(false)}>
+        <TweakSection label="Theme" />
+        <TweakColor label="Accent" value={t.accent}
+          options={["#7c5cf2", "#f06aa0", "#34c4dd", "#f4be3f", "#4fc187"]}
+          onChange={(v) => setTweak('accent', v)} />
+
+        <TweakSection label="Profile" />
+        <TweakText label="Name" value={t.name} onChange={(v) => setTweak('name', v)} />
+
+        <TweakSection label="Playfulness" />
+        <TweakToggle label="Mascots &amp; emoji" value={t.mascots} onChange={(v) => setTweak('mascots', v)} />
+        <TweakButton label="Reset claimed rewards" onClick={() => setClaimed([50, 100, 150, 200])} />
+      </TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

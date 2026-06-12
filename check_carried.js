@@ -20,8 +20,8 @@ const db = getFirestore(initializeApp(firebaseConfig));
 
 const AZURE_ORG = process.env.AZURE_ORG || 'morestudio';
 const AZURE_PROJECT = process.env.AZURE_PROJECT || 'M';
-const AZURE_PAT = process.env.AZURE_PAT;
-if (!AZURE_PAT) { console.error("Missing AZURE_PAT"); process.exit(1); }
+const AZURE_PAT = process.env.AZURE_PAT || process.env.ADO_PAT;
+if (!AZURE_PAT) { console.error("Missing AZURE_PAT or ADO_PAT"); process.exit(1); }
 
 const azureHeaders = {
   'Authorization': `Basic ${Buffer.from(`:${AZURE_PAT.replace(/^"|"$|'/g, '')}`).toString('base64')}`,

@@ -1,8 +1,9 @@
 name: Daily Sprint Snapshot & Notify
 
 on:
-  # Scheduled trigger moved to Vercel Cron (api/cron/daily-sprint) for exact timing.
-  # This workflow is kept as a manual backup only.
+  schedule:
+    # 11:00 UTC = 18:00 ICT. Note: GitHub free-tier cron can be delayed up to ~3 hrs.
+    - cron: '0 11 * * *'
   workflow_dispatch:
 
 jobs:
