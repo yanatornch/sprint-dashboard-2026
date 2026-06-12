@@ -91,5 +91,6 @@ Push to `main` → Vercel auto-builds and deploys. No CLI needed. Vercel config 
 
 | Collection | Description |
 |---|---|
-| `taskSnapshots` | Daily snapshots of all task states. Doc ID: `YYYY-MM-DD`. Used to compute daily deltas for notifications. |
+| `taskSnapshots` | Daily snapshots of all task states. Doc ID: `YYYY-MM-DD`. Used to compute daily/weekly deltas for notifications. |
 | `dailyStats` | Daily sprint notification records saved by `api/notify/daily-sprint.js`. |
+| `weeklyStats` | Weekly sprint notification records saved by `api/notify/weekly-sprint.js`. Diffs today's snapshot against the sprint-start baseline snapshot. |
