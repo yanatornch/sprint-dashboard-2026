@@ -81,6 +81,7 @@ async function computeWeeklyDelta(date) {
 
     const prev = baselineTasks[taskId];
     const person = task.person;
+    // Marketplace weekly card reads pointsThisWeek / tasksThisWeek.
     if (!byPerson[person]) byPerson[person] = { pointsThisWeek: 0, tasksThisWeek: 0, tasks: [] };
 
     const stateChanged = prev && prev.state !== task.state;
