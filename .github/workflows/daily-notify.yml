@@ -1,9 +1,8 @@
 name: Daily Sprint Snapshot & Notify
 
 on:
-  schedule:
-    # Every day at 17:45 ICT (10:45 UTC)
-    - cron: '45 10 * * *'
+  # Scheduled trigger moved to Vercel Cron (api/cron/daily-sprint) for exact timing.
+  # This workflow is kept as a manual backup only.
   workflow_dispatch:
 
 jobs:
