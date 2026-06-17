@@ -1,4 +1,8 @@
-name: Daily Sprint Snapshot & Notify
+name: Daily Azure Sync
+
+# Notifications are paused — this workflow only syncs Azure DevOps → Firestore.
+# WEBHOOK_URL is intentionally NOT passed so azure_sync.js skips its own webhook.
+# To resume notifications, restore the snapshot + notify jobs (see git history).
 
 on:
   schedule:
@@ -20,28 +24,4 @@ jobs:
           AZURE_ORG: ${{ secrets.AZURE_ORG || 'morestudio' }}
           AZURE_PROJECT: ${{ secrets.AZURE_PROJECT || 'M' }}
           AZURE_PAT: ${{ secrets.AZURE_PAT || secrets.ADO_PAT }}
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
-          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
         run: node azure_sync.js
-
-  snapshot:
-    needs: sync
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm install
-      - name: Take daily task snapshot
-        run: node daily_snapshot.js
-
-  notify:
-    needs: snapshot
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger daily-sprint notification
-        run: |
-          curl -s -X POST "${{ secrets.SPRINT_DASHBOARD_URL }}/api/notify/daily-sprint" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.WEBHOOK_SECRET }}" || true

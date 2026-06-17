@@ -1,16 +1,12 @@
 name: Weekly Dev Team Unfinished Tasks
 
 on:
-  workflow_run:
-    workflows: ["Azure to Firestore Sync"]
-    types:
-      - completed
+  # Notifications paused — auto-trigger on sync completion removed.
+  # Manual-only via workflow_dispatch. To resume, restore the workflow_run trigger.
   workflow_dispatch:
 
 jobs:
   notify:
-    # Only run if triggered by schedule/sync completion (not on failed sync)
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
