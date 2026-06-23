@@ -3330,6 +3330,26 @@ function wireUp(){
   document.getElementById("projSprintRange").addEventListener("change", e => { S.projRange = e.target.value; refresh(); });
   document.getElementById("projRole").addEventListener("change", e => { S.projRole = e.target.value; refresh(); });
   document.getElementById("projDrill").addEventListener("change", e => { S.projDrill = e.target.value; buildProjectDrill(); });
+  // Search box filters the project drill options as you type.
+  const projSearch = document.getElementById("projDrillSearch");
+  if (projSearch) {
+    projSearch.addEventListener("input", e => {
+      const q = e.target.value.trim().toLowerCase();
+      const sel = document.getElementById("projDrill");
+      let firstMatch = null;
+      Array.from(sel.options).forEach(opt => {
+        const hit = !q || opt.value === "__all__" || opt.textContent.toLowerCase().includes(q);
+        opt.hidden = !hit;
+        if (hit && opt.value !== "__all__" && !firstMatch) firstMatch = opt.value;
+      });
+      // Auto-select the top match so the chart updates while typing.
+      if (q && firstMatch && S.projDrill !== firstMatch) {
+        sel.value = firstMatch;
+        S.projDrill = firstMatch;
+        buildProjectDrill();
+      }
+    });
+  }
   document.getElementById("projDrillMetric").addEventListener("change", e => { S.projDrillMetric = e.target.value; buildProjectDrill(); });
   document.getElementById("projDrillStatus").addEventListener("change", e => { S.projDrillStatus = e.target.value; buildProjectDrill(); });
 
