@@ -514,7 +514,7 @@ function getPersonProjectValByMetric(person, project) {
 // ============================================================================
 function sum(arr){ return arr.reduce((a,b)=>a+(+b||0),0); }
 function rangeIdx(range){
-  if (range === "all") return [0,1,2,3,4,5,6,7,8,9,10,11];
+  if (range === "all") return Array.from({length: DATA.sprints.length}, (_, i) => i);
   const [s,e] = range.split("-").map(Number);
   return Array.from({length:e-s+1}, (_,i)=>s-1+i);
 }
@@ -3382,6 +3382,16 @@ function wireUp(){
 })();
 populateSelects();
 wireUp();
+// Fix static "1-N" sprint-count labels to match actual sprint count (index.html hardcodes 12).
+(function fixSprintCountLabels(){
+  const n = DATA.sprints.length;
+  ["sprintRange", "projSprintRange"].forEach(id => {
+    const opt = document.querySelector(`#${id} option[value="all"]`);
+    if (opt) opt.textContent = `All Sprints (1-${n})`;
+  });
+  const sub = document.querySelector("header .sub") || document.querySelector(".sub");
+  if (sub) sub.innerHTML = sub.innerHTML.replace(/Sprints 1[–-]\d+/, `Sprints 1–${n}`);
+})();
 // Theme toggle button wiring + restore saved label
 (function wireTheme(){
   const btn = document.getElementById("themeToggle");
