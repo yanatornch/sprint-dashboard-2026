@@ -289,6 +289,27 @@ async function runSync() {
   await statsBatch.commit();
   console.log("Sprint stats successfully updated in Firestore!");
 
+  // Ensure a `sprints` metadata doc exists for every sprint we just synced.
+  // main.js builds its entire sprint axis from this collection, so a missing
+  // doc means the sprint is invisible even when its task/stat data exists.
+  const syncedSprints = new Set([
+    ...Object.keys(userStatsBySprint),
+    ...Object.keys(projStatsBySprint)
+  ].map(Number));
+  syncedSprints.add(currentSprint);
+
+  let sprintsBatch = writeBatch(db);
+  for (const sprintNum of syncedSprints) {
+    const meta = SPRINT_DATES.find(d => d.sprint === sprintNum);
+    sprintsBatch.set(doc(db, "sprints", `sprint_${sprintNum}`), {
+      name: `Sprint ${sprintNum}`,
+      index: sprintNum - 1,
+      ...(meta ? { start: meta.s, end: meta.e } : {})
+    }, { merge: true });
+  }
+  await sprintsBatch.commit();
+  console.log(`Ensured ${syncedSprints.size} sprint metadata doc(s) exist.`);
+
   // 4. Auto-register new projects to Firestore if they don't exist
   console.log("Checking for new projects...");
   const projectsSnap = await getDocs(collection(db, "projects"));
