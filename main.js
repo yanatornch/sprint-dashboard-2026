@@ -1334,8 +1334,8 @@ function buildCapacityChart(){
       interaction:{mode:"nearest",intersect:true},
       scales:{
         x:{grid:{color:THEME.grid},ticks:{color:THEME.tick}},
-        y:{beginAtZero:true,grid:{color:THEME.grid},ticks:{color:THEME.tick},title:{display:true,text:"Points",color:"#94a3b8"}},
-        y1:{beginAtZero:true,grid:{display:false},ticks:{color:THEME.tick},position:"right",title:{display:true,text:"Tasks",color:"#94a3b8"}}
+        y:{beginAtZero:true,grace:"8%",grid:{color:THEME.grid},ticks:{color:THEME.tick},title:{display:true,text:"Points",color:"#94a3b8"}},
+        y1:{beginAtZero:true,grace:"8%",grid:{display:false},ticks:{color:THEME.tick},position:"right",title:{display:true,text:"Tasks",color:"#94a3b8"}}
       },
       plugins:{legend:{labels:{color:THEME.tick}}}
     }
@@ -1386,7 +1386,7 @@ function buildAvgTrendChart(){
       responsive:true, maintainAspectRatio:false,
       scales:{
         x:{grid:{color:THEME.grid},ticks:{color:THEME.tick}},
-        y:{beginAtZero:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}}
+        y:{beginAtZero:true,grace:"8%",grid:{color:THEME.grid},ticks:{color:THEME.tick}}
       },
       plugins:{legend:{labels:{color:THEME.tick}}}
     }
@@ -1658,7 +1658,7 @@ function buildPersonDrill(){
       interaction:{mode:"nearest",intersect:true,axis:"xy"},
       scales:{
         x:{stacked:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}},
-        y:{stacked:true,beginAtZero:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}}
+        y:{stacked:true,beginAtZero:true,grace:"8%",grid:{color:THEME.grid},ticks:{color:THEME.tick}}
       },
       plugins:{
         legend:{position:"bottom",labels:{color:THEME.tick,boxWidth:10,font:{size:11}}},
@@ -1990,7 +1990,7 @@ function buildProjTrendChart(){
       interaction:{mode:"nearest",intersect:true,axis:"xy"},
       scales:{
         x:{stacked:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}},
-        y:{stacked:true,beginAtZero:true,grid:{color:THEME.grid},ticks:{color:THEME.tick}}
+        y:{stacked:true,beginAtZero:true,grace:"8%",grid:{color:THEME.grid},ticks:{color:THEME.tick}}
       },
       plugins:{
         legend:{position:"bottom",labels:{color:THEME.tick,boxWidth:10,font:{size:11}}},
