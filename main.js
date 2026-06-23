@@ -856,13 +856,13 @@ function buildTrendChart(){
     plugins: [leaveIndicatorPlugin],
     options: {
       responsive:true, maintainAspectRatio:false,
-      layout: { padding: { bottom: S.chartType === "bar" ? 68 : 0 } },
+      layout: { padding: { top: S.chartType === "bar" ? 24 : 0, bottom: S.chartType === "bar" ? 68 : 0 } },
       interaction: S.chartType === "bar"
         ? { mode:"index", intersect:false }
         : { mode:"index", intersect:false },
       scales: {
         x: { stacked: S.chartType==="bar", grid:{color:THEME.grid}, ticks:{color:THEME.tick} },
-        y: { stacked: S.chartType==="bar", beginAtZero:true, grid:{color:THEME.grid}, ticks:{color:THEME.tick} }
+        y: { stacked: S.chartType==="bar", beginAtZero:true, grace: S.chartType==="bar" ? "8%" : 0, grid:{color:THEME.grid}, ticks:{color:THEME.tick} }
       },
       plugins: {
         legend: { position:"bottom", labels:{color:THEME.tick, boxWidth:10, font:{size:11}} },
@@ -1131,11 +1131,11 @@ function buildRoleChart(canvasId, legendId, rolePeople, idx, labels, leaveLookup
     plugins: [leavePlugin, hoverPlugin],
     options: {
       responsive: false, maintainAspectRatio: false,
-      layout: { padding: { bottom: 68 } },
+      layout: { padding: { top: 24, bottom: 68 } },
       interaction: { mode: "nearest", intersect: true },
       scales: {
         x: { stacked: true, grid: { color: THEME.grid }, ticks: { color: THEME.tick } },
-        y: { stacked: true, beginAtZero: true, grid: { color: THEME.grid }, ticks: { color: THEME.tick } }
+        y: { stacked: true, beginAtZero: true, grace: "8%", grid: { color: THEME.grid }, ticks: { color: THEME.tick } }
       },
       plugins: {
         legend: { display: false },
@@ -2228,10 +2228,11 @@ function buildProjectDrill(){
     data: { labels, datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 24 } },
       interaction: { mode: "nearest", intersect: true, axis: "xy" },
       scales: {
         x: { stacked: true, grid: { color: THEME.grid }, ticks: { color: THEME.tick } },
-        y: { stacked: true, beginAtZero: true, grid: { color: THEME.grid }, ticks: { color: THEME.tick } }
+        y: { stacked: true, beginAtZero: true, grace: "8%", grid: { color: THEME.grid }, ticks: { color: THEME.tick } }
       },
       plugins: {
         legend: { position: "bottom", labels: { color: THEME.tick, boxWidth: 10, font: { size: 11 } } },
@@ -2389,10 +2390,11 @@ function buildBugsTab(){
     data: { labels, datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 24 } },
       interaction: { mode: "nearest", intersect: true, axis: "xy" },
       scales: {
         x: { stacked: true, grid: { color: THEME.grid }, ticks: { color: THEME.tick } },
-        y: { stacked: true, beginAtZero: true, grid: { color: THEME.grid }, ticks: { color: THEME.tick, precision: 0 } }
+        y: { stacked: true, beginAtZero: true, grace: "8%", grid: { color: THEME.grid }, ticks: { color: THEME.tick, precision: 0 } }
       },
       plugins: {
         legend: { position: "bottom", labels: { color: THEME.tick, boxWidth: 10, font: { size: 11 } } },
