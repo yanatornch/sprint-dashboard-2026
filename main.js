@@ -3448,7 +3448,11 @@ function showToast(message, type = "info", duration = 4000) {
     document.getElementById("syncLabel").textContent = "Syncing…";
     showToast("Triggering Azure sync…", "info");
     try {
-      const res = await fetch("/api/trigger-sync", { method: "POST" });
+      const idToken = await currentUser.getIdToken();
+      const res = await fetch("/api/trigger-sync", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${idToken}` }
+      });
       const data = await res.json();
       if (res.ok) {
         document.getElementById("syncLabel").textContent = "Triggered!";
